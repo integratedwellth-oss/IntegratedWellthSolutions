@@ -20,15 +20,20 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+      
       - name: Set up Node
         uses: actions/setup-node@v4
         with:
           node-version: 20
-          cache: 'npm'
+          # cache line removed to prevent "lock file not found" error
+          
       - name: Install dependencies
         run: npm install
+        # Changed from "npm ci" to "npm install" to auto-generate the missing lock file
+
       - name: Build
         run: npm run build
+
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
