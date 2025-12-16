@@ -1,0 +1,5 @@
+User-agent: *
+Allow: /
+
+# Sitemap location (we will create this next)
+Sitemap: https://integratedwellth.co.za/sitemap.xml
