@@ -283,3 +283,19 @@ const ChatWidget: React.FC<ChatWidgetProps> = ({ currentView = 'home' }) => {
       {!isOpen && (
         <button
           onClick={() => setIsOpen(true)}
+          className="bg-brand-600 text-white p-4 rounded-full shadow-xl hover:bg-brand-700 transition-all hover:scale-105 flex items-center gap-3 group relative animate-fadeIn"
+        >
+            {/* Notification dot if closed */}
+            <span className="absolute top-0 right-0 -mt-1 -mr-1 w-4 h-4 bg-red-500 border-2 border-white rounded-full"></span>
+            
+            <MessageSquare size={26} />
+            <span className="max-w-0 overflow-hidden group-hover:max-w-xs transition-all duration-300 whitespace-nowrap font-medium pr-0 group-hover:pr-2">
+                Ask Wellth Advisor
+            </span>
+        </button>
+      )}
+    </div>
+  );
+};
+
+export default ChatWidget;
