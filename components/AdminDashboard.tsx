@@ -1,33 +1,63 @@
 import React, { useState, useEffect } from 'react';
-import { db } from '../firebaseConfig';
+import { db, auth, googleProvider } from '../firebaseConfig';
+import { signInWithPopup, signOut, onAuthStateChanged, User } from 'firebase/auth';
 import { collection, getDocs, query, orderBy } from 'firebase/firestore';
-import { Download, Lock, RefreshCw, ShieldCheck, Phone, Mail, Building, User } from 'lucide-react';
+import { Download, Lock, RefreshCw, ShieldCheck, Phone, Mail, Building, User as UserIcon, LogOut } from 'lucide-react';
 import Button from './Button';
 
+// 🔒 SECURITY: ONLY THIS EMAIL CAN SEE DATA
+const ALLOWED_EMAIL = "info@integratedwellth.co.za";
+
 const AdminDashboard = () => {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [password, setPassword] = useState('');
+  const [user, setUser] = useState<User | null>(null);
+  const [isAuthorized, setIsAuthorized] = useState(false);
+  const [authLoading, setAuthLoading] = useState(true);
   const [leads, setLeads] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
-  // 🔐 CHANGE YOUR SECRET PASSWORD HERE
-  const ADMIN_PASSWORD = "IWS2026"; 
+  // Check login status on load
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+      setUser(currentUser);
+      if (currentUser && currentUser.email === ALLOWED_EMAIL) {
+        setIsAuthorized(true);
+        fetchLeads(); // Auto-load data if authorized
+      } else {
+        setIsAuthorized(false);
+        setLeads([]);
+      }
+      setAuthLoading(false);
+    });
+    return () => unsubscribe();
+  }, []);
 
-  const handleLogin = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (password === ADMIN_PASSWORD) {
-      setIsAuthenticated(true);
-      fetchLeads();
-    } else {
-      setError('Incorrect password');
+  const handleLogin = async () => {
+    setError('');
+    try {
+      const result = await signInWithPopup(auth, googleProvider);
+      const email = result.user.email;
+      
+      if (email !== ALLOWED_EMAIL) {
+        await signOut(auth);
+        setError(`Access Denied. The email ${email} is not authorized.`);
+        setIsAuthorized(false);
+      }
+    } catch (err) {
+      console.error("Login failed", err);
+      setError("Login popup closed or failed. Please try again.");
     }
+  };
+
+  const handleLogout = async () => {
+    await signOut(auth);
+    setIsAuthorized(false);
+    setUser(null);
   };
 
   const fetchLeads = async () => {
     setLoading(true);
     try {
-      // Fetch leads and sort by newest first
       const q = query(collection(db, "leads"), orderBy("timestamp", "desc"));
       const querySnapshot = await getDocs(q);
       const leadsData = querySnapshot.docs.map(doc => ({
@@ -37,8 +67,7 @@ const AdminDashboard = () => {
       setLeads(leadsData);
     } catch (err) {
       console.error("Error fetching leads:", err);
-      // Fallback if indexing is missing (sometimes happens with new Firebase collections)
-      // We try fetching without sorting if the first try fails
+      // Fallback if indexing is missing
       try {
         const querySnapshot = await getDocs(collection(db, "leads"));
         const leadsData = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
@@ -52,16 +81,12 @@ const AdminDashboard = () => {
   };
 
   const downloadCSV = () => {
-    // Define headers
     const headers = ["Name,Enterprise,Email,Phone,Score,Result,Date\n"];
-    
-    // Format rows
     const rows = leads.map(lead => {
       const date = lead.timestamp ? new Date(lead.timestamp.seconds * 1000).toLocaleDateString() : 'N/A';
       return `"${lead.name}","${lead.enterprise}","${lead.email}","${lead.phone || ''}","${lead.score}","${lead.resultType}","${date}"`;
     });
 
-    // Create file
     const csvContent = "data:text/csv;charset=utf-8," + headers + rows.join("\n");
     const encodedUri = encodeURI(csvContent);
     const link = document.createElement("a");
@@ -72,34 +97,44 @@ const AdminDashboard = () => {
     document.body.removeChild(link);
   };
 
-  // 🔒 LOGIN SCREEN
-  if (!isAuthenticated) {
+  // 🔄 LOADING SCREEN
+  if (authLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <RefreshCw className="animate-spin text-brand-500 w-8 h-8" />
+      </div>
+    );
+  }
+
+  // 🔒 LOGIN SCREEN (If not logged in OR not authorized)
+  if (!isAuthorized) {
     return (
       <div className="min-h-screen bg-gray-100 flex items-center justify-center p-4">
         <div className="bg-white p-8 rounded-2xl shadow-xl w-full max-w-md text-center">
           <div className="w-16 h-16 bg-brand-900 rounded-full flex items-center justify-center mx-auto mb-6">
             <Lock className="text-white w-8 h-8" />
           </div>
-          <h2 className="text-2xl font-bold text-gray-800 mb-2">Admin Access</h2>
-          <p className="text-gray-500 mb-6">Please enter the master password to view leads.</p>
+          <h2 className="text-2xl font-bold text-gray-800 mb-2">Restricted Access</h2>
+          <p className="text-gray-500 mb-6">
+            Please sign in with the official administration account<br/>
+            (info@integratedwellth.co.za)
+          </p>
           
-          <form onSubmit={handleLogin} className="space-y-4">
-            <input
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-500 outline-none"
-              placeholder="Enter Password"
-            />
-            {error && <p className="text-red-500 text-sm">{error}</p>}
-            <Button type="submit" className="w-full justify-center">Unlock Dashboard</Button>
-          </form>
+          <Button onClick={handleLogin} className="w-full justify-center flex gap-2">
+            <ShieldCheck size={18} /> Sign in with Google
+          </Button>
+
+          {error && (
+            <div className="mt-4 p-3 bg-red-50 text-red-600 text-sm rounded-lg border border-red-100">
+              {error}
+            </div>
+          )}
         </div>
       </div>
     );
   }
 
-  // 📊 DASHBOARD SCREEN
+  // 📊 DASHBOARD SCREEN (Only visible if authorized)
   return (
     <div className="min-h-screen bg-gray-50 p-6">
       <div className="max-w-7xl mx-auto">
@@ -110,7 +145,9 @@ const AdminDashboard = () => {
             <h1 className="text-3xl font-bold text-brand-900 flex items-center gap-2">
               <ShieldCheck className="text-brand-500" /> Lead Dashboard
             </h1>
-            <p className="text-gray-500">Real-time data from your assessment tool.</p>
+            <p className="text-gray-500">
+              Welcome, {user?.displayName}. Secure connection established.
+            </p>
           </div>
           
           <div className="flex gap-3">
@@ -125,6 +162,12 @@ const AdminDashboard = () => {
               className="flex items-center gap-2 px-4 py-2 bg-brand-600 text-white rounded-lg hover:bg-brand-700 transition-colors shadow-md"
             >
               <Download size={18} /> Export CSV
+            </button>
+            <button 
+              onClick={handleLogout} 
+              className="flex items-center gap-2 px-4 py-2 bg-red-50 text-red-600 border border-red-100 rounded-lg hover:bg-red-100 transition-colors"
+            >
+              <LogOut size={18} /> Logout
             </button>
           </div>
         </div>
@@ -170,7 +213,7 @@ const AdminDashboard = () => {
                     </td>
                     <td className="p-4">
                       <div className="font-bold text-gray-900 flex items-center gap-2">
-                        <User size={16} className="text-gray-400" /> {lead.name}
+                        <UserIcon size={16} className="text-gray-400" /> {lead.name}
                       </div>
                       <div className="text-sm text-gray-500 flex items-center gap-2 mt-1">
                         <Building size={14} className="text-gray-400" /> {lead.enterprise}
