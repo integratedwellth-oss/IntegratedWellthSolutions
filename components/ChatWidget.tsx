@@ -299,3 +299,4 @@ const ChatWidget: React.FC<ChatWidgetProps> = ({ currentView = 'home' }) => {
 };
 
 export default ChatWidget;
+// --- END OF FILE: Ensure you copied the line above! ---
