@@ -1,12 +1,11 @@
-import { GoogleGenerativeAI } from "@google/generative-ai";
+import { GoogleGenerativeAI, ChatSession } from "@google/generative-ai";
 
-// ⚠️ MAKE SURE THIS VARIABLE MATCHES YOUR SECRETS
 const API_KEY = import.meta.env.VITE_GEMINI_API_KEY; 
 
 const genAI = new GoogleGenerativeAI(API_KEY || "");
 const model = genAI.getGenerativeModel({ model: "gemini-pro" });
 
-export const createChatSession = () => {
+export const createChatSession = (): ChatSession => {
   return model.startChat({
     history: [
       {
@@ -21,7 +20,7 @@ export const createChatSession = () => {
   });
 };
 
-export const sendMessageStream = async (chat: any, message: string) => {
+export const sendMessageStream = async (chat: ChatSession, message: string) => {
   try {
     const result = await chat.sendMessageStream(message);
     return result.stream;
