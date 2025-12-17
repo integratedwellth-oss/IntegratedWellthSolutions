@@ -8,6 +8,14 @@ import { CheckCircle2, AlertCircle, TrendingUp, Calendar, BookOpen, Users, X, Lo
 import { db } from '../firebaseConfig';
 import { collection, addDoc } from 'firebase/firestore';
 
+// 📧 EMAILJS IMPORT
+import emailjs from '@emailjs/browser';
+
+// ✅ YOUR KEYS ARE NOW CONFIGURED
+const EMAIL_SERVICE_ID = "service_8crgk07";
+const EMAIL_TEMPLATE_ID = "template_sryf7yg";
+const EMAIL_PUBLIC_KEY = "9AFASPrExB5K0FEog";
+
 interface FinancialHealthScoreProps {
   isModal?: boolean;
   isOpen?: boolean;
@@ -23,12 +31,11 @@ const FinancialHealthScore: React.FC<FinancialHealthScoreProps> = ({ isModal = f
   
   const [isSaving, setIsSaving] = useState(false);
 
-  // Added 'phone' to the state
   const [formData, setFormData] = useState({
     name: '',
     enterprise: '',
     email: '',
-    phone: '' 
+    phone: ''
   });
 
   useEffect(() => {
@@ -55,34 +62,9 @@ const FinancialHealthScore: React.FC<FinancialHealthScoreProps> = ({ isModal = f
     }
   };
 
-  const handleFormSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsSaving(true);
-
-    try {
-      // 💾 Saving Phone Number to Firebase now
-      await addDoc(collection(db, "leads"), {
-        name: formData.name,
-        enterprise: formData.enterprise,
-        email: formData.email,
-        phone: formData.phone, // <--- New Field
-        score: score,
-        resultType: getResult().title,
-        timestamp: new Date()
-      });
-
-      setShowForm(false);
-      setShowResult(true);
-    } catch (error) {
-      console.error("Error saving lead:", error);
-      setShowForm(false);
-      setShowResult(true);
-    } finally {
-      setIsSaving(false);
-    }
-  };
-
-  const getResult = () => {
+  // Helper to determine result data (Used for both UI and Email)
+  const getResultUI = () => {
+    // Total max is 16 (4 questions * 4 points)
     if (score >= 12) {
       return {
         title: "Results Ready",
@@ -114,6 +96,55 @@ const FinancialHealthScore: React.FC<FinancialHealthScoreProps> = ({ isModal = f
       icon: <AlertCircle className="w-12 h-12 text-red-500" />,
       msg: "A reset is highly recommended. Your business needs foundational support to address compliance risks, financial blind spots, and operational dependency before you can safely grow."
     };
+  };
+
+  // 🪄 THE SUBMIT HANDLER (Database + Email)
+  const handleFormSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSaving(true);
+
+    const resultData = getResultUI();
+
+    try {
+      // 1. Save to Database
+      await addDoc(collection(db, "leads"), {
+        name: formData.name,
+        enterprise: formData.enterprise,
+        email: formData.email,
+        phone: formData.phone,
+        score: score,
+        resultType: resultData.title,
+        timestamp: new Date()
+      });
+
+      // 2. Send "Thank You" Email via EmailJS
+      await emailjs.send(
+        EMAIL_SERVICE_ID,
+        EMAIL_TEMPLATE_ID,
+        {
+          name: formData.name,
+          enterprise: formData.enterprise,
+          email: formData.email,
+          phone: formData.phone,
+          score: score + " / 16",
+          resultType: resultData.title,
+          message: resultData.msg
+        },
+        EMAIL_PUBLIC_KEY
+      );
+
+      // 3. Show Results
+      setShowForm(false);
+      setShowResult(true);
+
+    } catch (error) {
+      console.error("Error saving/sending:", error);
+      // Even if email fails, show result so user isn't stuck
+      setShowForm(false);
+      setShowResult(true);
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   const resetQuiz = () => {
@@ -154,6 +185,7 @@ const FinancialHealthScore: React.FC<FinancialHealthScoreProps> = ({ isModal = f
 
   return (
     <Wrapper {...wrapperProps}>
+      {/* For Modal: Close Button */}
       {isModal && (
         <button 
           onClick={onClose} 
@@ -163,6 +195,7 @@ const FinancialHealthScore: React.FC<FinancialHealthScoreProps> = ({ isModal = f
         </button>
       )}
 
+      {/* Background Decor (Only for Section mode) */}
       {!isModal && (
         <>
           <div className="absolute top-0 left-0 w-64 h-64 bg-white opacity-5 rounded-full -translate-x-1/2 -translate-y-1/2"></div>
@@ -172,6 +205,7 @@ const FinancialHealthScore: React.FC<FinancialHealthScoreProps> = ({ isModal = f
 
       <div className={containerClasses}>
         
+        {/* Intro Screen */}
         {!started && (
           <div className={`text-center animate-fadeIn ${isModal ? 'py-4' : ''}`}>
             <div className="inline-block bg-yellow-500 text-brand-900 font-bold px-4 py-1 rounded-full text-sm uppercase mb-6 tracking-wider">
@@ -221,6 +255,7 @@ const FinancialHealthScore: React.FC<FinancialHealthScoreProps> = ({ isModal = f
           </div>
         )}
 
+        {/* Quiz & Form Container - Shared Logic */}
         {(started || showForm || showResult) && (
           <div className={`${!isModal ? 'bg-white text-gray-900 rounded-2xl p-6 md:p-10 shadow-2xl transition-all duration-300 min-h-[500px] flex flex-col justify-center animate-fadeIn' : 'w-full'}`}>
             
@@ -311,7 +346,6 @@ const FinancialHealthScore: React.FC<FinancialHealthScoreProps> = ({ isModal = f
                       disabled={isSaving}
                     />
                   </div>
-                  {/* PHONE NUMBER FIELD ADDED HERE */}
                   <div>
                     <label htmlFor="phone" className="block text-sm font-bold text-gray-700 mb-1">Phone Number</label>
                     <input
@@ -325,7 +359,6 @@ const FinancialHealthScore: React.FC<FinancialHealthScoreProps> = ({ isModal = f
                       disabled={isSaving}
                     />
                   </div>
-
                   <div className="pt-4">
                     <Button 
                       type="submit" 
@@ -335,7 +368,7 @@ const FinancialHealthScore: React.FC<FinancialHealthScoreProps> = ({ isModal = f
                       {isSaving ? (
                         <>
                           <Loader2 className="animate-spin w-5 h-5" />
-                          Analyzing & Saving...
+                          Processing...
                         </>
                       ) : (
                         "Reveal My Results"
@@ -350,19 +383,19 @@ const FinancialHealthScore: React.FC<FinancialHealthScoreProps> = ({ isModal = f
             {showResult && (
               <div className="text-center">
                 <div className="flex justify-center mb-6">
-                  <div className={`p-4 rounded-full ${getResult().bgColor}`}>
-                    {getResult().icon}
+                  <div className={`p-4 rounded-full ${getResultUI().bgColor}`}>
+                    {getResultUI().icon}
                   </div>
                 </div>
 
                 <p className="text-sm font-bold text-gray-500 uppercase tracking-widest mb-1">Results for {formData.enterprise}</p>
-                <div className={`text-4xl font-bold mb-2 ${getResult().color}`}>{getResult().title}</div>
+                <div className={`text-4xl font-bold mb-2 ${getResultUI().color}`}>{getResultUI().title}</div>
                 <div className="inline-block px-4 py-1 rounded-full bg-gray-100 text-gray-600 font-bold text-sm mb-6">
                   Score: {score} / 16
                 </div>
 
                 <p className="text-lg text-gray-700 mb-8 max-w-xl mx-auto leading-relaxed border-t border-b border-gray-100 py-6">
-                  {getResult().msg}
+                  {getResultUI().msg}
                 </p>
                 
                 <div className="bg-brand-50 rounded-xl p-6 mb-8 text-left">
