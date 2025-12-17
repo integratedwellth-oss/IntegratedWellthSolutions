@@ -21,16 +21,16 @@ const FinancialHealthScore: React.FC<FinancialHealthScoreProps> = ({ isModal = f
   const [showResult, setShowResult] = useState(false);
   const [showForm, setShowForm] = useState(false);
   
-  // New State for Saving to DB
   const [isSaving, setIsSaving] = useState(false);
 
+  // Added 'phone' to the state
   const [formData, setFormData] = useState({
     name: '',
     enterprise: '',
-    email: ''
+    email: '',
+    phone: '' 
   });
 
-  // Reset state when modal is reopened
   useEffect(() => {
     if (isModal && isOpen) {
       setStarted(false);
@@ -55,28 +55,26 @@ const FinancialHealthScore: React.FC<FinancialHealthScoreProps> = ({ isModal = f
     }
   };
 
-  // 🪄 THE MAGIC PART: Save to Firebase
   const handleFormSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSaving(true);
 
     try {
-      // 1. Save to Database
+      // 💾 Saving Phone Number to Firebase now
       await addDoc(collection(db, "leads"), {
         name: formData.name,
         enterprise: formData.enterprise,
         email: formData.email,
+        phone: formData.phone, // <--- New Field
         score: score,
-        resultType: getResult().title, // Save which result they got
+        resultType: getResult().title,
         timestamp: new Date()
       });
 
-      // 2. Move to Results Screen
       setShowForm(false);
       setShowResult(true);
     } catch (error) {
       console.error("Error saving lead:", error);
-      // Even if it fails, show them the result so they aren't stuck
       setShowForm(false);
       setShowResult(true);
     } finally {
@@ -85,7 +83,6 @@ const FinancialHealthScore: React.FC<FinancialHealthScoreProps> = ({ isModal = f
   };
 
   const getResult = () => {
-    // Total max is 16 (4 questions * 4 points)
     if (score >= 12) {
       return {
         title: "Results Ready",
@@ -125,7 +122,7 @@ const FinancialHealthScore: React.FC<FinancialHealthScoreProps> = ({ isModal = f
     setScore(0);
     setShowResult(false);
     setShowForm(false);
-    setFormData({ name: '', enterprise: '', email: '' });
+    setFormData({ name: '', enterprise: '', email: '', phone: '' });
   };
 
   const openBooking = () => {
@@ -157,7 +154,6 @@ const FinancialHealthScore: React.FC<FinancialHealthScoreProps> = ({ isModal = f
 
   return (
     <Wrapper {...wrapperProps}>
-      {/* For Modal: Close Button */}
       {isModal && (
         <button 
           onClick={onClose} 
@@ -167,7 +163,6 @@ const FinancialHealthScore: React.FC<FinancialHealthScoreProps> = ({ isModal = f
         </button>
       )}
 
-      {/* Background Decor (Only for Section mode) */}
       {!isModal && (
         <>
           <div className="absolute top-0 left-0 w-64 h-64 bg-white opacity-5 rounded-full -translate-x-1/2 -translate-y-1/2"></div>
@@ -177,7 +172,6 @@ const FinancialHealthScore: React.FC<FinancialHealthScoreProps> = ({ isModal = f
 
       <div className={containerClasses}>
         
-        {/* Intro Screen */}
         {!started && (
           <div className={`text-center animate-fadeIn ${isModal ? 'py-4' : ''}`}>
             <div className="inline-block bg-yellow-500 text-brand-900 font-bold px-4 py-1 rounded-full text-sm uppercase mb-6 tracking-wider">
@@ -227,7 +221,6 @@ const FinancialHealthScore: React.FC<FinancialHealthScoreProps> = ({ isModal = f
           </div>
         )}
 
-        {/* Quiz & Form Container - Shared Logic */}
         {(started || showForm || showResult) && (
           <div className={`${!isModal ? 'bg-white text-gray-900 rounded-2xl p-6 md:p-10 shadow-2xl transition-all duration-300 min-h-[500px] flex flex-col justify-center animate-fadeIn' : 'w-full'}`}>
             
@@ -318,6 +311,21 @@ const FinancialHealthScore: React.FC<FinancialHealthScoreProps> = ({ isModal = f
                       disabled={isSaving}
                     />
                   </div>
+                  {/* PHONE NUMBER FIELD ADDED HERE */}
+                  <div>
+                    <label htmlFor="phone" className="block text-sm font-bold text-gray-700 mb-1">Phone Number</label>
+                    <input
+                      type="tel"
+                      id="phone"
+                      required
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none transition-shadow"
+                      placeholder="e.g. 082 123 4567"
+                      value={formData.phone}
+                      onChange={(e) => setFormData({...formData, phone: e.target.value})}
+                      disabled={isSaving}
+                    />
+                  </div>
+
                   <div className="pt-4">
                     <Button 
                       type="submit" 
