@@ -5,8 +5,8 @@ import { collection, getDocs, query, orderBy } from 'firebase/firestore';
 import { Download, Lock, RefreshCw, ShieldCheck, Phone, Mail, Building, User as UserIcon, LogOut } from 'lucide-react';
 import Button from './Button';
 
-// 🔒 SECURITY: ONLY THIS EMAIL CAN SEE DATA
-const ALLOWED_EMAIL = "info@integratedwellth.co.za";
+// ✅ UPDATED: This now matches the email you are using to log in
+const ALLOWED_EMAIL = "integratedwellth@gmail.com";
 
 const AdminDashboard = () => {
   const [user, setUser] = useState<User | null>(null);
@@ -117,7 +117,7 @@ const AdminDashboard = () => {
           <h2 className="text-2xl font-bold text-gray-800 mb-2">Restricted Access</h2>
           <p className="text-gray-500 mb-6">
             Please sign in with the official administration account<br/>
-            (info@integratedwellth.co.za)
+            (integratedwellth@gmail.com)
           </p>
           
           <Button onClick={handleLogin} className="w-full justify-center flex gap-2">
