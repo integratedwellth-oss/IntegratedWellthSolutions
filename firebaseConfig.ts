@@ -2,7 +2,7 @@
 import { initializeApp } from "firebase/app";
 import { getAnalytics } from "firebase/analytics";
 import { getFirestore } from "firebase/firestore";
-// ⭐ NEW: Import Authentication tools
+// ⭐ NEW: Import Authentication tools so the Dashboard works
 import { getAuth, GoogleAuthProvider } from "firebase/auth"; 
 
 // Your web app's Firebase configuration
@@ -27,5 +27,5 @@ const db = getFirestore(app);
 const auth = getAuth(app);
 const googleProvider = new GoogleAuthProvider();
 
-// Export them so other files can use them
+// ⭐ NEW: Export 'auth' and 'googleProvider' so AdminDashboard can use them
 export { app, analytics, db, auth, googleProvider };
