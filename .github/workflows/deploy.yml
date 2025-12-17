@@ -28,7 +28,7 @@ jobs:
           # cache line removed to prevent "lock file not found" error
           
       - name: Install dependencies
-        run: npm install && npm install @google/genai
+        run: npm install && npm install @google/generative-ai
         # Changed from "npm ci" to "npm install" to auto-generate the missing lock file
 
       - name: Build
