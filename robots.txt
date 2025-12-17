@@ -1,0 +1,9 @@
+User-agent: *
+Allow: /
+
+# 🚫 Keep Google out of the Admin Dashboard
+Disallow: /#admin
+Disallow: /admin
+
+# 🗺️ Here is the map
+Sitemap: https://integratedwellth.co.za/sitemap.xml
