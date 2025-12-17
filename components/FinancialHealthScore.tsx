@@ -2,7 +2,11 @@ import React, { useState, useEffect } from 'react';
 import { QUIZ_QUESTIONS } from '../constants';
 import Button from './Button';
 import { CONTACT_INFO } from '../constants';
-import { CheckCircle2, AlertCircle, TrendingUp, Calendar, BookOpen, Users, X } from 'lucide-react';
+import { CheckCircle2, AlertCircle, TrendingUp, Calendar, BookOpen, Users, X, Loader2 } from 'lucide-react';
+
+// 🔌 FIREBASE IMPORTS
+import { db } from '../firebaseConfig';
+import { collection, addDoc } from 'firebase/firestore';
 
 interface FinancialHealthScoreProps {
   isModal?: boolean;
@@ -16,6 +20,10 @@ const FinancialHealthScore: React.FC<FinancialHealthScoreProps> = ({ isModal = f
   const [score, setScore] = useState(0);
   const [showResult, setShowResult] = useState(false);
   const [showForm, setShowForm] = useState(false);
+  
+  // New State for Saving to DB
+  const [isSaving, setIsSaving] = useState(false);
+
   const [formData, setFormData] = useState({
     name: '',
     enterprise: '',
@@ -30,6 +38,7 @@ const FinancialHealthScore: React.FC<FinancialHealthScoreProps> = ({ isModal = f
       setScore(0);
       setShowResult(false);
       setShowForm(false);
+      setIsSaving(false);
     }
   }, [isModal, isOpen]);
 
@@ -46,10 +55,33 @@ const FinancialHealthScore: React.FC<FinancialHealthScoreProps> = ({ isModal = f
     }
   };
 
-  const handleFormSubmit = (e: React.FormEvent) => {
+  // 🪄 THE MAGIC PART: Save to Firebase
+  const handleFormSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setShowForm(false);
-    setShowResult(true);
+    setIsSaving(true);
+
+    try {
+      // 1. Save to Database
+      await addDoc(collection(db, "leads"), {
+        name: formData.name,
+        enterprise: formData.enterprise,
+        email: formData.email,
+        score: score,
+        resultType: getResult().title, // Save which result they got
+        timestamp: new Date()
+      });
+
+      // 2. Move to Results Screen
+      setShowForm(false);
+      setShowResult(true);
+    } catch (error) {
+      console.error("Error saving lead:", error);
+      // Even if it fails, show them the result so they aren't stuck
+      setShowForm(false);
+      setShowResult(true);
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   const getResult = () => {
@@ -257,6 +289,7 @@ const FinancialHealthScore: React.FC<FinancialHealthScoreProps> = ({ isModal = f
                       placeholder="e.g. John Doe"
                       value={formData.name}
                       onChange={(e) => setFormData({...formData, name: e.target.value})}
+                      disabled={isSaving}
                     />
                   </div>
                   <div>
@@ -269,6 +302,7 @@ const FinancialHealthScore: React.FC<FinancialHealthScoreProps> = ({ isModal = f
                       placeholder="e.g. Innovate Holdings"
                       value={formData.enterprise}
                       onChange={(e) => setFormData({...formData, enterprise: e.target.value})}
+                      disabled={isSaving}
                     />
                   </div>
                   <div>
@@ -281,10 +315,24 @@ const FinancialHealthScore: React.FC<FinancialHealthScoreProps> = ({ isModal = f
                       placeholder="john@example.com"
                       value={formData.email}
                       onChange={(e) => setFormData({...formData, email: e.target.value})}
+                      disabled={isSaving}
                     />
                   </div>
                   <div className="pt-4">
-                    <Button type="submit" className="w-full justify-center text-lg py-3">Reveal My Results</Button>
+                    <Button 
+                      type="submit" 
+                      className="w-full justify-center text-lg py-3 flex items-center gap-2"
+                      disabled={isSaving}
+                    >
+                      {isSaving ? (
+                        <>
+                          <Loader2 className="animate-spin w-5 h-5" />
+                          Analyzing & Saving...
+                        </>
+                      ) : (
+                        "Reveal My Results"
+                      )}
+                    </Button>
                   </div>
                 </form>
               </div>
