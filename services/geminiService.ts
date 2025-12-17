@@ -1,8 +1,9 @@
 import { GoogleGenerativeAI, ChatSession } from "@google/generative-ai";
 
-const API_KEY = import.meta.env.VITE_GEMINI_API_KEY; 
+// ✅ YOUR KEY IS NOW CONFIGURED
+const API_KEY = "AIzaSyDMB_1xYZQ0MBwWyoz7giPnrQ2SygyylQ8"; 
 
-const genAI = new GoogleGenerativeAI(API_KEY || "");
+const genAI = new GoogleGenerativeAI(API_KEY);
 const model = genAI.getGenerativeModel({ model: "gemini-pro" });
 
 export const createChatSession = (): ChatSession => {
