@@ -1,31 +1,32 @@
-import { GoogleGenAI, Chat, GenerateContentResponse } from "@google/genai";
-import { COMPANY_CONTEXT } from "../constants";
+import { GoogleGenerativeAI } from "@google/genai";
 
-let ai: GoogleGenAI | null = null;
+// ⚠️ MAKE SURE THIS VARIABLE MATCHES YOUR SECRETS
+const API_KEY = import.meta.env.VITE_GEMINI_API_KEY; 
 
-const getAI = () => {
-  if (!ai) {
-    ai = new GoogleGenAI({ apiKey: process.env.API_KEY || '' });
-  }
-  return ai;
-};
+const genAI = new GoogleGenerativeAI(API_KEY || "");
+const model = genAI.getGenerativeModel({ model: "gemini-pro" });
 
-export const createChatSession = (): Chat => {
-  const client = getAI();
-  return client.chats.create({
-    model: 'gemini-3-pro-preview',
-    config: {
-      systemInstruction: COMPANY_CONTEXT,
-      temperature: 0.7,
-    },
+export const createChatSession = () => {
+  return model.startChat({
+    history: [
+      {
+        role: "user",
+        parts: [{ text: "You are the 'Wellth Advisor' for Integrated Wellth Solutions (IWS). You are helpful, professional, and empathetic. You answer questions about financial planning, tax compliance (especially for South African NPOs), and psychological well-being. Keep answers concise." }]
+      },
+      {
+        role: "model",
+        parts: [{ text: "Understood. I am ready to assist as the Wellth Advisor." }]
+      }
+    ],
   });
 };
 
-export const sendMessageStream = async (chat: Chat, message: string) => {
+export const sendMessageStream = async (chat: any, message: string) => {
   try {
-    return await chat.sendMessageStream({ message });
+    const result = await chat.sendMessageStream(message);
+    return result.stream;
   } catch (error) {
-    console.error("Gemini API Error:", error);
+    console.error("Error sending message to Gemini:", error);
     throw error;
   }
 };
