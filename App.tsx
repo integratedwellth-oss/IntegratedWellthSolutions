@@ -23,6 +23,9 @@ import NPOSolutions from './components/audiences/NPOSolutions';
 import IndividualSolutions from './components/audiences/IndividualSolutions';
 import WellnessSolutions from './components/audiences/WellnessSolutions';
 
+// ⭐ NEW: Import the Admin Dashboard
+import AdminDashboard from './components/AdminDashboard';
+
 const App: React.FC = () => {
   const [currentView, setCurrentView] = useState('home');
   const [showAssessmentModal, setShowAssessmentModal] = useState(false);
@@ -36,7 +39,8 @@ const App: React.FC = () => {
         setShowAssessmentModal(true);
       }
 
-      if (['blog', 'privacy', 'who-we-help', 'startups', 'existing-business', 'npos', 'individuals', 'wellness'].includes(hash)) {
+      // ⭐ NEW: Added 'admin' to this list so the router recognizes it
+      if (['blog', 'privacy', 'who-we-help', 'startups', 'existing-business', 'npos', 'individuals', 'wellness', 'admin'].includes(hash)) {
         setCurrentView(hash);
         window.scrollTo(0, 0);
       } else {
@@ -64,13 +68,21 @@ const App: React.FC = () => {
   useEffect(() => {
     // If user comes to homepage (no hash) or specifically to assessment
     const hash = window.location.hash;
-    if (currentView === 'home' && (!hash || hash === '#assessment')) {
+    
+    // ⭐ NEW: Do NOT trigger the popup if we are on the Admin page
+    if (currentView === 'home' && (!hash || hash === '#assessment') && currentView !== 'admin') {
         const timer = setTimeout(() => {
            setShowAssessmentModal(true);
         }, 1000); // 1.0s delay for quick entrance
         return () => clearTimeout(timer);
     }
   }, [currentView]);
+
+  // ⭐ NEW: Secret Admin Door
+  // If the URL is #admin, we return ONLY the dashboard and hide the rest of the site
+  if (currentView === 'admin') {
+    return <AdminDashboard />;
+  }
 
   return (
     <div className={`font-sans text-gray-900 bg-gray-50 min-h-screen flex flex-col ${showAssessmentModal ? 'overflow-hidden' : ''}`}>
