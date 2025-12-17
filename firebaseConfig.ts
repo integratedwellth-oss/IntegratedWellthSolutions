@@ -1,11 +1,8 @@
-// Import the functions you need from the SDKs you need
 import { initializeApp } from "firebase/app";
 import { getAnalytics } from "firebase/analytics";
 import { getFirestore } from "firebase/firestore";
-// ⭐ NEW: Import Authentication tools so the Dashboard works
 import { getAuth, GoogleAuthProvider } from "firebase/auth"; 
 
-// Your web app's Firebase configuration
 const firebaseConfig = {
   apiKey: "AIzaSyCqkjyN8etq3GcoJjdr9SyPewMCMtZRKdg",
   authDomain: "integratedwellth-a288f.firebaseapp.com",
@@ -16,16 +13,10 @@ const firebaseConfig = {
   measurementId: "G-R6CYBXMR5C"
 };
 
-// Initialize Firebase
 const app = initializeApp(firebaseConfig);
 const analytics = getAnalytics(app);
-
-// Initialize Database
 const db = getFirestore(app);
-
-// ⭐ NEW: Initialize Authentication
 const auth = getAuth(app);
 const googleProvider = new GoogleAuthProvider();
 
-// ⭐ NEW: Export 'auth' and 'googleProvider' so AdminDashboard can use them
 export { app, analytics, db, auth, googleProvider };
