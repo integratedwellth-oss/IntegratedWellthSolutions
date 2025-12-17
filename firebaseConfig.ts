@@ -1,47 +1,25 @@
+// Import the functions you need from the SDKs you need
 import { initializeApp } from "firebase/app";
-import { getAnalytics, isSupported } from "firebase/analytics";
-// import { getAuth } from "firebase/auth"; // Uncomment if you need Login/Auth
+import { getAnalytics } from "firebase/analytics";
+import { getFirestore } from "firebase/firestore"; // Added this for Database
 
+// Your web app's Firebase configuration
 const firebaseConfig = {
-  apiKey: process.env.VITE_FIREBASE_API_KEY,
-  authDomain: process.env.VITE_FIREBASE_AUTH_DOMAIN,
-  projectId: process.env.VITE_FIREBASE_PROJECT_ID,
-  storageBucket: process.env.VITE_FIREBASE_STORAGE_BUCKET,
-  messagingSenderId: process.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
-  appId: process.env.VITE_FIREBASE_APP_ID,
-  measurementId: process.env.VITE_FIREBASE_MEASUREMENT_ID
+  apiKey: "AIzaSyCqkjyN8etq3GcoJjdr9SyPewMCMtZRKdg",
+  authDomain: "integratedwellth-a288f.firebaseapp.com",
+  projectId: "integratedwellth-a288f",
+  storageBucket: "integratedwellth-a288f.firebasestorage.app",
+  messagingSenderId: "271338433506",
+  appId: "1:271338433506:web:2419f6f94af41fd691a7bb",
+  measurementId: "G-R6CYBXMR5C"
 };
 
 // Initialize Firebase
-let app;
-try {
-  app = initializeApp(firebaseConfig);
-} catch (e) {
-  // Suppress initialization errors if env vars are missing
-}
+const app = initializeApp(firebaseConfig);
+const analytics = getAnalytics(app);
 
-let analytics = null;
+// Initialize Database
+const db = getFirestore(app);
 
-// Initialize Analytics safely
-// We only attempt to initialize analytics if a measurementId is present and the environment supports it.
-const initAnalytics = async () => {
-  // Check if app is initialized and measurementId is available
-  if (app && firebaseConfig.measurementId) {
-    try {
-      // Check for support, catch potential promise rejections
-      const supported = await isSupported().catch(() => false);
-      if (supported) {
-        analytics = getAnalytics(app);
-      }
-    } catch (error) {
-      // Analytics initialization failed.
-      // This is common in environments with ad-blockers or restricted networks.
-      // We suppress the error to keep the console clean.
-    }
-  }
-};
-
-// Execute initialization
-initAnalytics();
-
-export { app, analytics };
+// Export them so other files can use them
+export { app, analytics, db };
