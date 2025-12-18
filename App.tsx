@@ -23,7 +23,10 @@ import NPOSolutions from './components/audiences/NPOSolutions';
 import IndividualSolutions from './components/audiences/IndividualSolutions';
 import WellnessSolutions from './components/audiences/WellnessSolutions';
 
-// ⭐ NEW: Import the Admin Dashboard
+// ⭐ NEW: Import the Team Page
+import { Team } from './pages/Team';
+
+// Import the Admin Dashboard
 import AdminDashboard from './components/AdminDashboard';
 
 const App: React.FC = () => {
@@ -39,8 +42,8 @@ const App: React.FC = () => {
         setShowAssessmentModal(true);
       }
 
-      // ⭐ NEW: Added 'admin' to this list so the router recognizes it
-      if (['blog', 'privacy', 'who-we-help', 'startups', 'existing-business', 'npos', 'individuals', 'wellness', 'admin'].includes(hash)) {
+      // ⭐ NEW: Added 'team' to this list so the app recognizes #team
+      if (['blog', 'privacy', 'who-we-help', 'startups', 'existing-business', 'npos', 'individuals', 'wellness', 'admin', 'team'].includes(hash)) {
         setCurrentView(hash);
         window.scrollTo(0, 0);
       } else {
@@ -69,7 +72,7 @@ const App: React.FC = () => {
     // If user comes to homepage (no hash) or specifically to assessment
     const hash = window.location.hash;
     
-    // ⭐ NEW: Do NOT trigger the popup if we are on the Admin page
+    // Do NOT trigger the popup if we are on the Admin or Team page
     if (currentView === 'home' && (!hash || hash === '#assessment') && currentView !== 'admin') {
         const timer = setTimeout(() => {
            setShowAssessmentModal(true);
@@ -78,8 +81,7 @@ const App: React.FC = () => {
     }
   }, [currentView]);
 
-  // ⭐ NEW: Secret Admin Door
-  // If the URL is #admin, we return ONLY the dashboard and hide the rest of the site
+  // Secret Admin Door
   if (currentView === 'admin') {
     return <AdminDashboard />;
   }
@@ -113,6 +115,9 @@ const App: React.FC = () => {
             <Contact />
           </>
         )}
+
+        {/* ⭐ NEW: Render the Team page when currentView is 'team' */}
+        {currentView === 'team' && <Team />}
 
         {currentView === 'who-we-help' && <WhoWeHelp />}
         {currentView === 'startups' && <StartupSolutions />}
