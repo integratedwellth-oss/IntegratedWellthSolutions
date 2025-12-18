@@ -2,37 +2,34 @@ import React from 'react';
 import { motion } from "framer-motion";
 import { Mail } from "lucide-react";
 
+// 1. FINAL TEAM DATA
 const TEAM_MEMBERS = [
   {
     name: "Marcia Kgaphola",
-    // Updated full qualifications
     role: "Chartered Business Accountant in Practice (CIBA), Hons Psychological Counselling, Risk and Project Management",
     bio: "Strategic visionary helping organizations navigate complex financial landscapes to achieve sustainable wealth.",
     image: "https://res.cloudinary.com/dka0498ns/image/upload/v1766077285/Chartered_Business_Accountant_in_Practice_CIBA_Hons_Psychological_Counselling_Risk_and_Project_Management_ubcpy9.jpg",
     email: "marcia@integratedwellth.co.za"
   },
   {
-    name: "Thabo",
-    role: "Team Member", // Replace with actual role when ready
-    bio: "Key member of the Integrated Wellth strategic implementation team.",
-    // Temporary Placeholder
-    image: "https://ui-avatars.com/api/?name=Thabo&background=1f2937&color=fff&size=512",
+    name: "Thabo Leslie Motsumi",
+    role: "AI, Google my Business profile optimization, Search Everywhere Optimation (SEO), Automation, and Smart digital marketing",
+    bio: "Digital systems architect focusing on automation and search visibility.",
+    image: "https://res.cloudinary.com/dka0498ns/image/upload/v1766069617/Thabo_Leslie_Motsumi._AI_Google_my_Business_profile_optimization_Search_Everywhere_Optimation_SEO_Automation_and_Smart_digital_marketing._vncyse.png",
     email: "info@integratedwellth.co.za"
   },
   {
-    name: "Enias",
-    role: "Team Member", // Replace with actual role when ready
-    bio: "Dedicated to driving operational excellence and client success.",
-    // Temporary Placeholder
-    image: "https://ui-avatars.com/api/?name=Enias&background=1f2937&color=fff&size=512",
+    name: "Enias Mafokoane",
+    role: "Executive Coach",
+    bio: "Dedicated to driving operational excellence, leadership development, and client success.",
+    image: "https://res.cloudinary.com/dka0498ns/image/upload/v1766069615/Enias_Mafokoane._Executive_Coach_dd47qt.jpg",
     email: "info@integratedwellth.co.za"
   },
   {
-    name: "Lazarus",
-    role: "Team Member", // Replace with actual role when ready
-    bio: "Expert support in building robust financial and business systems.",
-    // Temporary Placeholder
-    image: "https://ui-avatars.com/api/?name=Lazarus&background=1f2937&color=fff&size=512",
+    name: "Lazarus Kaseke",
+    role: "CA(SA)",
+    bio: "Expert financial oversight and chartered accounting specialized in robust business systems.",
+    image: "https://res.cloudinary.com/dka0498ns/image/upload/v1766069615/Lazarus_Kaseke._CA_SA_sbcpnw.jpg",
     email: "info@integratedwellth.co.za"
   }
 ];
@@ -51,7 +48,7 @@ export const Team = () => {
           </p>
         </div>
 
-        {/* TEAM GRID - Adjusted to lg:grid-cols-4 for better balance with 4 people */}
+        {/* TEAM GRID - 4 Columns for Desktop */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 justify-center">
           {TEAM_MEMBERS.map((member, index) => (
             <motion.div
@@ -87,8 +84,8 @@ export const Team = () => {
               <div className="p-6 flex flex-col flex-grow">
                 <div className="mb-4">
                   <h3 className="text-xl font-bold text-gray-900">{member.name}</h3>
-                  {/* Text size reduced slightly to handle long titles gracefully */}
-                  <p className="text-yellow-600 font-semibold text-xs uppercase tracking-wider mt-2 leading-tight">
+                  {/* Role text size optimized for long titles */}
+                  <p className="text-yellow-600 font-bold text-xs uppercase tracking-wider mt-2 leading-snug">
                     {member.role}
                   </p>
                 </div>
