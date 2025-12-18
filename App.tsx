@@ -23,8 +23,8 @@ import NPOSolutions from './components/audiences/NPOSolutions';
 import IndividualSolutions from './components/audiences/IndividualSolutions';
 import WellnessSolutions from './components/audiences/WellnessSolutions';
 
-// ⭐ NEW: Import the Team Page
-import { Team } from './pages/Team';
+// ⭐ CORRECT IMPORT: Points to 'Team.tsx' in the root folder
+import { Team } from './Team';
 
 // Import the Admin Dashboard
 import AdminDashboard from './components/AdminDashboard';
@@ -42,7 +42,7 @@ const App: React.FC = () => {
         setShowAssessmentModal(true);
       }
 
-      // ⭐ NEW: Added 'team' to this list so the app recognizes #team
+      // Added 'team' to this list so the app recognizes #team
       if (['blog', 'privacy', 'who-we-help', 'startups', 'existing-business', 'npos', 'individuals', 'wellness', 'admin', 'team'].includes(hash)) {
         setCurrentView(hash);
         window.scrollTo(0, 0);
@@ -116,7 +116,7 @@ const App: React.FC = () => {
           </>
         )}
 
-        {/* ⭐ NEW: Render the Team page when currentView is 'team' */}
+        {/* Render the Team page when currentView is 'team' */}
         {currentView === 'team' && <Team />}
 
         {currentView === 'who-we-help' && <WhoWeHelp />}
