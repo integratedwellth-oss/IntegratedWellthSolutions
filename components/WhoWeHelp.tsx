@@ -1,45 +1,43 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { Users, Briefcase, TrendingUp, HeartHandshake, ShieldCheck, UserCheck } from 'lucide-react';
-import { Link } from 'react-router-dom';
 
 const AUDIENCES = [
   {
     icon: Users,
     title: "SMMEs",
     description: "Small to Medium enterprises looking to scale operations and financial systems.",
-    link: "/who-we-help#smmes"
+    link: "#smmes"
   },
   {
     icon: Briefcase,
     title: "Professionals",
     description: "Lawyers, Doctors, and Engineers needing practice management and tax efficiency.",
-    link: "/who-we-help#professionals"
+    link: "#professionals"
   },
   {
     icon: TrendingUp,
     title: "Startups",
     description: "High-growth ventures requiring rapid financial modeling and investor readiness.",
-    link: "/who-we-help#startups"
+    link: "#startups"
   },
   {
     icon: ShieldCheck,
     title: "Non-Profits",
     description: "Organizations needing strict compliance, grant management, and auditing.",
-    link: "/who-we-help#non-profits"
+    link: "#non-profits"
   },
   {
     icon: UserCheck,
     title: "Sole Proprietors",
     description: "Individual founders needing to separate personal and business finances.",
-    link: "/who-we-help#sole-proprietors"
+    link: "#sole-proprietors"
   },
-  // 🔥 NEW 6TH CARD
   {
     icon: HeartHandshake,
     title: "Accountability Partner",
     description: "Founders seeking emotional resilience, mental clarity, and a confidential sounding board.",
-    link: "/accountability" // Links to the new standalone page
+    link: "#accountability" // This connects to your new page
   }
 ];
 
@@ -54,7 +52,17 @@ const WhoWeHelp = () => {
 
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
           {AUDIENCES.map((item, index) => (
-            <Link to={item.link} key={index} className="block group">
+            <a 
+              href={item.link} 
+              key={index} 
+              className="block group"
+              onClick={(e) => {
+                // Smooth handling for the app navigation
+                if (item.link.startsWith('#')) {
+                   // Let the App.tsx handle the hash change naturally
+                }
+              }}
+            >
               <motion.div 
                 whileHover={{ y: -5 }}
                 className="bg-gray-50 p-8 rounded-2xl border border-gray-100 shadow-sm hover:shadow-lg transition-all h-full"
@@ -70,7 +78,7 @@ const WhoWeHelp = () => {
                   Learn more <span className="ml-2">→</span>
                 </div>
               </motion.div>
-            </Link>
+            </a>
           ))}
         </div>
       </div>
