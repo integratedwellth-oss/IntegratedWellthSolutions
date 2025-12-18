@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { Linkedin, Mail, ArrowUpRight } from "lucide-react";
+import { Linkedin, Mail } from "lucide-react";
 
 // --- THE DATA SECTION ---
 const TEAM = [
@@ -9,8 +9,7 @@ const TEAM = [
     bio: "Strategic visionary helping organizations navigate complex financial landscapes to achieve sustainable wealth.",
     image: "https://res.cloudinary.com/dka0498ns/image/upload/v1766069615/Marcia_Kgaphola._Founder_x8bkog.jpg",
     linkedin: "#",
-    // Only Marcia has an email now
-    email: "mkgaphola@integratedwellth.co.za" 
+    email: "mkgaphola@integratedwellth.co.za" // Only Marcia has an email
   },
   {
     name: "Lazarus Kaseke",
@@ -18,7 +17,7 @@ const TEAM = [
     bio: "Financial strategist ensuring rigorous compliance, tax efficiency, and solid structural foundations for client wealth.",
     image: "https://res.cloudinary.com/dka0498ns/image/upload/v1766069615/Lazarus_Kaseke._CA_SA_sbcpnw.jpg",
     linkedin: "#",
-    email: "" // Email removed
+    email: ""
   },
   {
     name: "Enias Mafokoane",
@@ -26,7 +25,7 @@ const TEAM = [
     bio: "Empowering leaders to unlock potential and drive organizational culture through high-performance coaching.",
     image: "https://res.cloudinary.com/dka0498ns/image/upload/v1766069615/Enias_Mafokoane._Executive_Coach_dd47qt.jpg",
     linkedin: "#",
-    email: "" // Email removed
+    email: ""
   },
   {
     name: "Thabo Leslie Motsumi",
@@ -34,11 +33,11 @@ const TEAM = [
     bio: "Architect of the 'Smart Marketing' systems that automate growth, SEO visibility, and digital footprint for our clients.",
     image: "https://res.cloudinary.com/dka0498ns/image/upload/v1766069617/Thabo_Leslie_Motsumi._AI_Google_my_Business_profile_optimization_Search_Everywhere_Optimation_SEO_Automation_and_Smart_digital_marketing._vncyse.png",
     linkedin: "#",
-    email: "" // Email removed
+    email: ""
   }
 ];
 
-// --- THE COMPONENT SECTION ---
+// --- THE COMPONENT SECTION (This was missing) ---
 export const Team = () => {
   return (
     <div className="min-h-screen bg-gray-50 pt-24 pb-20">
@@ -83,7 +82,7 @@ export const Team = () => {
                     <Linkedin size={20} />
                   </a>
 
-                  {/* Email Button (Only shows if they have an email) */}
+                  {/* Email Button (Only shows for Marcia) */}
                   {member.email && (
                     <a href={`mailto:${member.email}`} className="p-3 bg-white rounded-full hover:bg-yellow-500 hover:text-white transition-colors">
                       <Mail size={20} />
