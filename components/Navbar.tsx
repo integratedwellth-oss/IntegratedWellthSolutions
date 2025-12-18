@@ -54,6 +54,8 @@ const Navbar: React.FC<NavbarProps> = ({ onNavigate }) => {
             <button onClick={() => handleLinkClick('#home')} className={navLinkClass}>Home</button>
             <button onClick={() => handleLinkClick('#who-we-help')} className={navLinkClass}>Who We Help</button>
             <button onClick={() => handleLinkClick('#philosophy')} className={navLinkClass}>Philosophy</button>
+            {/* 🔥 ADDED TEAM BUTTON HERE */}
+            <button onClick={() => handleLinkClick('#team')} className={navLinkClass}>Team</button>
             <button onClick={() => handleLinkClick('#services')} className={navLinkClass}>Services</button>
             <button onClick={() => handleLinkClick('#upcoming-event')} className={navLinkClass}>Workshops</button>
             <button onClick={() => handleLinkClick('#blog')} className={navLinkClass}>Blog</button>
@@ -79,6 +81,8 @@ const Navbar: React.FC<NavbarProps> = ({ onNavigate }) => {
             <button onClick={() => handleLinkClick('#home')} className="block px-3 py-2 text-left text-gray-700 hover:bg-brand-50 rounded-md">Home</button>
             <button onClick={() => handleLinkClick('#who-we-help')} className="block px-3 py-2 text-left text-gray-700 hover:bg-brand-50 rounded-md">Who We Help</button>
             <button onClick={() => handleLinkClick('#philosophy')} className="block px-3 py-2 text-left text-gray-700 hover:bg-brand-50 rounded-md">Philosophy</button>
+            {/* 🔥 ADDED TEAM BUTTON HERE (MOBILE) */}
+            <button onClick={() => handleLinkClick('#team')} className="block px-3 py-2 text-left text-gray-700 hover:bg-brand-50 rounded-md">Team</button>
             <button onClick={() => handleLinkClick('#services')} className="block px-3 py-2 text-left text-gray-700 hover:bg-brand-50 rounded-md">Services</button>
             <button onClick={() => handleLinkClick('#upcoming-event')} className="block px-3 py-2 text-left text-gray-700 hover:bg-brand-50 rounded-md">Workshops</button>
             <button onClick={() => handleLinkClick('#blog')} className="block px-3 py-2 text-left text-gray-700 hover:bg-brand-50 rounded-md">Blog</button>
