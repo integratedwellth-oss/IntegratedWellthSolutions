@@ -3,7 +3,7 @@ import { motion } from "framer-motion";
 import { Mail } from "lucide-react";
 
 // 1. UPDATED TEAM DATA
-const TEAM = [
+const TEAM_MEMBERS = [
   {
     name: "Marcia Kgaphola",
     role: "Founder & Principal Consultant",
@@ -27,12 +27,13 @@ const TEAM = [
   }
 ];
 
-const Team = () => {
+// 🔥 CHANGE HERE: "export const" instead of "const"
+export const Team = () => {
   return (
     <section id="team" className="py-20 bg-gray-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
-        {/* HEADER - Replaced custom SectionTitle with standard HTML */}
+        {/* HEADER */}
         <div className="text-center mb-16 pt-10">
            <h2 className="text-4xl font-bold text-gray-900 mb-4">Our Team</h2>
            <p className="text-xl text-brand-600 font-medium mb-6 uppercase tracking-wider">The Minds Behind The Mission</p>
@@ -43,7 +44,7 @@ const Team = () => {
 
         {/* TEAM GRID */}
         <div className="grid md:grid-cols-3 gap-8 justify-center">
-          {TEAM.map((member, index) => (
+          {TEAM_MEMBERS.map((member, index) => (
             <motion.div
               key={index}
               initial={{ opacity: 0, y: 20 }}
@@ -87,5 +88,3 @@ const Team = () => {
     </section>
   );
 };
-
-export default Team;
