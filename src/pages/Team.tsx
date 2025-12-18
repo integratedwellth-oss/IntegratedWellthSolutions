@@ -37,7 +37,7 @@ const TEAM = [
   }
 ];
 
-// --- THE COMPONENT SECTION (This was missing) ---
+// --- THE COMPONENT SECTION (This is what was missing) ---
 export const Team = () => {
   return (
     <div className="min-h-screen bg-gray-50 pt-24 pb-20">
