@@ -1,4 +1,3 @@
-import { motion } from "framer-motion";
 import { Linkedin, Mail } from "lucide-react";
 
 // --- THE DATA SECTION ---
@@ -44,13 +43,9 @@ export const Team = () => {
       
       {/* HEADER SECTION */}
       <div className="container mx-auto px-6 mb-16 text-center">
-        <motion.h2 
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          className="text-4xl md:text-5xl font-bold text-gray-900 mb-6"
-        >
+        <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6">
           The Minds Behind <span className="text-yellow-600">The Mission</span>
-        </motion.h2>
+        </h2>
         <p className="text-xl text-gray-600 max-w-2xl mx-auto">
           We are a collective of strategists, financial experts, and systems thinkers dedicated to building your integrated wealth.
         </p>
@@ -60,11 +55,8 @@ export const Team = () => {
       <div className="container mx-auto px-6">
         <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
           {TEAM.map((member, index) => (
-            <motion.div
+            <div
               key={index}
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ delay: index * 0.1 }}
               className="bg-white rounded-2xl overflow-hidden shadow-lg hover:shadow-xl transition-shadow border border-gray-100 group"
             >
               {/* Image Area */}
@@ -96,7 +88,7 @@ export const Team = () => {
                   {member.bio}
                 </p>
               </div>
-            </motion.div>
+            </div>
           ))}
         </div>
       </div>
