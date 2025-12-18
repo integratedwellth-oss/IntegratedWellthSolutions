@@ -23,11 +23,11 @@ import NPOSolutions from './components/audiences/NPOSolutions';
 import IndividualSolutions from './components/audiences/IndividualSolutions';
 import WellnessSolutions from './components/audiences/WellnessSolutions';
 
-// 🔥 IMPORT THE NEW PAGE
+// 🔥 IMPORT THE NEW ACCOUNTABILITY PAGE
 import AccountabilityPartnership from './components/audiences/AccountabilityPartnership';
 
-// ⭐ CORRECT IMPORT: Points to 'Team.tsx' in the root folder
-import { Team } from './Team';
+// ⭐ CORRECTED IMPORT: No curly braces. This matches 'export default Team'
+import Team from './Team';
 
 // Import the Admin Dashboard
 import AdminDashboard from './components/AdminDashboard';
@@ -45,7 +45,7 @@ const App: React.FC = () => {
         setShowAssessmentModal(true);
       }
 
-      // 🔥 Added 'accountability' to this list
+      // Check for valid views
       if (['blog', 'privacy', 'who-we-help', 'startups', 'existing-business', 'npos', 'individuals', 'wellness', 'accountability', 'admin', 'team'].includes(hash)) {
         setCurrentView(hash);
         window.scrollTo(0, 0);
@@ -75,11 +75,11 @@ const App: React.FC = () => {
     // If user comes to homepage (no hash) or specifically to assessment
     const hash = window.location.hash;
     
-    // Do NOT trigger the popup if we are on the Admin, Team, or Accountability page
+    // Do NOT trigger the popup if we are on secondary pages
     if (currentView === 'home' && (!hash || hash === '#assessment') && currentView !== 'admin') {
         const timer = setTimeout(() => {
            setShowAssessmentModal(true);
-        }, 1000); // 1.0s delay for quick entrance
+        }, 1000); 
         return () => clearTimeout(timer);
     }
   }, [currentView]);
@@ -119,7 +119,7 @@ const App: React.FC = () => {
           </>
         )}
 
-        {/* Render the Team page when currentView is 'team' */}
+        {/* Render the Team page */}
         {currentView === 'team' && <Team />}
 
         {currentView === 'who-we-help' && <WhoWeHelp />}
@@ -129,7 +129,7 @@ const App: React.FC = () => {
         {currentView === 'individuals' && <IndividualSolutions />}
         {currentView === 'wellness' && <WellnessSolutions />}
         
-        {/* 🔥 NEW PAGE RENDER */}
+        {/* Render Accountability Page */}
         {currentView === 'accountability' && <AccountabilityPartnership />}
         
         {currentView === 'blog' && <BlogPost />}
