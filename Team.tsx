@@ -1,149 +1,133 @@
-import React, { useState, useEffect } from 'react';
-import Navbar from './components/Navbar';
-import Hero from './components/Hero';
-import TrustedBy from './components/TrustedBy';
-import EventHighlight from './components/EventHighlight';
-import Philosophy from './components/Philosophy';
-import Services from './components/Services';
-import Audience from './components/Audience';
-import FinancialHealthScore from './components/FinancialHealthScore';
-import Testimonials from './components/Testimonials';
-import Gallery from './components/Gallery';
-import Contact from './components/Contact';
-import Footer from './components/Footer';
-import ChatWidget from './components/ChatWidget';
-import WhatsAppButton from './components/WhatsAppButton';
-import BlogPost from './components/BlogPost';
-import PrivacyPolicy from './components/PrivacyPolicy';
-import CookieConsent from './components/CookieConsent';
-import WhoWeHelp from './components/WhoWeHelp';
-import StartupSolutions from './components/audiences/StartupSolutions';
-import BusinessSolutions from './components/audiences/BusinessSolutions';
-import NPOSolutions from './components/audiences/NPOSolutions';
-import IndividualSolutions from './components/audiences/IndividualSolutions';
-import WellnessSolutions from './components/audiences/WellnessSolutions';
+import React from 'react';
+import { motion } from "framer-motion";
+import { Mail, Target, Compass, Heart } from "lucide-react";
 
-// 🔥 IMPORT THE NEW ACCOUNTABILITY PAGE
-import AccountabilityPartnership from './components/audiences/AccountabilityPartnership';
-
-// ⭐ CORRECTED IMPORT: Removed curly braces { } to fix the crash
-import Team from './Team';
-
-// Import the Admin Dashboard
-import AdminDashboard from './components/AdminDashboard';
-
-const App: React.FC = () => {
-  const [currentView, setCurrentView] = useState('home');
-  const [showAssessmentModal, setShowAssessmentModal] = useState(false);
-
-  useEffect(() => {
-    const handleHashChange = () => {
-      const hash = window.location.hash.replace('#', '');
-      
-      // Explicitly check for assessment hash to trigger modal
-      if (hash === 'assessment') {
-        setShowAssessmentModal(true);
-      }
-
-      // Check for valid views
-      if (['blog', 'privacy', 'who-we-help', 'startups', 'existing-business', 'npos', 'individuals', 'wellness', 'accountability', 'admin', 'team'].includes(hash)) {
-        setCurrentView(hash);
-        window.scrollTo(0, 0);
-      } else {
-        setCurrentView('home');
-        // If it's a section hash, scroll to it after rendering home
-        if (hash && hash !== 'home' && hash !== 'assessment') {
-           setTimeout(() => {
-               const el = document.getElementById(hash);
-               if (el) el.scrollIntoView({ behavior: 'smooth' });
-           }, 100);
-        } else if (!hash) {
-            window.scrollTo(0, 0);
-        }
-      }
-    };
-
-    // Initial check
-    handleHashChange();
-
-    window.addEventListener('hashchange', handleHashChange);
-    return () => window.removeEventListener('hashchange', handleHashChange);
-  }, []);
-
-  // Trigger modal on first load automatically
-  useEffect(() => {
-    // If user comes to homepage (no hash) or specifically to assessment
-    const hash = window.location.hash;
-    
-    // Do NOT trigger the popup if we are on secondary pages
-    if (currentView === 'home' && (!hash || hash === '#assessment') && currentView !== 'admin') {
-        const timer = setTimeout(() => {
-           setShowAssessmentModal(true);
-        }, 1000); 
-        return () => clearTimeout(timer);
-    }
-  }, [currentView]);
-
-  // Secret Admin Door
-  if (currentView === 'admin') {
-    return <AdminDashboard />;
+// 1. TEAM DATA
+const TEAM = [
+  {
+    name: "Marcia Kgaphola",
+    role: "Founder & Principal Consultant",
+    bio: "Strategic visionary helping organizations navigate complex financial landscapes to achieve sustainable wealth.",
+    image: "https://res.cloudinary.com/dka0498ns/image/upload/v1766077285/Chartered_Business_Accountant_in_Practice_CIBA_Hons_Psychological_Counselling_Risk_and_Project_Management_ubcpy9.jpg",
+    email: "marcia@integratedwellth.co.za"
+  },
+  {
+    name: "Senior Consultant",
+    role: "Strategic Analysis Lead",
+    bio: "Expert in operational efficiency and systems thinking, ensuring our strategies are executable.",
+    image: "https://ui-avatars.com/api/?name=Senior+Consultant&background=f3f4f6&color=1f2937&size=512",
+    email: "info@integratedwellth.co.za"
+  },
+  {
+    name: "Client Success",
+    role: "Head of Partnerships",
+    bio: "Dedicated to building long-term value networks and ensuring client success at every touchpoint.",
+    image: "https://ui-avatars.com/api/?name=Client+Success&background=f3f4f6&color=1f2937&size=512",
+    email: "info@integratedwellth.co.za"
   }
+];
 
+// 2. COMPONENT DEFINITION
+const Team = () => {
   return (
-    <div className={`font-sans text-gray-900 bg-gray-50 min-h-screen flex flex-col ${showAssessmentModal ? 'overflow-hidden' : ''}`}>
-      <Navbar onNavigate={(view) => setCurrentView(view)} />
-
-      <main className="flex-grow">
-        {currentView === 'home' && (
-          <>
-            <div id="home"><Hero /></div>
-            <TrustedBy />
-            <Philosophy />
-            <EventHighlight />
-            <Services />
-            <Audience />
-            
-            {/* On-page section version */}
-            <FinancialHealthScore />
-            
-            {/* Popup modal version */}
-            <FinancialHealthScore 
-              isModal={true} 
-              isOpen={showAssessmentModal} 
-              onClose={() => setShowAssessmentModal(false)} 
-            />
-
-            <Testimonials />
-            <Gallery />
-            <Contact />
-          </>
-        )}
-
-        {/* Render the Team page */}
-        {currentView === 'team' && <Team />}
-
-        {currentView === 'who-we-help' && <WhoWeHelp />}
-        {currentView === 'startups' && <StartupSolutions />}
-        {currentView === 'existing-business' && <BusinessSolutions />}
-        {currentView === 'npos' && <NPOSolutions />}
-        {currentView === 'individuals' && <IndividualSolutions />}
-        {currentView === 'wellness' && <WellnessSolutions />}
-        
-        {/* Render Accountability Page */}
-        {currentView === 'accountability' && <AccountabilityPartnership />}
-        
-        {currentView === 'blog' && <BlogPost />}
-        {currentView === 'privacy' && <PrivacyPolicy />}
-      </main>
-
-      <Footer />
+    <div className="pt-20">
       
-      {/* Interactive Elements */}
-      <ChatWidget currentView={currentView} />
-      <WhatsAppButton />
-      <CookieConsent />
+      {/* --- SECTION 1: THE TEAM --- */}
+      <section id="team" className="py-20 bg-gray-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-16">
+             <h2 className="text-4xl font-bold text-gray-900 mb-4">Our Team</h2>
+             <p className="text-xl text-brand-600 font-medium mb-6 uppercase tracking-wider">The Minds Behind The Mission</p>
+            <p className="text-xl text-gray-600 max-w-2xl mx-auto leading-relaxed">
+              We are a collective of strategists, financial experts, and systems thinkers dedicated to building your integrated wealth.
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-3 gap-8 justify-center">
+            {TEAM.map((member, index) => (
+              <motion.div
+                key={index}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: index * 0.2 }}
+                className="bg-white rounded-2xl overflow-hidden shadow-md hover:shadow-xl transition-shadow border border-gray-100 group flex flex-col"
+              >
+                <div className="relative aspect-[3/4] bg-gray-200 overflow-hidden">
+                  <img 
+                    src={member.image} 
+                    alt={member.name} 
+                    className="w-full h-full object-cover object-top group-hover:scale-105 transition-transform duration-700"
+                  />
+                  <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                    {member.email && (
+                      <a 
+                        href={`mailto:${member.email}`} 
+                        className="p-3 bg-white rounded-full text-gray-900 hover:bg-yellow-500 hover:text-white transition-colors transform hover:scale-110"
+                      >
+                        <Mail size={22} />
+                      </a>
+                    )}
+                  </div>
+                </div>
+
+                <div className="p-8 flex flex-col flex-grow">
+                  <div className="mb-4">
+                    <h3 className="text-2xl font-bold text-gray-900">{member.name}</h3>
+                    <p className="text-yellow-600 font-semibold text-sm uppercase tracking-wider mt-1">{member.role}</p>
+                  </div>
+                  <p className="text-gray-600 leading-relaxed flex-grow font-sans">
+                    {member.bio}
+                  </p>
+                </div>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* --- SECTION 2: VISION, MISSION & VALUES --- */}
+      <section className="py-24 bg-white border-t border-gray-100">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-16">
+            <h2 className="text-3xl font-bold text-gray-900">The Foundation</h2>
+            <p className="text-gray-600 mt-4">Why we do what we do.</p>
+          </div>
+
+          <div className="grid lg:grid-cols-3 gap-12">
+            <div className="flex flex-col items-center text-center">
+              <div className="w-16 h-16 bg-brand-50 rounded-2xl flex items-center justify-center text-brand-600 mb-6">
+                <Target size={32} />
+              </div>
+              <h3 className="text-xl font-bold text-gray-900 mb-4">Our Vision</h3>
+              <p className="text-gray-600 leading-relaxed">
+                To be the leading holistic empowerment partner in Africa, driving financial confidence, emotional resilience, and professional excellence.
+              </p>
+            </div>
+            <div className="flex flex-col items-center text-center">
+              <div className="w-16 h-16 bg-brand-50 rounded-2xl flex items-center justify-center text-brand-600 mb-6">
+                <Compass size={32} />
+              </div>
+              <h3 className="text-xl font-bold text-gray-900 mb-4">Our Mission</h3>
+              <p className="text-gray-600 leading-relaxed">
+                Our mission is to empower clients — from teens to entrepreneurs — with integrated solutions that blend financial management and emotional intelligence.
+              </p>
+            </div>
+            <div className="flex flex-col items-center text-center">
+              <div className="w-16 h-16 bg-brand-50 rounded-2xl flex items-center justify-center text-brand-600 mb-6">
+                <Heart size={32} />
+              </div>
+              <h3 className="text-xl font-bold text-gray-900 mb-4">Our Values</h3>
+              <p className="text-gray-600 leading-relaxed">
+                Integrated Wellth Solutions values integrity, empathy, and collaboration. We partner with clients to co-create solutions that align with their goals.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
     </div>
   );
 };
 
-export default App;
+// 3. EXPORT DEFAULT (This prevents the crash)
+export default Team;
