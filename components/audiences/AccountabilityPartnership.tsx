@@ -110,109 +110,148 @@ const AccountabilityPartnership = () => {
         </div>
       </section>
 
-      {/* SUBSCRIPTION PLANS - UPDATED LAYOUT TO MATCH SCREENSHOT */}
-      <section className="py-24 px-4 max-w-7xl mx-auto" id="plans">
-        <div className="text-center mb-16">
-          <h2 className="text-3xl font-bold text-gray-900">Retainers for Resilience</h2>
-          <p className="text-gray-600 mt-4 text-lg">Consistent support to keep you performing at your peak.</p>
+      {/* SUBSCRIPTION PLANS - EXACT TEXT MATCH */}
+      <section className="py-24 px-4 max-w-7xl mx-auto bg-white" id="plans">
+        
+        {/* Logo/Header Area */}
+        <div className="mb-12 flex flex-col md:flex-row justify-between items-end">
+             <div className="mb-6 md:mb-0">
+               <h2 className="text-4xl font-bold text-gray-900 tracking-tight">IWS<span className="text-yellow-600">SOVEREIGN</span></h2>
+             </div>
+             <div>
+                <Button onClick={openCalendly} className="bg-brand-900 text-white hover:bg-brand-800">
+                    Book Strategic Intel
+                </Button>
+             </div>
         </div>
 
-        <div className="grid md:grid-cols-3 gap-8 items-start">
+        {/* The 3 Cards */}
+        <div className="grid md:grid-cols-3 gap-6 items-stretch">
           
-          {/* Card 1: Maintenance (Basic) */}
-          <div className="bg-white border border-gray-200 rounded-2xl p-8 shadow-sm hover:shadow-md transition-shadow flex flex-col h-full relative top-4">
-            <h3 className="text-xl font-bold text-gray-900">The Check-In</h3>
-            <div className="my-4">
-              <span className="text-4xl font-bold text-gray-900">Basic</span>
-              <span className="text-gray-500 ml-2">/ month</span>
-            </div>
-            <p className="text-gray-600 text-sm mb-6">Maintenance & Clarity for steady periods.</p>
+          {/* Card 1: Strategic Pulse */}
+          <div className="bg-white border border-gray-200 rounded-2xl p-8 flex flex-col h-full hover:shadow-lg transition-shadow">
+            <h3 className="text-2xl font-bold text-gray-900">Strategic Pulse</h3>
+            <p className="text-brand-600 text-xs font-bold uppercase tracking-widest mt-2 mb-4">THE ESSENTIAL SAFETY NET</p>
             
-            {/* Button placed BEFORE list */}
-            <Button onClick={openCalendly} variant="outline" className="w-full justify-center mb-8">Start Basic</Button>
+            <h4 className="text-xl font-bold text-gray-900 mb-6">Monthly Subscription</h4>
             
-            <div className="border-t border-gray-100 pt-6 flex-grow">
-              <p className="text-sm font-bold text-gray-900 uppercase tracking-wider mb-4">Features</p>
-              <ul className="space-y-4">
+            <ul className="space-y-4 flex-grow mb-8">
                 <li className="flex gap-3 text-gray-700 text-sm items-start">
                   <CheckCircle size={18} className="text-brand-600 flex-shrink-0 mt-0.5" />
-                  <span>1 x 60min Strategy & Venting Session</span>
+                  <span>Monthly 90-min Deep Dive Session</span>
                 </li>
                 <li className="flex gap-3 text-gray-700 text-sm items-start">
                   <CheckCircle size={18} className="text-brand-600 flex-shrink-0 mt-0.5" />
-                  <span>Monthly "Headspace" Audit</span>
+                  <span>Strategic Goal Tracking</span>
                 </li>
                 <li className="flex gap-3 text-gray-700 text-sm items-start">
+                  <CheckCircle size={18} className="text-brand-600 flex-shrink-0 mt-0.5" />
+                  <span>Resilience & Burnout Check-in</span>
+                </li>
+                 <li className="flex gap-3 text-gray-700 text-sm items-start">
                   <CheckCircle size={18} className="text-brand-600 flex-shrink-0 mt-0.5" />
                   <span>Email Support</span>
                 </li>
-              </ul>
-            </div>
+                <li className="flex gap-3 text-gray-700 text-sm items-start">
+                  <CheckCircle size={18} className="text-brand-600 flex-shrink-0 mt-0.5" />
+                  <span>2026 Compliance Guidance</span>
+                </li>
+            </ul>
+
+            <button 
+              onClick={openCalendly}
+              className="w-full py-3 rounded-md border border-brand-600 text-brand-600 font-medium hover:bg-brand-50 transition-colors"
+            >
+              Get Started
+            </button>
           </div>
 
-          {/* Card 2: Growth (HIGHLIGHTED) */}
-          <div className="bg-white border-2 border-brand-500 rounded-2xl p-8 shadow-xl flex flex-col h-full relative transform md:-translate-y-2 z-10">
-            <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-brand-500 text-white px-4 py-1 rounded-full text-sm font-bold uppercase tracking-wide shadow-sm">
-              Most Popular
+          {/* Card 2: Growth Partner */}
+          <div className="bg-white border-2 border-brand-600 rounded-2xl p-8 flex flex-col h-full relative shadow-xl">
+            <div className="absolute -top-4 left-1/2 transform -translate-x-1/2 bg-brand-600 text-white px-4 py-1 rounded-full text-xs font-bold uppercase">
+              RECOMMENDED
             </div>
-            <h3 className="text-xl font-bold text-gray-900 mt-2">The Co-Pilot</h3>
-             <div className="my-4">
-              <span className="text-4xl font-bold text-gray-900">Growth</span>
-              <span className="text-gray-500 ml-2">/ month</span>
-            </div>
-            <p className="text-gray-600 text-sm mb-6">Active Resilience Building for high-pressure times.</p>
+
+            <h3 className="text-2xl font-bold text-gray-900 mt-2">Growth Partner</h3>
+            <p className="text-brand-600 text-xs font-bold uppercase tracking-widest mt-2 mb-4">MOST POPULAR FOR SCALING FOUNDERS</p>
             
-            {/* Primary Button BEFORE list */}
-            <Button onClick={openCalendly} variant="primary" className="w-full justify-center mb-8 py-3 text-lg">Start Growth</Button>
+            <h4 className="text-xl font-bold text-gray-900 mb-6">Retainer Model</h4>
             
-             <div className="border-t border-gray-100 pt-6 flex-grow">
-              <p className="text-sm font-bold text-gray-900 uppercase tracking-wider mb-4">Features</p>
-              <ul className="space-y-4">
+            <ul className="space-y-4 flex-grow mb-8">
                 <li className="flex gap-3 text-gray-700 text-sm items-start">
                   <CheckCircle size={18} className="text-brand-600 flex-shrink-0 mt-0.5" />
-                  <span>2 x 60min Deep-Dive Sessions</span>
+                  <span>Bi-Weekly Strategy Calls</span>
                 </li>
                 <li className="flex gap-3 text-gray-700 text-sm items-start">
                   <CheckCircle size={18} className="text-brand-600 flex-shrink-0 mt-0.5" />
-                  <span>Decision-Fatigue Analysis</span>
+                  <span>Decision-Making Fatigue Support</span>
                 </li>
                 <li className="flex gap-3 text-gray-700 text-sm items-start">
                   <CheckCircle size={18} className="text-brand-600 flex-shrink-0 mt-0.5" />
-                  <span>WhatsApp Voice Note Access (Mon-Fri)</span>
+                  <span>Financial Dashboard Review</span>
                 </li>
-              </ul>
-            </div>
+                <li className="flex gap-3 text-gray-700 text-sm items-start">
+                  <CheckCircle size={18} className="text-brand-600 flex-shrink-0 mt-0.5" />
+                  <span>WhatsApp Priority Access</span>
+                </li>
+                 <li className="flex gap-3 text-gray-700 text-sm items-start">
+                  <CheckCircle size={18} className="text-brand-600 flex-shrink-0 mt-0.5" />
+                  <span>Conflict Resolution Support</span>
+                </li>
+                <li className="flex gap-3 text-gray-700 text-sm items-start">
+                  <CheckCircle size={18} className="text-brand-600 flex-shrink-0 mt-0.5" />
+                  <span>Quarterly Business Reset</span>
+                </li>
+            </ul>
+
+            <button 
+              onClick={openCalendly}
+              className="w-full py-3 rounded-md bg-brand-600 text-white font-medium hover:bg-brand-700 transition-colors"
+            >
+              Get Started
+            </button>
           </div>
 
-          {/* Card 3: Premium */}
-          <div className="bg-white border border-gray-200 rounded-2xl p-8 shadow-sm hover:shadow-md transition-shadow flex flex-col h-full relative top-4">
-            <h3 className="text-xl font-bold text-gray-900">The Inner Circle</h3>
-             <div className="my-4">
-              <span className="text-4xl font-bold text-gray-900">Premium</span>
-              <span className="text-gray-500 ml-2">/ month</span>
-            </div>
-            <p className="text-gray-600 text-sm mb-6">Intensive Leadership Support for complex challenges.</p>
+          {/* Card 3: Founder Concierge */}
+          <div className="bg-brand-900 rounded-2xl p-8 flex flex-col h-full shadow-lg text-white">
+            <h3 className="text-2xl font-bold text-white">Founder Concierge</h3>
+            <p className="text-yellow-500 text-xs font-bold uppercase tracking-widest mt-2 mb-4">TOTAL OPERATIONAL & EMOTIONAL PEACE</p>
             
-            {/* Button BEFORE list */}
-            <Button onClick={openCalendly} variant="outline" className="w-full justify-center mb-8">Start Premium</Button>
+            <h4 className="text-xl font-bold text-white mb-6">Tailored Retainer</h4>
             
-            <div className="border-t border-gray-100 pt-6 flex-grow">
-               <p className="text-sm font-bold text-gray-900 uppercase tracking-wider mb-4">Features</p>
-               <ul className="space-y-4">
-                <li className="flex gap-3 text-gray-700 text-sm items-start">
-                  <CheckCircle size={18} className="text-brand-600 flex-shrink-0 mt-0.5" />
-                  <span>Weekly 60min Executive Sessions</span>
+            <ul className="space-y-4 flex-grow mb-8">
+                <li className="flex gap-3 text-gray-100 text-sm items-start">
+                  <CheckCircle size={18} className="text-yellow-500 flex-shrink-0 mt-0.5" />
+                  <span>Weekly Accountability Sprints</span>
                 </li>
-                <li className="flex gap-3 text-gray-700 text-sm items-start">
-                  <CheckCircle size={18} className="text-brand-600 flex-shrink-0 mt-0.5" />
-                  <span>Priority Crisis Calls</span>
+                <li className="flex gap-3 text-gray-100 text-sm items-start">
+                  <CheckCircle size={18} className="text-yellow-500 flex-shrink-0 mt-0.5" />
+                  <span>Full Management Accounts Access</span>
                 </li>
-                <li className="flex gap-3 text-gray-700 text-sm items-start">
-                  <CheckCircle size={18} className="text-brand-600 flex-shrink-0 mt-0.5" />
-                  <span>Full Personal & Business Alignment</span>
+                <li className="flex gap-3 text-gray-100 text-sm items-start">
+                  <CheckCircle size={18} className="text-yellow-500 flex-shrink-0 mt-0.5" />
+                  <span>Unlimited Resilience Coaching</span>
                 </li>
-              </ul>
-            </div>
+                 <li className="flex gap-3 text-gray-100 text-sm items-start">
+                  <CheckCircle size={18} className="text-yellow-500 flex-shrink-0 mt-0.5" />
+                  <span>Operational Bottleneck Solving</span>
+                </li>
+                <li className="flex gap-3 text-gray-100 text-sm items-start">
+                  <CheckCircle size={18} className="text-yellow-500 flex-shrink-0 mt-0.5" />
+                  <span>Investor Readiness Partnership</span>
+                </li>
+                <li className="flex gap-3 text-gray-100 text-sm items-start">
+                  <CheckCircle size={18} className="text-yellow-500 flex-shrink-0 mt-0.5" />
+                  <span>Bespoke Strategic Planning</span>
+                </li>
+            </ul>
+
+            <button 
+              onClick={openCalendly}
+              className="w-full py-3 rounded-md bg-yellow-600 text-brand-900 font-bold hover:bg-yellow-500 transition-colors"
+            >
+              Get Started
+            </button>
           </div>
 
         </div>
