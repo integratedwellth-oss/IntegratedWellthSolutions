@@ -25,14 +25,16 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 20
-          # cache line removed to prevent "lock file not found" error
           
       - name: Install dependencies
+        # Preserving your custom install command
         run: npm install && npm install @google/generative-ai
-        # Changed from "npm ci" to "npm install" to auto-generate the missing lock file
 
       - name: Build
         run: npm run build
+        env:
+          # 🔥 CRITICAL: This injects the secret so Vite can see it
+          VITE_API_KEY: ${{ secrets.API_KEY }}
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
@@ -47,4 +49,5 @@ jobs:
     needs: build
     steps:
       - name: Deploy to GitHub Pages
+        id: deployment  # Added this ID so the URL output above works
         uses: actions/deploy-pages@v4
