@@ -2,7 +2,7 @@ import React from 'react';
 import { motion } from "framer-motion";
 import { Mail, Target, Compass, Heart } from "lucide-react";
 
-// 1. TEAM DATA
+// 1. TEAM DATA (Fully Populated)
 const TEAM = [
   {
     name: "Marcia Kgaphola",
@@ -12,17 +12,24 @@ const TEAM = [
     email: "marcia@integratedwellth.co.za"
   },
   {
-    name: "Senior Consultant",
-    role: "Strategic Analysis Lead",
-    bio: "Expert in operational efficiency and systems thinking, ensuring our strategies are executable.",
-    image: "https://ui-avatars.com/api/?name=Senior+Consultant&background=f3f4f6&color=1f2937&size=512",
+    name: "Thabo Leslie Motsumi",
+    role: "AI & Digital Marketing Specialist",
+    bio: "Expert in AI, Google My Business Profile Optimization, SEO Automation, and Smart Digital Marketing systems.",
+    image: "https://res.cloudinary.com/dka0498ns/image/upload/v1766069617/Thabo_Leslie_Motsumi._AI_Google_my_Business_profile_optimization_Search_Everywhere_Optimation_SEO_Automation_and_Smart_digital_marketing._vncyse.png",
+    email: "thabo@integratedwellth.co.za"
+  },
+  {
+    name: "Enias Mafokoane",
+    role: "Executive Coach",
+    bio: "Driving professional excellence and leadership development through tailored executive coaching.",
+    image: "https://res.cloudinary.com/dka0498ns/image/upload/v1766069615/Enias_Mafokoane._Executive_Coach_dd47qt.jpg",
     email: "info@integratedwellth.co.za"
   },
   {
-    name: "Client Success",
-    role: "Head of Partnerships",
-    bio: "Dedicated to building long-term value networks and ensuring client success at every touchpoint.",
-    image: "https://ui-avatars.com/api/?name=Client+Success&background=f3f4f6&color=1f2937&size=512",
+    name: "Lazarus Kaseke",
+    role: "Chartered Accountant (SA)",
+    bio: "Ensuring financial integrity and robust governance structures for sustainable business growth.",
+    image: "https://res.cloudinary.com/dka0498ns/image/upload/v1766069615/Lazarus_Kaseke._CA_SA_sbcpnw.jpg",
     email: "info@integratedwellth.co.za"
   }
 ];
@@ -30,11 +37,12 @@ const TEAM = [
 // 2. COMPONENT DEFINITION
 const Team = () => {
   return (
-    <div className="pt-20">
+    <div className="bg-gray-50 min-h-screen">
       
-      {/* --- SECTION 1: THE TEAM --- */}
-      <section id="team" className="py-20 bg-gray-50">
+      {/* --- SECTION 1: THE TEAM (4 MEMBERS) --- */}
+      <section id="team" className="pt-32 pb-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          
           <div className="text-center mb-16">
              <h2 className="text-4xl font-bold text-gray-900 mb-4">Our Team</h2>
              <p className="text-xl text-brand-600 font-medium mb-6 uppercase tracking-wider">The Minds Behind The Mission</p>
@@ -43,16 +51,18 @@ const Team = () => {
             </p>
           </div>
 
-          <div className="grid md:grid-cols-3 gap-8 justify-center">
+          {/* GRID set to 4 Columns for 4 Members */}
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 justify-center">
             {TEAM.map((member, index) => (
               <motion.div
                 key={index}
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
-                transition={{ delay: index * 0.2 }}
+                transition={{ delay: index * 0.1 }}
                 className="bg-white rounded-2xl overflow-hidden shadow-md hover:shadow-xl transition-shadow border border-gray-100 group flex flex-col"
               >
+                {/* Image Aspect Ratio */}
                 <div className="relative aspect-[3/4] bg-gray-200 overflow-hidden">
                   <img 
                     src={member.image} 
@@ -65,18 +75,18 @@ const Team = () => {
                         href={`mailto:${member.email}`} 
                         className="p-3 bg-white rounded-full text-gray-900 hover:bg-yellow-500 hover:text-white transition-colors transform hover:scale-110"
                       >
-                        <Mail size={22} />
+                        <Mail size={20} />
                       </a>
                     )}
                   </div>
                 </div>
 
-                <div className="p-8 flex flex-col flex-grow">
-                  <div className="mb-4">
-                    <h3 className="text-2xl font-bold text-gray-900">{member.name}</h3>
-                    <p className="text-yellow-600 font-semibold text-sm uppercase tracking-wider mt-1">{member.role}</p>
+                <div className="p-6 flex flex-col flex-grow text-center">
+                  <div className="mb-3">
+                    <h3 className="text-xl font-bold text-gray-900">{member.name}</h3>
+                    <p className="text-yellow-600 font-semibold text-xs uppercase tracking-wider mt-1">{member.role}</p>
                   </div>
-                  <p className="text-gray-600 leading-relaxed flex-grow font-sans">
+                  <p className="text-gray-600 text-sm leading-relaxed flex-grow font-sans">
                     {member.bio}
                   </p>
                 </div>
@@ -86,48 +96,56 @@ const Team = () => {
         </div>
       </section>
 
-      {/* --- SECTION 2: VISION, MISSION & VALUES --- */}
+      {/* --- SECTION 2: VISION, MISSION & VALUES (Exact Text Provided) --- */}
       <section className="py-24 bg-white border-t border-gray-100">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          
           <div className="text-center mb-16">
             <h2 className="text-3xl font-bold text-gray-900">The Foundation</h2>
             <p className="text-gray-600 mt-4">Why we do what we do.</p>
           </div>
 
           <div className="grid lg:grid-cols-3 gap-12">
-            <div className="flex flex-col items-center text-center">
-              <div className="w-16 h-16 bg-brand-50 rounded-2xl flex items-center justify-center text-brand-600 mb-6">
+            
+            {/* VISION */}
+            <div className="flex flex-col items-center text-center p-8 bg-brand-50 rounded-2xl border border-brand-100 h-full">
+              <div className="w-16 h-16 bg-white shadow-sm rounded-full flex items-center justify-center text-brand-600 mb-6">
                 <Target size={32} />
               </div>
-              <h3 className="text-xl font-bold text-gray-900 mb-4">Our Vision</h3>
-              <p className="text-gray-600 leading-relaxed">
-                To be the leading holistic empowerment partner in Africa, driving financial confidence, emotional resilience, and professional excellence.
+              <h3 className="text-xl font-bold text-gray-900 mb-4">Vision Statement</h3>
+              <p className="text-gray-600 leading-relaxed text-sm">
+                To be the leading holistic empowerment partner in Africa, driving financial confidence, emotional resilience, and professional excellence for individuals, businesses, and communities — unlocking sustainable well-being and generational transformation.
               </p>
             </div>
-            <div className="flex flex-col items-center text-center">
-              <div className="w-16 h-16 bg-brand-50 rounded-2xl flex items-center justify-center text-brand-600 mb-6">
+
+            {/* MISSION */}
+            <div className="flex flex-col items-center text-center p-8 bg-brand-50 rounded-2xl border border-brand-100 h-full">
+              <div className="w-16 h-16 bg-white shadow-sm rounded-full flex items-center justify-center text-brand-600 mb-6">
                 <Compass size={32} />
               </div>
-              <h3 className="text-xl font-bold text-gray-900 mb-4">Our Mission</h3>
-              <p className="text-gray-600 leading-relaxed">
-                Our mission is to empower clients — from teens to entrepreneurs — with integrated solutions that blend financial management and emotional intelligence.
+              <h3 className="text-xl font-bold text-gray-900 mb-4">Mission Statement</h3>
+              <p className="text-gray-600 leading-relaxed text-sm">
+                Our mission is to empower clients — from teens to entrepreneurs and organisations — with integrated solutions that blend financial management, emotional intelligence, professional development, and digital innovation. Through tailored coaching, expert guidance, and measurable outcomes, we simplify complexity, foster confidence, and support sustainable growth so our clients can thrive personally and professionally.
               </p>
             </div>
-            <div className="flex flex-col items-center text-center">
-              <div className="w-16 h-16 bg-brand-50 rounded-2xl flex items-center justify-center text-brand-600 mb-6">
+
+            {/* VALUES */}
+            <div className="flex flex-col items-center text-center p-8 bg-brand-50 rounded-2xl border border-brand-100 h-full">
+              <div className="w-16 h-16 bg-white shadow-sm rounded-full flex items-center justify-center text-brand-600 mb-6">
                 <Heart size={32} />
               </div>
               <h3 className="text-xl font-bold text-gray-900 mb-4">Our Values</h3>
-              <p className="text-gray-600 leading-relaxed">
-                Integrated Wellth Solutions values integrity, empathy, and collaboration. We partner with clients to co-create solutions that align with their goals.
+              <p className="text-gray-600 leading-relaxed text-sm">
+                Integrated Wellth Solutions values integrity, empathy, and collaboration, we partner with clients to co-create solutions that align with their goals. Whether simplifying tax compliance for SMEs, fostering inclusive workplaces through diversity training, or mentoring teens in digital literacy, Integrated Wellth Solutions is your trusted ally in achieving lasting success.
               </p>
             </div>
+
           </div>
         </div>
       </section>
+
     </div>
   );
 };
 
-// 3. EXPORT DEFAULT (This prevents the crash)
 export default Team;
