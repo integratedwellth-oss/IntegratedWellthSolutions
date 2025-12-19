@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
-import { X, Send, CheckCircle, Briefcase, User, Phone, Mail } from 'lucide-react';
+import { X, Send, Briefcase, User, Phone, Mail, Loader2 } from 'lucide-react';
+import { collection, addDoc, serverTimestamp } from 'firebase/firestore'; 
+import { db } from '../firebaseConfig'; // Ensure your firebaseConfig exports 'db'
 
 interface ApplicationModalProps {
   isOpen: boolean;
@@ -8,6 +10,7 @@ interface ApplicationModalProps {
 }
 
 const ApplicationModal: React.FC<ApplicationModalProps> = ({ isOpen, onClose, packageName }) => {
+  const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -19,19 +22,51 @@ const ApplicationModal: React.FC<ApplicationModalProps> = ({ isOpen, onClose, pa
 
   if (!isOpen) return null;
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    // Construct the professional application message
-    const message = `*NEW IWS APPLICATION* 📝%0A%0A*Package:* ${packageName}%0A*Applicant:* ${formData.name}%0A*Business:* ${formData.businessName}%0A*Email:* ${formData.email}%0A*Phone:* ${formData.phone}%0A*Revenue Stage:* ${formData.revenue}%0A*Key Challenge:* ${formData.challenges}%0A%0A_Please review my application for the ${packageName} program._`;
-    
-    // Open WhatsApp with the pre-filled application
-    window.open(`https://wa.me/27763606352?text=${message}`, '_blank');
-    onClose();
+    setIsLoading(true);
+
+    try {
+      // 1. SAVE TO FIREBASE (This secures the lead & triggers email automation)
+      await addDoc(collection(db, "applications"), {
+        package: packageName,
+        applicantName: formData.name,
+        email: formData.email,
+        phone: formData.phone,
+        businessName: formData.businessName,
+        revenueBracket: formData.revenue,
+        challenge: formData.challenges,
+        status: 'new', // Useful for your Admin Dashboard
+        createdAt: serverTimestamp(),
+        // Adding this field allows the 'Trigger Email' extension to send a confirmation automatically
+        to: formData.email, 
+        message: {
+          subject: `Application Received: ${packageName}`,
+          text: `Dear ${formData.name},\n\nThank you for applying for the ${packageName}. We have received your details and Marcia will review them shortly.\n\nBest,\nIntegrated Wellth Solutions`
+        }
+      });
+
+      // 2. OPEN WHATSAPP (Clean Format - No Asterisks)
+      // We use %0A for new lines. 
+      const cleanMessage = `IWS APPLICATION SUBMISSION 📝%0A%0APackage: ${packageName}%0AApplicant: ${formData.name}%0ABusiness: ${formData.businessName}%0AEmail: ${formData.email}%0APhone: ${formData.phone}%0ARevenue: ${formData.revenue}%0AChallenge: ${formData.challenges}%0A%0ARequesting preliminary assessment.`;
+      
+      // Target Number: 0812355910 -> 27812355910
+      window.open(`https://wa.me/27812355910?text=${cleanMessage}`, '_blank');
+
+      // 3. CLOSE & RESET
+      setIsLoading(false);
+      onClose();
+      alert("Application submitted successfully! We will be in touch shortly.");
+
+    } catch (error) {
+      console.error("Error submitting application: ", error);
+      setIsLoading(false);
+      alert("There was an error submitting your application. Please try again or contact us directly on WhatsApp.");
+    }
   };
 
   return (
-    <div className="fixed inset-0 z-[600] flex items-center justify-center p-4">
+    <div className="fixed inset-0 z-[600] flex items-center justify-center p-4 font-sans">
       {/* Backdrop */}
       <div 
         className="absolute inset-0 bg-brand-900/60 backdrop-blur-sm transition-opacity"
@@ -136,9 +171,10 @@ const ApplicationModal: React.FC<ApplicationModalProps> = ({ isOpen, onClose, pa
 
           <button 
             type="submit"
-            className="w-full bg-brand-900 text-white py-4 rounded-xl font-bold flex items-center justify-center gap-2 hover:bg-brand-800 transform hover:scale-[1.02] transition-all shadow-lg shadow-brand-900/20"
+            disabled={isLoading}
+            className="w-full bg-brand-900 text-white py-4 rounded-xl font-bold flex items-center justify-center gap-2 hover:bg-brand-800 transform hover:scale-[1.02] transition-all shadow-lg shadow-brand-900/20 disabled:opacity-70 disabled:cursor-not-allowed"
           >
-            Submit Application <Send size={18} />
+            {isLoading ? <Loader2 className="animate-spin" /> : <>Submit Application <Send size={18} /></>}
           </button>
           
           <p className="text-center text-xs text-gray-400">
