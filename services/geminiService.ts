@@ -1,23 +1,33 @@
 import { GoogleGenerativeAI, ChatSession } from "@google/generative-ai";
 
-// ✅ YOUR KEY IS NOW CONFIGURED
-const API_KEY = "AIzaSyDMB_1xYZQ0MBwWyoz7giPnrQ2SygyylQ8"; 
-
-const genAI = new GoogleGenerativeAI(API_KEY);
-const model = genAI.getGenerativeModel({ model: "gemini-pro" });
-
 export const createChatSession = (): ChatSession => {
+  // 🔒 SECURITY FIX: Load key from Environment Variables (Vite)
+  // This reads the VITE_API_KEY injected by your deploy.yml
+  const apiKey = import.meta.env.VITE_API_KEY;
+
+  // Safety check to debug deployment issues
+  if (!apiKey || apiKey === "undefined") {
+    console.error("FATAL: Gemini API Key is missing. Ensure VITE_API_KEY is set in GitHub Secrets.");
+    throw new Error("Gemini API Key is missing.");
+  }
+
+  const genAI = new GoogleGenerativeAI(apiKey);
+  
+  // ⚡ PERFORMANCE: Switched to 'gemini-1.5-flash' (Faster/Better for chat)
+  const model = genAI.getGenerativeModel({ 
+    model: "gemini-1.5-flash",
+    // System instructions are now native to the model config
+    systemInstruction: "You are the 'Wellth Advisor' for Integrated Wellth Solutions (IWS). You are helpful, professional, and empathetic. You answer questions about financial planning, tax compliance (especially for South African NPOs), and psychological well-being. Keep answers concise."
+  });
+
   return model.startChat({
     history: [
-      {
-        role: "user",
-        parts: [{ text: "You are the 'Wellth Advisor' for Integrated Wellth Solutions (IWS). You are helpful, professional, and empathetic. You answer questions about financial planning, tax compliance (especially for South African NPOs), and psychological well-being. Keep answers concise." }]
-      },
-      {
-        role: "model",
-        parts: [{ text: "Understood. I am ready to assist as the Wellth Advisor." }]
-      }
+      // History is now clean, system instructions are handled above
     ],
+    generationConfig: {
+      temperature: 0.7,
+      maxOutputTokens: 1000,
+    },
   });
 };
 
