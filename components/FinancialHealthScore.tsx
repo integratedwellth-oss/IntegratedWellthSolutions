@@ -265,7 +265,6 @@ const FinancialHealthScore: React.FC<FinancialHealthScoreProps> = ({ isModal = f
                    <h4 className={`font-bold mb-2 flex items-center gap-2 ${isModal ? 'text-brand-900' : 'text-white'}`}>
                     <CheckCircle2 size={18} className="text-brand-500" /> Details
                   </h4>
-                   {/* FIXED SECTION BELOW - NO MORE BROKEN TAGS */}
                    <div className={`text-sm ${isModal ? 'text-gray-600' : 'text-gray-300'}`}>
                      <div className="mb-2"><strong>Completion time:</strong> 5–7 minutes</div>
                      <div><strong>Outcome:</strong> Actionable strategic insight</div>
@@ -328,4 +327,143 @@ const FinancialHealthScore: React.FC<FinancialHealthScoreProps> = ({ isModal = f
                 <div className="w-16 h-16 bg-brand-100 rounded-full flex items-center justify-center mx-auto mb-6">
                   <CheckCircle2 className="w-8 h-8 text-brand-600" />
                 </div>
-                <h3 className="text-3xl font
+                <h3 className="text-3xl font-bold mb-2 text-gray-900">Assessment Complete</h3>
+                <p className="text-gray-600 mb-8">Enter your details to generate your tailored Strategic SME Reset Plan.</p>
+                
+                <form onSubmit={handleFormSubmit} className="space-y-5 text-left">
+                  <div>
+                    <label htmlFor="name" className="block text-sm font-bold text-gray-700 mb-1">Your Name</label>
+                    <input
+                      type="text"
+                      id="name"
+                      required
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none transition-shadow"
+                      placeholder="e.g. John Doe"
+                      value={formData.name}
+                      onChange={(e) => setFormData({...formData, name: e.target.value})}
+                      disabled={isSaving}
+                    />
+                  </div>
+                  <div>
+                    <label htmlFor="enterprise" className="block text-sm font-bold text-gray-700 mb-1">Name of Enterprise</label>
+                    <input
+                      type="text"
+                      id="enterprise"
+                      required
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none transition-shadow"
+                      placeholder="e.g. Innovate Holdings"
+                      value={formData.enterprise}
+                      onChange={(e) => setFormData({...formData, enterprise: e.target.value})}
+                      disabled={isSaving}
+                    />
+                  </div>
+                  <div>
+                    <label htmlFor="email" className="block text-sm font-bold text-gray-700 mb-1">Email Address</label>
+                    <input
+                      type="email"
+                      id="email"
+                      required
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none transition-shadow"
+                      placeholder="john@example.com"
+                      value={formData.email}
+                      onChange={(e) => setFormData({...formData, email: e.target.value})}
+                      disabled={isSaving}
+                    />
+                  </div>
+                  <div>
+                    <label htmlFor="phone" className="block text-sm font-bold text-gray-700 mb-1">Phone Number</label>
+                    <input
+                      type="tel"
+                      id="phone"
+                      required
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none transition-shadow"
+                      placeholder="e.g. 082 123 4567"
+                      value={formData.phone}
+                      onChange={(e) => setFormData({...formData, phone: e.target.value})}
+                      disabled={isSaving}
+                    />
+                  </div>
+                  <div className="pt-4">
+                    <Button 
+                      type="submit" 
+                      className="w-full justify-center text-lg py-3 flex items-center gap-2"
+                      disabled={isSaving}
+                    >
+                      {isSaving ? (
+                        <>
+                          <Loader2 className="animate-spin w-5 h-5" />
+                          Processing...
+                        </>
+                      ) : (
+                        "Reveal My Results"
+                      )}
+                    </Button>
+                  </div>
+                </form>
+              </div>
+            )}
+
+            {/* Results View */}
+            {showResult && (
+              <div className="text-center">
+                <div className="flex justify-center mb-6">
+                  <div className={`p-4 rounded-full ${getResultUI().bgColor}`}>
+                    {getResultUI().icon}
+                  </div>
+                </div>
+
+                <p className="text-sm font-bold text-gray-500 uppercase tracking-widest mb-1">Results for {formData.enterprise}</p>
+                <div className={`text-4xl font-bold mb-2 ${getResultUI().color}`}>{getResultUI().title}</div>
+                <div className="inline-block px-4 py-1 rounded-full bg-gray-100 text-gray-600 font-bold text-sm mb-6">
+                  Score: {score} / 16
+                </div>
+
+                <p className="text-lg text-gray-700 mb-8 max-w-xl mx-auto leading-relaxed border-t border-b border-gray-100 py-6">
+                  {getResultUI().msg}
+                </p>
+                
+                <div className="bg-brand-50 rounded-xl p-6 mb-8 text-left">
+                  <h4 className="font-bold text-brand-900 mb-4 text-center">What This Reset Is Inviting You To Do</h4>
+                  <div className="grid md:grid-cols-3 gap-4">
+                    <button onClick={openBooking} className="flex flex-col items-center text-center p-4 bg-white rounded-lg border border-brand-100 hover:border-brand-500 hover:shadow-md transition-all group">
+                      <div className="w-10 h-10 bg-brand-100 text-brand-600 rounded-full flex items-center justify-center mb-3 group-hover:bg-brand-600 group-hover:text-white transition-colors">
+                        <Calendar size={20} />
+                      </div>
+                      <span className="font-bold text-gray-800 text-sm">Book a SME Reset<br/>Clarity Session</span>
+                    </button>
+
+                    <button onClick={() => window.location.hash = '#contact'} className="flex flex-col items-center text-center p-4 bg-white rounded-lg border border-brand-100 hover:border-brand-500 hover:shadow-md transition-all group">
+                       <div className="w-10 h-10 bg-brand-100 text-brand-600 rounded-full flex items-center justify-center mb-3 group-hover:bg-brand-600 group-hover:text-white transition-colors">
+                        <BookOpen size={20} />
+                      </div>
+                      <span className="font-bold text-gray-800 text-sm">Access Financial &<br/>Compliance Toolkits</span>
+                    </button>
+
+                    <button onClick={scrollToEvent} className="relative flex flex-col items-center text-center p-4 bg-gradient-to-b from-yellow-50 to-white rounded-lg border-2 border-yellow-400 hover:border-yellow-500 shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all group overflow-visible">
+                       <div className="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-yellow-500 text-white text-[10px] font-bold px-3 py-0.5 rounded-full shadow-sm whitespace-nowrap animate-pulse">
+                        LIMITED SEATS
+                       </div>
+                       <div className="w-10 h-10 bg-yellow-100 text-yellow-700 rounded-full flex items-center justify-center mb-3 group-hover:bg-yellow-500 group-hover:text-white transition-colors">
+                        <Users size={20} />
+                      </div>
+                      <span className="font-bold text-gray-900 text-sm">Join Upcoming<br/>SME Clinics</span>
+                    </button>
+                  </div>
+                </div>
+
+                <div className="flex gap-4 justify-center">
+                   <Button onClick={resetQuiz} variant="outline" size="md">Start New Assessment</Button>
+                   {isModal && onClose && (
+                     <Button onClick={onClose} variant="secondary" size="md">Close</Button>
+                   )}
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+    </Wrapper>
+  );
+};
+
+export default FinancialHealthScore;
