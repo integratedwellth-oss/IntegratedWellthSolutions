@@ -1,4 +1,4 @@
-name: Deploy React/Vite to Pages
+name: Deploy IWS WhatsApp Agent
 
 on:
   push:
@@ -11,43 +11,37 @@ permissions:
   id-token: write
 
 concurrency:
-  group: "pages"
+  group: "deployment"
   cancel-in-progress: true
 
 jobs:
-  build:
+  build_and_deploy:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
+      - name: Checkout Repo
         uses: actions/checkout@v4
-      
+
       - name: Set up Node
         uses: actions/setup-node@v4
         with:
           node-version: 20
-          
+
       - name: Install dependencies
-        # Preserving your custom install command
-        run: npm install && npm install @google/generative-ai
+        # Navigates to functions folder to install required AI and WhatsApp packages
+        run: |
+          cd functions
+          npm install
+          npm install axios @google/generative-ai
 
-      - name: Build
-        run: npm run build
-        env:
-          # 🔥 CRITICAL: This injects the secret so Vite can see it
-          VITE_API_KEY: ${{ secrets.API_KEY }}
-
-      - name: Upload artifact
-        uses: actions/upload-pages-artifact@v3
+      - name: Deploy to Firebase
+        # Uses the Firebase action to deploy only the functions
+        uses: FirebaseExtended/action-hosting-deploy@v0
         with:
-          path: ./dist
-
-  deploy:
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    runs-on: ubuntu-latest
-    needs: build
-    steps:
-      - name: Deploy to GitHub Pages
-        id: deployment  # Added this ID so the URL output above works
-        uses: actions/deploy-pages@v4
+          repoToken: '${{ secrets.GITHUB_TOKEN }}'
+          firebaseServiceAccount: '${{ secrets.FIREBASE_SERVICE_ACCOUNT }}'
+          projectId: integratedwellthsolutions
+          channelId: live
+        env:
+          # 🔥 THIS SECURES YOUR KEYS: It passes GitHub Secrets to the Firebase build environment
+          WHATSAPP_TOKEN: ${{ secrets.WHATSAPP_TOKEN }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
