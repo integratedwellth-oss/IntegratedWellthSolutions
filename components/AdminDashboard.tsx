@@ -1,251 +1,283 @@
 import React, { useState, useEffect } from 'react';
 import { db, auth, googleProvider } from '../firebaseConfig';
+import { collection, getDocs, query } from 'firebase/firestore';
 import { signInWithPopup, signOut, onAuthStateChanged, User } from 'firebase/auth';
-import { collection, getDocs, query, orderBy } from 'firebase/firestore';
-import { Download, Lock, RefreshCw, ShieldCheck, Phone, Mail, Building, User as UserIcon, LogOut } from 'lucide-react';
-import Button from './Button';
-
-// ✅ UPDATED: This now matches the email you are using to log in
-const ALLOWED_EMAIL = "integratedwellth@gmail.com";
+import { LayoutDashboard, LogOut, Loader2, ChevronDown, ChevronRight, User as UserIcon, Briefcase, TrendingUp, AlertCircle, CheckCircle2 } from 'lucide-react';
 
 const AdminDashboard = () => {
   const [user, setUser] = useState<User | null>(null);
-  const [isAuthorized, setIsAuthorized] = useState(false);
-  const [authLoading, setAuthLoading] = useState(true);
-  const [leads, setLeads] = useState<any[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState<'applications' | 'assessments'>('applications');
+  
+  // Data State
+  const [applications, setApplications] = useState<any[]>([]);
+  const [assessments, setAssessments] = useState<any[]>([]);
+  const [isDataLoading, setIsDataLoading] = useState(false);
 
-  // Check login status on load
+  // Authentication Listener
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
       setUser(currentUser);
-      if (currentUser && currentUser.email === ALLOWED_EMAIL) {
-        setIsAuthorized(true);
-        fetchLeads(); // Auto-load data if authorized
-      } else {
-        setIsAuthorized(false);
-        setLeads([]);
+      if (currentUser) {
+        fetchLeads();
       }
-      setAuthLoading(false);
+      setLoading(false);
     });
     return () => unsubscribe();
   }, []);
 
-  const handleLogin = async () => {
-    setError('');
-    try {
-      const result = await signInWithPopup(auth, googleProvider);
-      const email = result.user.email;
-      
-      if (email !== ALLOWED_EMAIL) {
-        await signOut(auth);
-        setError(`Access Denied. The email ${email} is not authorized.`);
-        setIsAuthorized(false);
-      }
-    } catch (err) {
-      console.error("Login failed", err);
-      setError("Login popup closed or failed. Please try again.");
-    }
-  };
-
-  const handleLogout = async () => {
-    await signOut(auth);
-    setIsAuthorized(false);
-    setUser(null);
-  };
-
+  // Fetch Data from 'mail' collection
   const fetchLeads = async () => {
-    setLoading(true);
+    setIsDataLoading(true);
     try {
-      const q = query(collection(db, "leads"), orderBy("timestamp", "desc"));
+      const q = query(collection(db, "mail")); // Fetching all mail
       const querySnapshot = await getDocs(q);
-      const leadsData = querySnapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data()
-      }));
-      setLeads(leadsData);
-    } catch (err) {
-      console.error("Error fetching leads:", err);
-      // Fallback if indexing is missing
-      try {
-        const querySnapshot = await getDocs(collection(db, "leads"));
-        const leadsData = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-        setLeads(leadsData);
-      } catch (retryErr) {
-        setError('Could not load data. Check Firebase permissions.');
-      }
+      
+      const apps: any[] = [];
+      const assess: any[] = [];
+
+      querySnapshot.forEach((doc) => {
+        const data = doc.data();
+        // Sort based on which data object exists
+        if (data.applicantDetails) {
+          apps.push({ id: doc.id, ...data.applicantDetails });
+        } else if (data.assessmentData) {
+          assess.push({ id: doc.id, ...data.assessmentData });
+        }
+      });
+
+      // Sort by newest first (handling different timestamp fields)
+      apps.sort((a, b) => (b.submittedAt?.seconds || 0) - (a.submittedAt?.seconds || 0));
+      assess.sort((a, b) => (b.submittedAt?.seconds || 0) - (a.submittedAt?.seconds || 0));
+
+      setApplications(apps);
+      setAssessments(assess);
+    } catch (error) {
+      console.error("Error fetching leads:", error);
+      alert("Error loading data. Check console permissions.");
     } finally {
-      setLoading(false);
+      setIsDataLoading(false);
     }
   };
 
-  const downloadCSV = () => {
-    const headers = ["Name,Enterprise,Email,Phone,Score,Result,Date\n"];
-    const rows = leads.map(lead => {
-      const date = lead.timestamp ? new Date(lead.timestamp.seconds * 1000).toLocaleDateString() : 'N/A';
-      return `"${lead.name}","${lead.enterprise}","${lead.email}","${lead.phone || ''}","${lead.score}","${lead.resultType}","${date}"`;
-    });
-
-    const csvContent = "data:text/csv;charset=utf-8," + headers + rows.join("\n");
-    const encodedUri = encodeURI(csvContent);
-    const link = document.createElement("a");
-    link.setAttribute("href", encodedUri);
-    link.setAttribute("download", "IWS_Leads.csv");
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+  const handleLogin = async () => {
+    try {
+      await signInWithPopup(auth, googleProvider);
+    } catch (error) {
+      console.error("Login failed", error);
+    }
   };
 
-  // 🔄 LOADING SCREEN
-  if (authLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <RefreshCw className="animate-spin text-brand-500 w-8 h-8" />
-      </div>
-    );
-  }
+  const handleLogout = () => {
+    signOut(auth);
+  };
 
-  // 🔒 LOGIN SCREEN (If not logged in OR not authorized)
-  if (!isAuthorized) {
+  // --- RENDERING HELPERS ---
+
+  // Group Applications by Package
+  const groupApplications = () => {
+    const groups: {[key: string]: any[]} = {
+      'Strategic Pulse': [],
+      'Growth Partner': [],
+      'Founder Concierge': [],
+      'Other': []
+    };
+
+    applications.forEach(app => {
+      if (groups[app.package]) {
+        groups[app.package].push(app);
+      } else {
+        groups['Other'].push(app);
+      }
+    });
+    return groups;
+  };
+
+  // Group Assessments by Result Type
+  const groupAssessments = () => {
+    const groups: {[key: string]: any[]} = {
+      'Results Ready': [],
+      'Reset in Progress': [],
+      'Reflection Needed': [],
+      'Other': []
+    };
+
+    assessments.forEach(ass => {
+      if (groups[ass.resultType]) {
+        groups[ass.resultType].push(ass);
+      } else {
+        groups['Other'].push(ass);
+      }
+    });
+    return groups;
+  };
+
+  // --- LOGIN SCREEN ---
+  if (loading) return <div className="h-screen flex items-center justify-center"><Loader2 className="animate-spin text-brand-500" size={40} /></div>;
+
+  if (!user) {
     return (
-      <div className="min-h-screen bg-gray-100 flex items-center justify-center p-4">
-        <div className="bg-white p-8 rounded-2xl shadow-xl w-full max-w-md text-center">
-          <div className="w-16 h-16 bg-brand-900 rounded-full flex items-center justify-center mx-auto mb-6">
-            <Lock className="text-white w-8 h-8" />
+      <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center p-4">
+        <div className="bg-white p-8 rounded-2xl shadow-xl max-w-md w-full text-center">
+          <div className="w-16 h-16 bg-brand-100 rounded-full flex items-center justify-center mx-auto mb-6">
+            <LayoutDashboard className="text-brand-900" size={32} />
           </div>
-          <h2 className="text-2xl font-bold text-gray-800 mb-2">Restricted Access</h2>
-          <p className="text-gray-500 mb-6">
-            Please sign in with the official administration account<br/>
-            (integratedwellth@gmail.com)
-          </p>
-          
-          <Button onClick={handleLogin} className="w-full justify-center flex gap-2">
-            <ShieldCheck size={18} /> Sign in with Google
-          </Button>
-
-          {error && (
-            <div className="mt-4 p-3 bg-red-50 text-red-600 text-sm rounded-lg border border-red-100">
-              {error}
-            </div>
-          )}
+          <h2 className="text-2xl font-bold text-gray-900 mb-2">Restricted Access</h2>
+          <p className="text-gray-500 mb-8">Please sign in with the official administration account (integratedwellth@gmail.com)</p>
+          <button 
+            onClick={handleLogin}
+            className="w-full bg-brand-900 text-white py-3 rounded-xl font-bold hover:bg-brand-800 transition-colors flex items-center justify-center gap-2"
+          >
+            <UserIcon size={18} /> Sign in with Google
+          </button>
         </div>
       </div>
     );
   }
 
-  // 📊 DASHBOARD SCREEN (Only visible if authorized)
+  // --- DASHBOARD SCREEN ---
+  const appGroups = groupApplications();
+  const assessGroups = groupAssessments();
+
   return (
-    <div className="min-h-screen bg-gray-50 p-6">
-      <div className="max-w-7xl mx-auto">
+    <div className="min-h-screen bg-gray-50 font-sans">
+      {/* Top Bar */}
+      <div className="bg-white border-b border-gray-200 px-6 py-4 flex justify-between items-center sticky top-0 z-10">
+        <div className="flex items-center gap-3">
+          <LayoutDashboard className="text-brand-900" />
+          <h1 className="font-bold text-xl text-gray-900">Lead Dashboard</h1>
+        </div>
+        <div className="flex items-center gap-4">
+          <span className="text-sm text-gray-500 hidden md:inline">{user.email}</span>
+          <button onClick={handleLogout} className="text-red-500 hover:text-red-700 text-sm font-bold flex items-center gap-1">
+            <LogOut size={16} /> Logout
+          </button>
+        </div>
+      </div>
+
+      {/* Main Content */}
+      <div className="max-w-6xl mx-auto p-6">
         
-        {/* Header */}
-        <div className="flex flex-col md:flex-row justify-between items-center mb-8 gap-4">
-          <div>
-            <h1 className="text-3xl font-bold text-brand-900 flex items-center gap-2">
-              <ShieldCheck className="text-brand-500" /> Lead Dashboard
-            </h1>
-            <p className="text-gray-500">
-              Welcome, {user?.displayName}. Secure connection established.
-            </p>
-          </div>
-          
-          <div className="flex gap-3">
-             <button 
-              onClick={fetchLeads} 
-              className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
-            >
-              <RefreshCw size={18} className={loading ? "animate-spin" : ""} /> Refresh
-            </button>
-            <button 
-              onClick={downloadCSV} 
-              className="flex items-center gap-2 px-4 py-2 bg-brand-600 text-white rounded-lg hover:bg-brand-700 transition-colors shadow-md"
-            >
-              <Download size={18} /> Export CSV
-            </button>
-            <button 
-              onClick={handleLogout} 
-              className="flex items-center gap-2 px-4 py-2 bg-red-50 text-red-600 border border-red-100 rounded-lg hover:bg-red-100 transition-colors"
-            >
-              <LogOut size={18} /> Logout
-            </button>
-          </div>
+        {/* Tabs */}
+        <div className="flex gap-4 mb-8 border-b border-gray-200">
+          <button 
+            onClick={() => setActiveTab('applications')}
+            className={`pb-4 px-4 font-bold text-sm transition-colors relative ${activeTab === 'applications' ? 'text-brand-900' : 'text-gray-400 hover:text-gray-600'}`}
+          >
+            <span className="flex items-center gap-2"><Briefcase size={18}/> Partnership Applications ({applications.length})</span>
+            {activeTab === 'applications' && <div className="absolute bottom-0 left-0 w-full h-1 bg-brand-900 rounded-t-full"></div>}
+          </button>
+          <button 
+            onClick={() => setActiveTab('assessments')}
+            className={`pb-4 px-4 font-bold text-sm transition-colors relative ${activeTab === 'assessments' ? 'text-brand-900' : 'text-gray-400 hover:text-gray-600'}`}
+          >
+            <span className="flex items-center gap-2"><TrendingUp size={18}/> SME Assessments ({assessments.length})</span>
+            {activeTab === 'assessments' && <div className="absolute bottom-0 left-0 w-full h-1 bg-brand-900 rounded-t-full"></div>}
+          </button>
+          <button onClick={fetchLeads} className="ml-auto text-brand-600 text-sm hover:underline">Refresh Data</button>
         </div>
 
-        {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-          <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
-            <div className="text-gray-500 text-sm font-bold uppercase mb-1">Total Leads</div>
-            <div className="text-4xl font-bold text-brand-900">{leads.length}</div>
-          </div>
-          <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
-             <div className="text-gray-500 text-sm font-bold uppercase mb-1">Results Ready (High)</div>
-             <div className="text-4xl font-bold text-green-600">
-               {leads.filter(l => l.score >= 12).length}
-             </div>
-          </div>
-          <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
-             <div className="text-gray-500 text-sm font-bold uppercase mb-1">Needs Reset (Low/Med)</div>
-             <div className="text-4xl font-bold text-orange-500">
-               {leads.filter(l => l.score < 12).length}
-             </div>
-          </div>
-        </div>
-
-        {/* Table */}
-        <div className="bg-white rounded-xl shadow-md overflow-hidden border border-gray-200">
-          <div className="overflow-x-auto">
-            <table className="w-full text-left">
-              <thead className="bg-gray-50 border-b border-gray-200">
-                <tr>
-                  <th className="p-4 font-bold text-gray-600 text-sm">Date</th>
-                  <th className="p-4 font-bold text-gray-600 text-sm">Name & Enterprise</th>
-                  <th className="p-4 font-bold text-gray-600 text-sm">Contact Details</th>
-                  <th className="p-4 font-bold text-gray-600 text-sm">Score</th>
-                  <th className="p-4 font-bold text-gray-600 text-sm">Result Type</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-100">
-                {leads.map((lead) => (
-                  <tr key={lead.id} className="hover:bg-gray-50 transition-colors">
-                    <td className="p-4 text-sm text-gray-500 whitespace-nowrap">
-                      {lead.timestamp ? new Date(lead.timestamp.seconds * 1000).toLocaleDateString() : 'N/A'}
-                    </td>
-                    <td className="p-4">
-                      <div className="font-bold text-gray-900 flex items-center gap-2">
-                        <UserIcon size={16} className="text-gray-400" /> {lead.name}
+        {isDataLoading ? (
+          <div className="flex justify-center py-20"><Loader2 className="animate-spin text-gray-400" size={32} /></div>
+        ) : (
+          <div className="space-y-8">
+            
+            {/* --- APPLICATIONS VIEW --- */}
+            {activeTab === 'applications' && (
+              <div className="grid gap-6">
+                {Object.entries(appGroups).map(([pkgName, items]) => (
+                  <div key={pkgName} className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+                    <div className="bg-gray-50 px-6 py-3 border-b border-gray-100 flex justify-between items-center">
+                      <h3 className="font-bold text-gray-800">{pkgName}</h3>
+                      <span className="bg-white px-3 py-1 rounded-full text-xs font-bold text-gray-500 border border-gray-200">{items.length}</span>
+                    </div>
+                    {items.length === 0 ? (
+                      <div className="p-6 text-gray-400 text-sm italic">No applications in this category yet.</div>
+                    ) : (
+                      <div className="divide-y divide-gray-50">
+                        {items.map((lead: any) => (
+                          <div key={lead.id} className="p-6 hover:bg-gray-50 transition-colors group">
+                            <div className="flex justify-between items-start mb-2">
+                              <div>
+                                <h4 className="font-bold text-lg text-brand-900">{lead.name}</h4>
+                                <p className="text-sm text-gray-600">{lead.business}</p>
+                              </div>
+                              <span className="text-xs text-gray-400 bg-gray-100 px-2 py-1 rounded">
+                                {lead.submittedAt?.toDate ? lead.submittedAt.toDate().toLocaleDateString() : 'Just now'}
+                              </span>
+                            </div>
+                            <div className="grid md:grid-cols-3 gap-4 mt-4 text-sm">
+                              <div className="bg-blue-50 text-blue-800 px-3 py-2 rounded-lg">
+                                <span className="block text-xs font-bold uppercase opacity-70">Commitment</span>
+                                {lead.commitment}
+                              </div>
+                              <div className="bg-green-50 text-green-800 px-3 py-2 rounded-lg">
+                                <span className="block text-xs font-bold uppercase opacity-70">Contact</span>
+                                {lead.email} <span className="mx-1">•</span> {lead.phone}
+                              </div>
+                              <div className="bg-orange-50 text-orange-800 px-3 py-2 rounded-lg md:col-span-1">
+                                <span className="block text-xs font-bold uppercase opacity-70">Challenge</span>
+                                <span className="line-clamp-1">{lead.challenge || "None listed"}</span>
+                              </div>
+                            </div>
+                          </div>
+                        ))}
                       </div>
-                      <div className="text-sm text-gray-500 flex items-center gap-2 mt-1">
-                        <Building size={14} className="text-gray-400" /> {lead.enterprise}
-                      </div>
-                    </td>
-                    <td className="p-4">
-                       <div className="text-sm text-gray-900 flex items-center gap-2">
-                        <Mail size={14} className="text-gray-400" /> <a href={`mailto:${lead.email}`} className="hover:text-brand-600">{lead.email}</a>
-                      </div>
-                      <div className="text-sm text-gray-500 flex items-center gap-2 mt-1">
-                        <Phone size={14} className="text-gray-400" /> <a href={`tel:${lead.phone}`} className="hover:text-brand-600">{lead.phone || 'No phone'}</a>
-                      </div>
-                    </td>
-                    <td className="p-4">
-                      <span className={`inline-block px-3 py-1 rounded-full text-xs font-bold ${lead.score >= 12 ? 'bg-green-100 text-green-700' : lead.score >= 8 ? 'bg-orange-100 text-orange-700' : 'bg-red-100 text-red-700'}`}>
-                        {lead.score} / 16
-                      </span>
-                    </td>
-                    <td className="p-4 text-sm text-gray-700">
-                      {lead.resultType}
-                    </td>
-                  </tr>
+                    )}
+                  </div>
                 ))}
-              </tbody>
-            </table>
+              </div>
+            )}
+
+            {/* --- ASSESSMENTS VIEW --- */}
+            {activeTab === 'assessments' && (
+              <div className="grid gap-6">
+                 {Object.entries(assessGroups).map(([resultType, items]) => (
+                  <div key={resultType} className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+                    <div className={`px-6 py-3 border-b border-gray-100 flex justify-between items-center ${
+                      resultType.includes('Results') ? 'bg-green-50' : 
+                      resultType.includes('Reset') ? 'bg-orange-50' : 'bg-red-50'
+                    }`}>
+                      <h3 className="font-bold text-gray-800">{resultType}</h3>
+                      <span className="bg-white/50 px-3 py-1 rounded-full text-xs font-bold text-gray-600 border border-gray-200/50">{items.length}</span>
+                    </div>
+                    {items.length === 0 ? (
+                      <div className="p-6 text-gray-400 text-sm italic">No assessments in this category yet.</div>
+                    ) : (
+                      <div className="divide-y divide-gray-50">
+                        {items.map((lead: any) => (
+                          <div key={lead.id} className="p-6 hover:bg-gray-50 transition-colors">
+                            <div className="flex justify-between items-start mb-2">
+                              <div>
+                                <h4 className="font-bold text-lg text-brand-900">{lead.enterprise}</h4>
+                                <p className="text-sm text-gray-600">Contact: {lead.name}</p>
+                              </div>
+                              <div className="text-right">
+                                <span className="block text-2xl font-bold text-brand-900">{lead.score}/16</span>
+                                <span className="text-xs text-gray-400">
+                                  {lead.submittedAt?.toDate ? lead.submittedAt.toDate().toLocaleDateString() : 'Just now'}
+                                </span>
+                              </div>
+                            </div>
+                            <div className="flex gap-2 mt-2">
+                              <a href={`mailto:${lead.email}`} className="text-xs bg-gray-100 hover:bg-gray-200 px-3 py-1 rounded-full transition-colors">
+                                {lead.email}
+                              </a>
+                              <a href={`tel:${lead.phone}`} className="text-xs bg-gray-100 hover:bg-gray-200 px-3 py-1 rounded-full transition-colors">
+                                {lead.phone}
+                              </a>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
+
           </div>
-          {leads.length === 0 && !loading && (
-            <div className="p-12 text-center text-gray-500">
-              No leads found yet. Wait for someone to take the assessment!
-            </div>
-          )}
-        </div>
+        )}
       </div>
     </div>
   );
