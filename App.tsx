@@ -32,6 +32,9 @@ import Team from './Team';
 // Import the Admin Dashboard
 import AdminDashboard from './components/AdminDashboard';
 
+// 🎈 IMPORT THE NEW FLOATING BUBBLE
+import FloatingCTA from './components/FloatingCTA';
+
 const App: React.FC = () => {
   const [currentView, setCurrentView] = useState('home');
   const [showAssessmentModal, setShowAssessmentModal] = useState(false);
@@ -142,6 +145,9 @@ const App: React.FC = () => {
       <ChatWidget currentView={currentView} />
       <WhatsAppButton />
       <CookieConsent />
+      
+      {/* The New Sticky Bubble */}
+      <FloatingCTA />
     </div>
   );
 };
