@@ -54,9 +54,7 @@ const FinancialHealthScore: React.FC<FinancialHealthScoreProps> = ({ isModal = f
     }
   };
 
-  // Helper to determine result data (Used for both UI and Email)
   const getResultUI = () => {
-    // Total max is 16 (4 questions * 4 points)
     if (score >= 12) {
       return {
         title: "Results Ready",
@@ -90,7 +88,6 @@ const FinancialHealthScore: React.FC<FinancialHealthScoreProps> = ({ isModal = f
     };
   };
 
-  // 🪄 THE SUBMIT HANDLER (Updated to use 'mail' collection)
   const handleFormSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSaving(true);
@@ -98,7 +95,6 @@ const FinancialHealthScore: React.FC<FinancialHealthScoreProps> = ({ isModal = f
     const resultData = getResultUI();
 
     try {
-      // 1. Save to 'mail' Collection (Triggers Automated Email)
       await addDoc(collection(db, "mail"), {
         to: formData.email,
         message: {
@@ -133,7 +129,6 @@ const FinancialHealthScore: React.FC<FinancialHealthScoreProps> = ({ isModal = f
             </div>
           `
         },
-        // Internal Data for your Dashboard
         assessmentData: {
           name: formData.name,
           enterprise: formData.enterprise,
@@ -145,13 +140,11 @@ const FinancialHealthScore: React.FC<FinancialHealthScoreProps> = ({ isModal = f
         }
       });
 
-      // 2. Show Results UI
       setShowForm(false);
       setShowResult(true);
 
     } catch (error) {
       console.error("Error saving assessment:", error);
-      // Show result anyway so user isn't stuck
       setShowForm(false);
       setShowResult(true);
     } finally {
@@ -207,7 +200,7 @@ const FinancialHealthScore: React.FC<FinancialHealthScoreProps> = ({ isModal = f
         </button>
       )}
 
-      {/* Background Decor (Only for Section mode) */}
+      {/* Background Decor */}
       {!isModal && (
         <>
           <div className="absolute top-0 left-0 w-64 h-64 bg-white opacity-5 rounded-full -translate-x-1/2 -translate-y-1/2"></div>
@@ -235,7 +228,7 @@ const FinancialHealthScore: React.FC<FinancialHealthScoreProps> = ({ isModal = f
               <p className={`mb-6 leading-relaxed ${isModal ? 'text-gray-700' : 'text-gray-200'}`}>
                 Running a business requires clarity, control, and conscious decision-making. 
                 This is not just a test—it's a reset point designed to help you pause, assess, and identify critical gaps across 
-                strategy, finances, compliance, systems, and wellbeing before moving into your next phase of growth.
+                strategy, finances, compliance, systems, and wellbeing.
               </p>
               
               <div className="grid md:grid-cols-2 gap-6">
@@ -253,10 +246,10 @@ const FinancialHealthScore: React.FC<FinancialHealthScoreProps> = ({ isModal = f
                    <h4 className={`font-bold mb-2 flex items-center gap-2 ${isModal ? 'text-brand-900' : 'text-white'}`}>
                     <CheckCircle2 size={18} className="text-brand-500" /> Details
                   </h4>
-                   <p className={`text-sm ${isModal ? 'text-gray-600' : 'text-gray-300'}`}>
-                     <strong>Completion time:</strong> 5–7 minutes<br/><br>
-                     <strong>Outcome:</strong> Actionable strategic insight
-                   </p>
+                   <div className={`text-sm ${isModal ? 'text-gray-600' : 'text-gray-300'}`}>
+                     <div className="mb-2"><strong>Completion time:</strong> 5–7 minutes</div>
+                     <div><strong>Outcome:</strong> Actionable strategic insight</div>
+                   </div>
                 </div>
               </div>
             </div>
@@ -267,7 +260,7 @@ const FinancialHealthScore: React.FC<FinancialHealthScoreProps> = ({ isModal = f
           </div>
         )}
 
-        {/* Quiz & Form Container - Shared Logic */}
+        {/* Quiz & Form Container */}
         {(started || showForm || showResult) && (
           <div className={`${!isModal ? 'bg-white text-gray-900 rounded-2xl p-6 md:p-10 shadow-2xl transition-all duration-300 min-h-[500px] flex flex-col justify-center animate-fadeIn' : 'w-full'}`}>
             
