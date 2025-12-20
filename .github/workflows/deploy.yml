@@ -27,7 +27,7 @@ jobs:
           node-version: 20
 
       - name: Install dependencies
-        # Running from the root directory since your package.json is there
+        # Installs axios and ai tools directly at the root
         run: npm install && npm install axios @google/generative-ai
 
       - name: Deploy to Firebase
