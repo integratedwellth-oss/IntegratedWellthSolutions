@@ -27,14 +27,10 @@ jobs:
           node-version: 20
 
       - name: Install dependencies
-        # Navigates to functions folder to install required AI and WhatsApp packages
-        run: |
-          cd functions
-          npm install
-          npm install axios @google/generative-ai
+        # Running from the root directory since your package.json is there
+        run: npm install && npm install axios @google/generative-ai
 
       - name: Deploy to Firebase
-        # Uses the Firebase action to deploy only the functions
         uses: FirebaseExtended/action-hosting-deploy@v0
         with:
           repoToken: '${{ secrets.GITHUB_TOKEN }}'
@@ -42,6 +38,5 @@ jobs:
           projectId: integratedwellthsolutions
           channelId: live
         env:
-          # 🔥 THIS SECURES YOUR KEYS: It passes GitHub Secrets to the Firebase build environment
           WHATSAPP_TOKEN: ${{ secrets.WHATSAPP_TOKEN }}
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
