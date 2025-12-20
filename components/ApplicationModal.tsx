@@ -16,35 +16,91 @@ const ApplicationModal: React.FC<ApplicationModalProps> = ({ isOpen, onClose, pa
     email: '',
     phone: '',
     businessName: '',
-    commitment: '', // Updated from revenue to commitment
+    commitment: '',
     challenges: ''
   });
 
   if (!isOpen) return null;
 
+  // 📝 HELPER: Get dynamic content based on the package selected
+  const getPackageContent = (pkg: string) => {
+    switch (pkg) {
+      case 'Strategic Pulse':
+        return {
+          headline: "Your Essential Safety Net",
+          body: "We are thrilled you've chosen the Strategic Pulse. This is your monthly checkpoint to ensure compliance, track goals, and prevent burnout before it starts.",
+          whatsAppTag: "I am ready to secure my safety net."
+        };
+      case 'Growth Partner':
+        return {
+          headline: "Scaling Without the Fatigue",
+          body: "Welcome to the Growth Partner model. You are taking a major step towards removing decision fatigue and gaining a dedicated strategic ally for your bi-weekly sprints.",
+          whatsAppTag: "I am ready to scale with a partner."
+        };
+      case 'Founder Concierge':
+        return {
+          headline: "Total Operational Peace",
+          body: "We are honored to receive your application for the Founder Concierge. You are prioritizing your peace of mind and operational excellence. We are ready to step in as your full strategic right hand.",
+          whatsAppTag: "I need total operational peace."
+        };
+      default:
+        return {
+          headline: "Strategic Partnership",
+          body: "Thank you for applying for a partnership with Integrated Wellth Solutions. We are reviewing your business profile.",
+          whatsAppTag: "I am interested in a partnership."
+        };
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
 
+    const packageContent = getPackageContent(packageName);
+
     try {
-      // 1. SAVE TO FIREBASE (Using 'mail' collection confirmed working in image_0b044f.png)
+      // 1. SAVE TO 'MAIL' COLLECTION (Triggers Dynamic Email)
       await addDoc(collection(db, "mail"), {
         to: formData.email, 
         message: {
-          subject: `Strategic Partnership Application: ${packageName}`,
+          subject: `Application Received: ${packageName}`,
           html: `
-            <h1>Thank you for your application, ${formData.name}!</h1>
-            <p>We have received your interest in the <strong>${packageName}</strong> partnership with a <strong>${formData.commitment}</strong> commitment period.</p>
-            <p><strong>Next Steps:</strong></p>
-            <ul>
-              <li>Our Lead Advisor will review your business profile and current bottlenecks.</li>
-              <li>You will receive a calendar invite for your preliminary assessment call within 24 hours.</li>
-            </ul>
-            <p>We look forward to helping you achieve operational peace.</p>
-            <p>Best regards,<br><strong>The Integrated Wellth Solutions Team</strong></p>
+            <div style="font-family: Arial, sans-serif; color: #333; line-height: 1.6;">
+              <h2 style="color: #004D40;">Application Received: ${packageName}</h2>
+              <p>Dear ${formData.name},</p>
+              
+              <p>${packageContent.body}</p>
+              
+              <div style="background-color: #f0fdf4; padding: 15px; border-radius: 8px; border: 1px solid #bbf7d0; margin: 20px 0;">
+                <p style="margin: 0; color: #166534;"><strong>Commitment Period:</strong> ${formData.commitment}</p>
+                <p style="margin: 5px 0 0 0; color: #166534;"><strong>Business:</strong> ${formData.businessName}</p>
+              </div>
+
+              <hr style="border: 0; border-top: 1px solid #eee; margin: 30px 0;" />
+
+              <h3 style="color: #BFA15C;">EXCLUSIVE INVITATION: MASTER YOUR NUMBERS</h3>
+              <p>While we review your application, we want to invite you to a session critical for every founder's success:</p>
+              
+              <div style="border-left: 4px solid #BFA15C; padding-left: 15px; background-color: #f9f9f9; padding: 15px;">
+                <p style="margin: 0; font-weight: bold; font-size: 16px;">"Financial Clarity For Non-Financial Business Owners"</p>
+                <p style="margin: 5px 0;">📍 <strong>Location:</strong> Munyaka Lifestyle Centre</p>
+                <p style="margin: 5px 0;">🎯 <strong>Goal:</strong> Stop guessing. Start mastering your compliance and wealth preservation.</p>
+                <br/>
+                <a href="https://integratedwellth.co.za/#upcoming-event" style="background-color: #004D40; color: white; padding: 10px 20px; text-decoration: none; border-radius: 4px; font-weight: bold;">Secure Your Seat</a>
+              </div>
+
+              <hr style="border: 0; border-top: 1px solid #eee; margin: 30px 0;" />
+
+              <p><strong>What happens next?</strong><br/>
+              Our Lead Advisor, Marcia, will review your submission. Expect a calendar invite or WhatsApp message within 24 hours to schedule your preliminary assessment call.</p>
+              
+              <p>To your integrated wealth,</p>
+              <p><strong>The Integrated Wellth Solutions Team</strong><br/>
+              <a href="https://integratedwellth.co.za" style="color: #004D40;">www.integratedwellth.co.za</a></p>
+            </div>
           `
         },
-        // Meta-data for your internal records
+        // Internal Data
         applicantDetails: {
           name: formData.name,
           business: formData.businessName,
@@ -52,20 +108,20 @@ const ApplicationModal: React.FC<ApplicationModalProps> = ({ isOpen, onClose, pa
           commitment: formData.commitment,
           challenge: formData.challenges,
           package: packageName,
-          status: 'new_lead',
+          status: 'new_application',
           submittedAt: serverTimestamp()
         }
       });
 
-      // 2. OPEN WHATSAPP 
-      const cleanMessage = `IWS PARTNERSHIP APPLICATION%0A%0APackage: ${packageName}%0AApplicant: ${formData.name}%0ABusiness: ${formData.businessName}%0ACommitment: ${formData.commitment}%0AChallenge: ${formData.challenges}%0A%0ARequesting preliminary assessment call.`;
+      // 2. OPEN WHATSAPP (Tailored Message)
+      const cleanMessage = `IWS APPLICATION 📝%0A%0APackage: ${packageName}%0AApplicant: ${formData.name}%0ABusiness: ${formData.businessName}%0ACommitment: ${formData.commitment}%0A%0ANote: ${packageContent.whatsAppTag}`;
       
       window.open(`https://wa.me/27812355910?text=${cleanMessage}`, '_blank');
 
       // 3. CLOSE & RESET
       setIsLoading(false);
       onClose();
-      alert("Application submitted! Check your email for confirmation.");
+      alert(`Application for ${packageName} submitted successfully! Please check your email.`);
 
     } catch (error) {
       console.error("Submission error: ", error);
@@ -87,7 +143,7 @@ const ApplicationModal: React.FC<ApplicationModalProps> = ({ isOpen, onClose, pa
               <Briefcase size={12} /> Application Phase
             </span>
             <h3 className="text-2xl font-bold text-white font-sora">Apply for {packageName}</h3>
-            <p className="text-brand-200 text-sm mt-1">Please provide your details for pre-approval.</p>
+            <p className="text-brand-200 text-sm mt-1">{getPackageContent(packageName).headline}</p>
           </div>
           <button onClick={onClose} className="text-brand-200 hover:text-white transition-colors">
             <X size={24} />
@@ -122,7 +178,7 @@ const ApplicationModal: React.FC<ApplicationModalProps> = ({ isOpen, onClose, pa
                 value={formData.businessName} onChange={(e) => setFormData({...formData, businessName: e.target.value})} />
             </div>
 
-            {/* Commitment Period Dropdown - UPDATED */}
+            {/* Commitment Period Dropdown */}
             <div className="relative">
               <Calendar className="absolute left-4 top-3.5 text-gray-400" size={18} />
               <select required className="w-full bg-gray-50 border border-gray-200 rounded-xl py-3 pl-11 pr-4 text-gray-600 focus:ring-2 focus:ring-brand-500 outline-none appearance-none"
