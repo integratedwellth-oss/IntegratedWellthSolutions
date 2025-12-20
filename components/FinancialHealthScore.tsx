@@ -54,7 +54,9 @@ const FinancialHealthScore: React.FC<FinancialHealthScoreProps> = ({ isModal = f
     }
   };
 
+  // Helper to determine result data (Used for both UI and Email)
   const getResultUI = () => {
+    // High Score (12-16)
     if (score >= 12) {
       return {
         title: "Results Ready",
@@ -66,6 +68,7 @@ const FinancialHealthScore: React.FC<FinancialHealthScoreProps> = ({ isModal = f
         msg: "Your business is in a strong position! You have good systems and clarity. The next step is optimization and scaling strategies to preserve wealth and expand sustainably."
       };
     }
+    // Medium Score (8-11)
     if (score >= 8) {
       return {
         title: "Reset in Progress",
@@ -77,6 +80,7 @@ const FinancialHealthScore: React.FC<FinancialHealthScoreProps> = ({ isModal = f
         msg: "You are doing many things right, but specific strategic refinements and systems support are needed to prevent bottlenecks and ensure you handle 2026 compliance changes smoothly."
       };
     }
+    // Low Score (0-7)
     return {
       title: "Reflection Needed",
       subtitle: "Your business is operating under pressure with high risk exposure.",
@@ -88,6 +92,7 @@ const FinancialHealthScore: React.FC<FinancialHealthScoreProps> = ({ isModal = f
     };
   };
 
+  // 🪄 THE SUBMIT HANDLER (Updated with Munyaka Email Template)
   const handleFormSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSaving(true);
@@ -95,40 +100,61 @@ const FinancialHealthScore: React.FC<FinancialHealthScoreProps> = ({ isModal = f
     const resultData = getResultUI();
 
     try {
+      // 1. Save to 'mail' Collection (Triggers Automated Email)
       await addDoc(collection(db, "mail"), {
         to: formData.email,
         message: {
-          subject: `Your Strategic Assessment Results: ${resultData.title}`,
+          subject: `Your Assessment Results: ${resultData.title}`,
           html: `
-            <div style="font-family: sans-serif; color: #333;">
-              <h1>Assessment Complete</h1>
-              <p>Hello ${formData.name},</p>
+            <div style="font-family: Arial, sans-serif; color: #333; line-height: 1.6;">
+              <p>Hi ${formData.name},</p>
+              
               <p>Thank you for completing the SME Strategic Self-Assessment for <strong>${formData.enterprise}</strong>.</p>
               
-              <div style="background-color: #f4f4f5; padding: 20px; border-radius: 8px; margin: 20px 0;">
-                <h2 style="margin-top:0;">Result: ${resultData.title}</h2>
-                <p><strong>Score:</strong> ${score} / 16</p>
-                <p style="font-size: 16px; line-height: 1.5;">${resultData.msg}</p>
-              </div>
-
-              <hr style="margin: 30px 0; border: 0; border-top: 1px solid #eee;" />
-
-              <h2>🎁 Recommended Next Step: Financial Clarity</h2>
-              <p>Based on your results, we invite you to our specialized workshop designed for business owners:</p>
+              <p>Running a business requires clarity, control, and constant adaptation. This assessment was designed to give you a mirror to see exactly where you stand right now.</p>
               
-              <div style="border-left: 4px solid #BFA15C; padding-left: 15px; margin-bottom: 20px;">
-                <p><strong>Workshop:</strong> Financial Clarity For Non-Financial Business Owners</p>
-                <p><strong>Goal:</strong> Master your numbers and achieve operational peace.</p>
+              <p>Here is your snapshot:</p>
+              
+              <div style="border-top: 1px dashed #ccc; border-bottom: 1px dashed #ccc; padding: 15px 0; margin: 20px 0;">
+                <p style="margin: 5px 0;"><strong>YOUR SCORE:</strong> ${score} / 16</p>
+                <p style="margin: 5px 0;"><strong>RESULT PROFILE:</strong> ${resultData.title}</p>
               </div>
-
+              
+              <h3 style="color: #BFA15C; margin-bottom: 5px;">WHAT THIS MEANS FOR YOU:</h3>
+              <p style="margin-top: 0;">${resultData.msg}</p>
+              
+              <hr style="border: 0; border-top: 1px solid #eee; margin: 30px 0;" />
+              
+              <h3 style="color: #004D40;">EXCLUSIVE INVITATION: JOIN US AT MUNYAKA</h3>
+              <p>Data is useful, but clarity is powerful. We would like to invite you to our upcoming exclusive workshop:</p>
+              
+              <div style="background-color: #f9f9f9; padding: 15px; border-left: 4px solid #BFA15C; margin: 15px 0;">
+                <p style="margin: 0;"><strong>"Financial Clarity For Non-Financial Business Owners"</strong></p>
+                <p style="margin: 5px 0;">📍 <strong>Location:</strong> Munyaka Lifestyle Centre</p>
+                <p style="margin: 5px 0;">🎯 <strong>Goal:</strong> Stop guessing and start mastering your numbers, compliance, and wealth preservation.</p>
+              </div>
+              
+              <p>This session is specifically designed for founders who are experts in their trade but need stronger financial control to navigate the 2026 regulatory changes.</p>
+              
               <p>
-                <a href="https://integratedwellth.co.za/workshops" style="background-color: #004D40; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold;">View Workshop Details</a>
+                <a href="https://integratedwellth.co.za/#upcoming-event" style="background-color: #004D40; color: white; padding: 12px 24px; text-decoration: none; border-radius: 4px; font-weight: bold; display: inline-block;">Secure your seat here</a>
               </p>
-
-              <p style="margin-top: 30px; font-size: 14px; color: #888;">Best regards,<br>The Integrated Wellth Solutions Team</p>
+              
+              <hr style="border: 0; border-top: 1px solid #eee; margin: 30px 0;" />
+              
+              <h3 style="color: #333;">IMMEDIATE NEXT STEP</h3>
+              <p>If you need urgent assistance interpreting your score, we recommend booking a complimentary 15-minute "Triage Call" to identify your immediate compliance risks.</p>
+              
+              <p><a href="https://calendly.com/integrated-wellth-solutions" style="color: #BFA15C; font-weight: bold;">Book your slot here</a></p>
+              
+              <br />
+              <p>To your integrated wealth,</p>
+              <p><strong>The Integrated Wellth Solutions Team</strong><br>
+              <a href="https://integratedwellth.co.za">https://integratedwellth.co.za</a></p>
             </div>
           `
         },
+        // Internal Data
         assessmentData: {
           name: formData.name,
           enterprise: formData.enterprise,
@@ -140,6 +166,7 @@ const FinancialHealthScore: React.FC<FinancialHealthScoreProps> = ({ isModal = f
         }
       });
 
+      // 2. Show Results UI
       setShowForm(false);
       setShowResult(true);
 
