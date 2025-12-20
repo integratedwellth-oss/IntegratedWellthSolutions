@@ -6,15 +6,7 @@ import { CheckCircle2, AlertCircle, TrendingUp, Calendar, BookOpen, Users, X, Lo
 
 // 🔌 FIREBASE IMPORTS
 import { db } from '../firebaseConfig';
-import { collection, addDoc } from 'firebase/firestore';
-
-// 📧 EMAILJS IMPORT
-import emailjs from '@emailjs/browser';
-
-// ✅ YOUR KEYS ARE NOW CONFIGURED
-const EMAIL_SERVICE_ID = "service_8crgk07";
-const EMAIL_TEMPLATE_ID = "template_sryf7yg";
-const EMAIL_PUBLIC_KEY = "9AFASPrExB5K0FEog";
+import { collection, addDoc, serverTimestamp } from 'firebase/firestore'; 
 
 interface FinancialHealthScoreProps {
   isModal?: boolean;
@@ -98,7 +90,7 @@ const FinancialHealthScore: React.FC<FinancialHealthScoreProps> = ({ isModal = f
     };
   };
 
-  // 🪄 THE SUBMIT HANDLER (Database + Email)
+  // 🪄 THE SUBMIT HANDLER (Updated to use 'mail' collection)
   const handleFormSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSaving(true);
@@ -106,40 +98,60 @@ const FinancialHealthScore: React.FC<FinancialHealthScoreProps> = ({ isModal = f
     const resultData = getResultUI();
 
     try {
-      // 1. Save to Database
-      await addDoc(collection(db, "leads"), {
-        name: formData.name,
-        enterprise: formData.enterprise,
-        email: formData.email,
-        phone: formData.phone,
-        score: score,
-        resultType: resultData.title,
-        timestamp: new Date()
-      });
+      // 1. Save to 'mail' Collection (Triggers Automated Email)
+      await addDoc(collection(db, "mail"), {
+        to: formData.email,
+        message: {
+          subject: `Your Strategic Assessment Results: ${resultData.title}`,
+          html: `
+            <div style="font-family: sans-serif; color: #333;">
+              <h1>Assessment Complete</h1>
+              <p>Hello ${formData.name},</p>
+              <p>Thank you for completing the SME Strategic Self-Assessment for <strong>${formData.enterprise}</strong>.</p>
+              
+              <div style="background-color: #f4f4f5; padding: 20px; border-radius: 8px; margin: 20px 0;">
+                <h2 style="margin-top:0;">Result: ${resultData.title}</h2>
+                <p><strong>Score:</strong> ${score} / 16</p>
+                <p style="font-size: 16px; line-height: 1.5;">${resultData.msg}</p>
+              </div>
 
-      // 2. Send "Thank You" Email via EmailJS
-      await emailjs.send(
-        EMAIL_SERVICE_ID,
-        EMAIL_TEMPLATE_ID,
-        {
+              <hr style="margin: 30px 0; border: 0; border-top: 1px solid #eee;" />
+
+              <h2>🎁 Recommended Next Step: Financial Clarity</h2>
+              <p>Based on your results, we invite you to our specialized workshop designed for business owners:</p>
+              
+              <div style="border-left: 4px solid #BFA15C; padding-left: 15px; margin-bottom: 20px;">
+                <p><strong>Workshop:</strong> Financial Clarity For Non-Financial Business Owners</p>
+                <p><strong>Goal:</strong> Master your numbers and achieve operational peace.</p>
+              </div>
+
+              <p>
+                <a href="https://integratedwellth.co.za/workshops" style="background-color: #004D40; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold;">View Workshop Details</a>
+              </p>
+
+              <p style="margin-top: 30px; font-size: 14px; color: #888;">Best regards,<br>The Integrated Wellth Solutions Team</p>
+            </div>
+          `
+        },
+        // Internal Data for your Dashboard
+        assessmentData: {
           name: formData.name,
           enterprise: formData.enterprise,
           email: formData.email,
           phone: formData.phone,
-          score: score + " / 16",
+          score: score,
           resultType: resultData.title,
-          message: resultData.msg
-        },
-        EMAIL_PUBLIC_KEY
-      );
+          submittedAt: serverTimestamp()
+        }
+      });
 
-      // 3. Show Results
+      // 2. Show Results UI
       setShowForm(false);
       setShowResult(true);
 
     } catch (error) {
-      console.error("Error saving/sending:", error);
-      // Even if email fails, show result so user isn't stuck
+      console.error("Error saving assessment:", error);
+      // Show result anyway so user isn't stuck
       setShowForm(false);
       setShowResult(true);
     } finally {
@@ -242,7 +254,7 @@ const FinancialHealthScore: React.FC<FinancialHealthScoreProps> = ({ isModal = f
                     <CheckCircle2 size={18} className="text-brand-500" /> Details
                   </h4>
                    <p className={`text-sm ${isModal ? 'text-gray-600' : 'text-gray-300'}`}>
-                     <strong>Completion time:</strong> 5–7 minutes<br/>
+                     <strong>Completion time:</strong> 5–7 minutes<br/><br>
                      <strong>Outcome:</strong> Actionable strategic insight
                    </p>
                 </div>
