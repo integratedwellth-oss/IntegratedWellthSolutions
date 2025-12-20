@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
-import { X, Send, Briefcase, User, Phone, Mail, Loader2 } from 'lucide-react';
+import { X, Send, Briefcase, User, Phone, Mail, Loader2, Calendar } from 'lucide-react';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore'; 
-import { db } from '../firebaseConfig'; // Ensure your firebaseConfig exports 'db'
+import { db } from '../firebaseConfig'; 
 
 interface ApplicationModalProps {
   isOpen: boolean;
@@ -16,7 +16,7 @@ const ApplicationModal: React.FC<ApplicationModalProps> = ({ isOpen, onClose, pa
     email: '',
     phone: '',
     businessName: '',
-    revenue: '',
+    commitment: '', // Updated from revenue to commitment
     challenges: ''
   });
 
@@ -27,53 +27,57 @@ const ApplicationModal: React.FC<ApplicationModalProps> = ({ isOpen, onClose, pa
     setIsLoading(true);
 
     try {
-      // 1. SAVE TO FIREBASE (This secures the lead & triggers email automation)
-      await addDoc(collection(db, "applications"), {
-        package: packageName,
-        applicantName: formData.name,
-        email: formData.email,
-        phone: formData.phone,
-        businessName: formData.businessName,
-        revenueBracket: formData.revenue,
-        challenge: formData.challenges,
-        status: 'new', // Useful for your Admin Dashboard
-        createdAt: serverTimestamp(),
-        // Adding this field allows the 'Trigger Email' extension to send a confirmation automatically
+      // 1. SAVE TO FIREBASE (Using 'mail' collection confirmed working in image_0b044f.png)
+      await addDoc(collection(db, "mail"), {
         to: formData.email, 
         message: {
-          subject: `Application Received: ${packageName}`,
-          text: `Dear ${formData.name},\n\nThank you for applying for the ${packageName}. We have received your details and Marcia will review them shortly.\n\nBest,\nIntegrated Wellth Solutions`
+          subject: `Strategic Partnership Application: ${packageName}`,
+          html: `
+            <h1>Thank you for your application, ${formData.name}!</h1>
+            <p>We have received your interest in the <strong>${packageName}</strong> partnership with a <strong>${formData.commitment}</strong> commitment period.</p>
+            <p><strong>Next Steps:</strong></p>
+            <ul>
+              <li>Our Lead Advisor will review your business profile and current bottlenecks.</li>
+              <li>You will receive a calendar invite for your preliminary assessment call within 24 hours.</li>
+            </ul>
+            <p>We look forward to helping you achieve operational peace.</p>
+            <p>Best regards,<br><strong>The Integrated Wellth Solutions Team</strong></p>
+          `
+        },
+        // Meta-data for your internal records
+        applicantDetails: {
+          name: formData.name,
+          business: formData.businessName,
+          phone: formData.phone,
+          commitment: formData.commitment,
+          challenge: formData.challenges,
+          package: packageName,
+          status: 'new_lead',
+          submittedAt: serverTimestamp()
         }
       });
 
-      // 2. OPEN WHATSAPP (Clean Format - No Asterisks)
-      // We use %0A for new lines. 
-      const cleanMessage = `IWS APPLICATION SUBMISSION 📝%0A%0APackage: ${packageName}%0AApplicant: ${formData.name}%0ABusiness: ${formData.businessName}%0AEmail: ${formData.email}%0APhone: ${formData.phone}%0ARevenue: ${formData.revenue}%0AChallenge: ${formData.challenges}%0A%0ARequesting preliminary assessment.`;
+      // 2. OPEN WHATSAPP 
+      const cleanMessage = `IWS PARTNERSHIP APPLICATION%0A%0APackage: ${packageName}%0AApplicant: ${formData.name}%0ABusiness: ${formData.businessName}%0ACommitment: ${formData.commitment}%0AChallenge: ${formData.challenges}%0A%0ARequesting preliminary assessment call.`;
       
-      // Target Number: 0812355910 -> 27812355910
       window.open(`https://wa.me/27812355910?text=${cleanMessage}`, '_blank');
 
       // 3. CLOSE & RESET
       setIsLoading(false);
       onClose();
-      alert("Application submitted successfully! We will be in touch shortly.");
+      alert("Application submitted! Check your email for confirmation.");
 
     } catch (error) {
-      console.error("Error submitting application: ", error);
+      console.error("Submission error: ", error);
       setIsLoading(false);
-      alert("There was an error submitting your application. Please try again or contact us directly on WhatsApp.");
+      alert("Error submitting. Please contact us directly on WhatsApp.");
     }
   };
 
   return (
     <div className="fixed inset-0 z-[600] flex items-center justify-center p-4 font-sans">
-      {/* Backdrop */}
-      <div 
-        className="absolute inset-0 bg-brand-900/60 backdrop-blur-sm transition-opacity"
-        onClick={onClose}
-      ></div>
+      <div className="absolute inset-0 bg-brand-900/60 backdrop-blur-sm transition-opacity" onClick={onClose}></div>
 
-      {/* Modal Content */}
       <div className="relative bg-white rounded-3xl shadow-2xl w-full max-w-lg overflow-hidden animate-in fade-in zoom-in duration-300">
         
         {/* Header */}
@@ -92,94 +96,54 @@ const ApplicationModal: React.FC<ApplicationModalProps> = ({ isOpen, onClose, pa
 
         {/* Form */}
         <form onSubmit={handleSubmit} className="p-8 space-y-5">
-          
           <div className="space-y-4">
-            {/* Name */}
             <div className="relative">
               <User className="absolute left-4 top-3.5 text-gray-400" size={18} />
-              <input 
-                required
-                type="text" 
-                placeholder="Full Name"
-                className="w-full bg-gray-50 border border-gray-200 rounded-xl py-3 pl-11 pr-4 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent transition-all"
-                value={formData.name}
-                onChange={(e) => setFormData({...formData, name: e.target.value})}
-              />
+              <input required type="text" placeholder="Full Name" className="w-full bg-gray-50 border border-gray-200 rounded-xl py-3 pl-11 pr-4 focus:ring-2 focus:ring-brand-500 outline-none"
+                value={formData.name} onChange={(e) => setFormData({...formData, name: e.target.value})} />
             </div>
 
-            {/* Contact Grid */}
             <div className="grid grid-cols-2 gap-4">
               <div className="relative">
                 <Mail className="absolute left-4 top-3.5 text-gray-400" size={18} />
-                <input 
-                  required
-                  type="email" 
-                  placeholder="Email Address"
-                  className="w-full bg-gray-50 border border-gray-200 rounded-xl py-3 pl-11 pr-4 focus:outline-none focus:ring-2 focus:ring-brand-500 transition-all text-sm"
-                  value={formData.email}
-                  onChange={(e) => setFormData({...formData, email: e.target.value})}
-                />
+                <input required type="email" placeholder="Email Address" className="w-full bg-gray-50 border border-gray-200 rounded-xl py-3 pl-11 pr-4 focus:ring-2 focus:ring-brand-500 outline-none text-sm"
+                  value={formData.email} onChange={(e) => setFormData({...formData, email: e.target.value})} />
               </div>
               <div className="relative">
                 <Phone className="absolute left-4 top-3.5 text-gray-400" size={18} />
-                <input 
-                  required
-                  type="tel" 
-                  placeholder="WhatsApp No."
-                  className="w-full bg-gray-50 border border-gray-200 rounded-xl py-3 pl-11 pr-4 focus:outline-none focus:ring-2 focus:ring-brand-500 transition-all text-sm"
-                  value={formData.phone}
-                  onChange={(e) => setFormData({...formData, phone: e.target.value})}
-                />
+                <input required type="tel" placeholder="WhatsApp No." className="w-full bg-gray-50 border border-gray-200 rounded-xl py-3 pl-11 pr-4 focus:ring-2 focus:ring-brand-500 outline-none text-sm"
+                  value={formData.phone} onChange={(e) => setFormData({...formData, phone: e.target.value})} />
               </div>
             </div>
 
-            {/* Business Name */}
             <div className="relative">
               <Briefcase className="absolute left-4 top-3.5 text-gray-400" size={18} />
-              <input 
-                required
-                type="text" 
-                placeholder="Registered Business Name"
-                className="w-full bg-gray-50 border border-gray-200 rounded-xl py-3 pl-11 pr-4 focus:outline-none focus:ring-2 focus:ring-brand-500 transition-all"
-                value={formData.businessName}
-                onChange={(e) => setFormData({...formData, businessName: e.target.value})}
-              />
+              <input required type="text" placeholder="Registered Business Name" className="w-full bg-gray-50 border border-gray-200 rounded-xl py-3 pl-11 pr-4 focus:ring-2 focus:ring-brand-500 outline-none"
+                value={formData.businessName} onChange={(e) => setFormData({...formData, businessName: e.target.value})} />
             </div>
 
-            {/* Revenue Selection */}
-            <select 
-              className="w-full bg-gray-50 border border-gray-200 rounded-xl py-3 px-4 text-gray-600 focus:outline-none focus:ring-2 focus:ring-brand-500"
-              value={formData.revenue}
-              onChange={(e) => setFormData({...formData, revenue: e.target.value})}
-            >
-              <option value="">Select Current Annual Revenue</option>
-              <option value="Pre-Revenue">Pre-Revenue (Startup)</option>
-              <option value="R0 - R1m">R0 - R1m</option>
-              <option value="R1m - R5m">R1m - R5m</option>
-              <option value="R5m+">R5m+</option>
-            </select>
+            {/* Commitment Period Dropdown - UPDATED */}
+            <div className="relative">
+              <Calendar className="absolute left-4 top-3.5 text-gray-400" size={18} />
+              <select required className="w-full bg-gray-50 border border-gray-200 rounded-xl py-3 pl-11 pr-4 text-gray-600 focus:ring-2 focus:ring-brand-500 outline-none appearance-none"
+                value={formData.commitment} onChange={(e) => setFormData({...formData, commitment: e.target.value})} >
+                <option value="">Commitment Period</option>
+                <option value="3 months">3 months</option>
+                <option value="6 months">6 months</option>
+                <option value="9 months">9 months</option>
+                <option value="12 months">12 months</option>
+              </select>
+            </div>
 
-            {/* Challenge */}
-            <textarea 
-              rows={3}
-              placeholder="What is your biggest operational or financial bottleneck right now?"
-              className="w-full bg-gray-50 border border-gray-200 rounded-xl py-3 px-4 focus:outline-none focus:ring-2 focus:ring-brand-500 transition-all resize-none"
-              value={formData.challenges}
-              onChange={(e) => setFormData({...formData, challenges: e.target.value})}
-            />
+            <textarea rows={3} placeholder="What is your biggest operational or financial bottleneck right now?" className="w-full bg-gray-50 border border-gray-200 rounded-xl py-3 px-4 focus:ring-2 focus:ring-brand-500 outline-none resize-none"
+              value={formData.challenges} onChange={(e) => setFormData({...formData, challenges: e.target.value})} />
           </div>
 
-          <button 
-            type="submit"
-            disabled={isLoading}
-            className="w-full bg-brand-900 text-white py-4 rounded-xl font-bold flex items-center justify-center gap-2 hover:bg-brand-800 transform hover:scale-[1.02] transition-all shadow-lg shadow-brand-900/20 disabled:opacity-70 disabled:cursor-not-allowed"
-          >
+          <button type="submit" disabled={isLoading} className="w-full bg-brand-900 text-white py-4 rounded-xl font-bold flex items-center justify-center gap-2 hover:bg-brand-800 transition-all shadow-lg disabled:opacity-70" >
             {isLoading ? <Loader2 className="animate-spin" /> : <>Submit Application <Send size={18} /></>}
           </button>
           
-          <p className="text-center text-xs text-gray-400">
-            By applying, you agree to a preliminary assessment call.
-          </p>
+          <p className="text-center text-xs text-gray-400">By applying, you agree to a preliminary assessment call.</p>
         </form>
       </div>
     </div>
