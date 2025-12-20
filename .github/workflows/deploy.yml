@@ -22,16 +22,16 @@ jobs:
           node-version: 20
 
       - name: Install dependencies
-        # This installs everything needed for the AI and WhatsApp directly
-        run: npm install && npm install axios @google/generative-ai firebase-functions firebase-admin
+        # Simple npm install now works because these are in your package.json
+        run: npm install
 
       - name: Deploy to Firebase
         uses: w9jds/firebase-action@master
         with:
           args: deploy --only functions
         env:
-          # This uses the Service Account key you added to the vault
-          FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
-          # These are your WhatsApp & Gemini keys
+          # 🔥 FIX: This must match the name of the JSON key you added to GitHub Secrets
+          GCP_SA_KEY: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+          # These are your AI keys
           WHATSAPP_TOKEN: ${{ secrets.WHATSAPP_TOKEN }}
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
