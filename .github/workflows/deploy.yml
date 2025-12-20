@@ -7,12 +7,7 @@ on:
 
 permissions:
   contents: read
-  pages: write
   id-token: write
-
-concurrency:
-  group: "deployment"
-  cancel-in-progress: true
 
 jobs:
   build_and_deploy:
@@ -27,16 +22,16 @@ jobs:
           node-version: 20
 
       - name: Install dependencies
-        # Installs axios and ai tools directly at the root
-        run: npm install && npm install axios @google/generative-ai
+        # This installs everything needed for the AI and WhatsApp directly
+        run: npm install && npm install axios @google/generative-ai firebase-functions firebase-admin
 
       - name: Deploy to Firebase
-        uses: FirebaseExtended/action-hosting-deploy@v0
+        uses: w9jds/firebase-action@master
         with:
-          repoToken: '${{ secrets.GITHUB_TOKEN }}'
-          firebaseServiceAccount: '${{ secrets.FIREBASE_SERVICE_ACCOUNT }}'
-          projectId: integratedwellthsolutions
-          channelId: live
+          args: deploy --only functions
         env:
+          # This uses the Service Account key you added to the vault
+          FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
+          # These are your WhatsApp & Gemini keys
           WHATSAPP_TOKEN: ${{ secrets.WHATSAPP_TOKEN }}
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
