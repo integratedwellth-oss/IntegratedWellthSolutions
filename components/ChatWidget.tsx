@@ -4,8 +4,8 @@ import { GoogleGenerativeAI } from "@google/generative-ai";
 import { db } from '../firebaseConfig'; 
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 
-// 🔑 USES YOUR EXISTING KEY
-const GEMINI_API_KEY = import.meta.env.VITE_API_KEY;
+// 🔴 ACTION REQUIRED: PASTE YOUR API KEY INSIDE THE QUOTES BELOW
+const GEMINI_API_KEY = "PASTE_YOUR_KEY_HERE_INSIDE_THESE_QUOTES";
 
 export interface ChatMessage {
   role: 'user' | 'model';
@@ -36,7 +36,7 @@ const ChatWidget: React.FC<ChatWidgetProps> = ({ currentView = 'home' }) => {
   const [isLoading, setIsLoading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  // Initialize Gemini with your VITE_API_KEY
+  // Initialize Gemini
   const genAI = new GoogleGenerativeAI(GEMINI_API_KEY);
 
   useEffect(() => {
