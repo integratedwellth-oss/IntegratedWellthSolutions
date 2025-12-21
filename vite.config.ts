@@ -3,35 +3,24 @@ import { defineConfig, loadEnv } from 'vite';
 import react from '@vitejs/plugin-react';
 
 export default defineConfig(({ mode }) => {
-    // Load variables from the current environment and secrets
+    // This loads secrets from GitHub Actions instead of the deleted .env file
     const env = loadEnv(mode, process.cwd(), '');
 
     return {
-      // Points assets to your organization repo to un-blank the page
+      // Points to your integratedwellth-oss repo
       base: '/IntegratedWellthSolutions/', 
-      
-      server: {
-        port: 3000,
-        host: '0.0.0.0',
-      },
-      
       plugins: [react()],
-      
       define: {
-        // Safe injection of keys for use in your React components
         'process.env.GEMINI_API_KEY': JSON.stringify(env.GEMINI_API_KEY),
         'process.env.WHATSAPP_TOKEN': JSON.stringify(env.WHATSAPP_TOKEN),
       },
-      
       resolve: {
         alias: {
-          // Standardized alias for your source files
-          '@': path.resolve(__dirname, './src'), 
+          '@': path.resolve(__dirname, './src'),
         },
       },
-      
       build: {
-        outDir: 'dist', // Ensures build files go to the correct directory
+        outDir: 'dist', // This is where the website "lives" after building
       }
     };
 });
