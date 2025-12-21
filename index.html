@@ -15,6 +15,7 @@
 
     <title>Integrated Wellth Solutions | Financial & Psychological Well-being</title>
     <meta name="description" content="Integrated Wellth Solutions (IWS) provides holistic consulting merging accounting and psychology. We optimize financial health and mental well-being for individuals and businesses." />
+    <meta name="robots" content="index, follow">
     
     <meta property="og:title" content="Integrated Wellth Solutions" />
     <meta property="og:description" content="Merging accounting and psychology for holistic success." />
@@ -36,6 +37,10 @@
               fadeIn: 'fadeIn 0.5s ease-out',
               scaleIn: 'scaleIn 0.3s ease-out',
               'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+            },
+            keyframes: {
+              fadeIn: { '0%': { opacity: '0' }, '100%': { opacity: '1' } },
+              scaleIn: { '0%': { transform: 'scale(0.95)', opacity: '0' }, '100%': { transform: 'scale(1)', opacity: '1' } }
             }
           }
         }
