@@ -1,7 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { HashRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
-
-// Core Components
 import Navbar from './components/Navbar';
 import Hero from './components/Hero';
 import TrustedBy from './components/TrustedBy';
@@ -19,92 +16,111 @@ import BlogPost from './components/BlogPost';
 import PrivacyPolicy from './components/PrivacyPolicy';
 import CookieConsent from './components/CookieConsent';
 import WhoWeHelp from './components/WhoWeHelp';
-
-// Audience Solutions
 import StartupSolutions from './components/audiences/StartupSolutions';
 import BusinessSolutions from './components/audiences/BusinessSolutions';
 import NPOSolutions from './components/audiences/NPOSolutions';
 import IndividualSolutions from './components/audiences/IndividualSolutions';
 import WellnessSolutions from './components/audiences/WellnessSolutions';
-import AccountabilityPartnership from './components/audiences/AccountabilityPartnership';
 
-// Pages & UI
+// NEW PAGE IMPORTS
+import AccountabilityPartnership from './components/audiences/AccountabilityPartnership';
 import Team from './Team';
 import AdminDashboard from './components/AdminDashboard';
 import FloatingCTA from './components/FloatingCTA';
 
-// Helper component to manage the Assessment Modal logic
-const ScrollToTopAndModal = ({ setModal }: { setModal: (val: boolean) => void }) => {
-  const { pathname, hash } = useLocation();
-
-  useEffect(() => {
-    window.scrollTo(0, 0);
-    if (hash === '#assessment') {
-      setModal(true);
-    }
-  }, [pathname, hash, setModal]);
-
-  return null;
-};
-
 const App: React.FC = () => {
+  const [currentView, setCurrentView] = useState('home');
   const [showAssessmentModal, setShowAssessmentModal] = useState(false);
 
-  return (
-    /**
-     * 🔥 THE FIX: Switched to HashRouter and removed 'basename'.
-     * This is the most reliable way to avoid blank pages on GitHub Pages 
-     * when using relative pathing in Vite.
-     */
-    <Router>
-      <ScrollToTopAndModal setModal={setShowAssessmentModal} />
+  useEffect(() => {
+    const handleHashChange = () => {
+      const hash = window.location.hash.replace('#', '');
       
-      <div className={`font-sans text-gray-900 bg-gray-50 min-h-screen flex flex-col ${showAssessmentModal ? 'overflow-hidden' : ''}`}>
-        <Navbar />
+      if (hash === 'assessment') {
+        setShowAssessmentModal(true);
+      }
 
-        <main className="flex-grow">
-          <Routes>
-            {/* Home Page Route */}
-            <Route path="/" element={
-              <>
-                <div id="home"><Hero /></div>
-                <TrustedBy />
-                <Philosophy />
-                <EventHighlight />
-                <Services />
-                <Audience />
-                <FinancialHealthScore 
-                  isModal={true} 
-                  isOpen={showAssessmentModal} 
-                  onClose={() => setShowAssessmentModal(false)} 
-                />
-                <Testimonials />
-                <Gallery />
-                <Contact />
-              </>
-            } />
+      if (['blog', 'privacy', 'who-we-help', 'startups', 'existing-business', 'npos', 'individuals', 'wellness', 'accountability', 'admin', 'team'].includes(hash)) {
+        setCurrentView(hash);
+        window.scrollTo(0, 0);
+      } else {
+        setCurrentView('home');
+        if (hash && hash !== 'home' && hash !== 'assessment') {
+           setTimeout(() => {
+               const el = document.getElementById(hash);
+               if (el) el.scrollIntoView({ behavior: 'smooth' });
+           }, 100);
+        } else if (!hash) {
+            window.scrollTo(0, 0);
+        }
+      }
+    };
 
-            {/* Sub-Pages */}
-            <Route path="/team" element={<Team />} />
-            <Route path="/who-we-help" element={<WhoWeHelp />} />
-            <Route path="/startups" element={<StartupSolutions />} />
-            <Route path="/existing-business" element={<BusinessSolutions />} />
-            <Route path="/npos" element={<NPOSolutions />} />
-            <Route path="/individuals" element={<IndividualSolutions />} />
-            <Route path="/wellness" element={<WellnessSolutions />} />
-            <Route path="/accountability" element={<AccountabilityPartnership />} />
-            <Route path="/blog" element={<BlogPost />} />
-            <Route path="/privacy" element={<PrivacyPolicy />} />
-            <Route path="/admin" element={<AdminDashboard />} />
-          </Routes>
-        </main>
+    handleHashChange();
+    window.addEventListener('hashchange', handleHashChange);
+    return () => window.removeEventListener('hashchange', handleHashChange);
+  }, []);
 
-        <Footer />
-        <WhatsAppButton />
-        <CookieConsent />
-        <FloatingCTA />
-      </div>
-    </Router>
+  useEffect(() => {
+    const hash = window.location.hash;
+    if (currentView === 'home' && (!hash || hash === '#assessment') && currentView !== 'admin') {
+        const timer = setTimeout(() => {
+           setShowAssessmentModal(true);
+        }, 1000); 
+        return () => clearTimeout(timer);
+    }
+  }, [currentView]);
+
+  if (currentView === 'admin') {
+    return <AdminDashboard />;
+  }
+
+  return (
+    <div className={`font-sans text-gray-900 bg-gray-50 min-h-screen flex flex-col ${showAssessmentModal ? 'overflow-hidden' : ''}`}>
+      <Navbar onNavigate={(view) => setCurrentView(view)} />
+
+      <main className="flex-grow">
+        {currentView === 'home' && (
+          <>
+            <div id="home"><Hero /></div>
+            <TrustedBy />
+            <Philosophy />
+            <EventHighlight />
+            <Services />
+            <Audience />
+            
+            <FinancialHealthScore />
+            
+            <FinancialHealthScore 
+              isModal={true} 
+              isOpen={showAssessmentModal} 
+              onClose={() => setShowAssessmentModal(false)} 
+            />
+
+            <Testimonials />
+            <Gallery />
+            <Contact />
+          </>
+        )}
+
+        {currentView === 'team' && <Team />}
+        {currentView === 'who-we-help' && <WhoWeHelp />}
+        {currentView === 'startups' && <StartupSolutions />}
+        {currentView === 'existing-business' && <BusinessSolutions />}
+        {currentView === 'npos' && <NPOSolutions />}
+        {currentView === 'individuals' && <IndividualSolutions />}
+        {currentView === 'wellness' && <WellnessSolutions />}
+        {currentView === 'accountability' && <AccountabilityPartnership />}
+        {currentView === 'blog' && <BlogPost />}
+        {currentView === 'privacy' && <PrivacyPolicy />}
+      </main>
+
+      <Footer />
+      
+      <WhatsAppButton />
+      <CookieConsent />
+      <FloatingCTA />
+    </div>
   );
 };
 
