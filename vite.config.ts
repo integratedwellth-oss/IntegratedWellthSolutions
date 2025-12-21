@@ -3,7 +3,7 @@ import react from '@vitejs/plugin-react';
 
 export default defineConfig({
   plugins: [react()],
-  // 🔥 CRITICAL FIX: This matches your GitHub repository name exactly
+  // 🔥 CRITICAL FIX: This MUST match your repository name exactly
   base: '/IntegratedWellthSolutions/',
   build: {
     outDir: 'dist',
