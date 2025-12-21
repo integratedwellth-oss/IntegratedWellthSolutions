@@ -1,6 +1,6 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
-// 🔥 CRITICAL FIX: Switch to HashRouter for GitHub Pages compatibility
+// 🔥 CRITICAL FIX: HashRouter is required for GitHub Pages
 import { HashRouter } from 'react-router-dom';
 import App from './App';
 
