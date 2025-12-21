@@ -1,10 +1,10 @@
-import { onRequest } from "firebase-functions/v2/https";
-import axios from "axios";
+import React from 'react';
+import ReactDOM from 'react-dom/client';
+import App from './App';
+import './index.css'; 
 
-// SECURE SETUP: These pull from your GitHub Secrets vault
-const PHONE_ID = "931320420054495"; 
-const PERMANENT_TOKEN = process.env.WHATSAPP_TOKEN; 
-const GEMINI_KEY = process.env.GEMINI_API_KEY;      
-const VERIFY_TOKEN = "IWS_SECRET_2025"; 
-
-// ... rest of the WhatsApp Agent logic ...
+ReactDOM.createRoot(document.getElementById('root')!).render(
+  <React.StrictMode>
+    <App />
+  </React.StrictMode>
+);
