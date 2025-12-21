@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom';
+import { HashRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
 
 // Core Components
 import Navbar from './components/Navbar';
@@ -51,8 +51,12 @@ const App: React.FC = () => {
   const [showAssessmentModal, setShowAssessmentModal] = useState(false);
 
   return (
-    // 🔥 THE FIX: basename tells React it lives in the subfolder
-    <BrowserRouter basename="/IntegratedWellthSolutions">
+    /**
+     * 🔥 THE FIX: Switched to HashRouter and removed 'basename'.
+     * This is the most reliable way to avoid blank pages on GitHub Pages 
+     * when using relative pathing in Vite.
+     */
+    <Router>
       <ScrollToTopAndModal setModal={setShowAssessmentModal} />
       
       <div className={`font-sans text-gray-900 bg-gray-50 min-h-screen flex flex-col ${showAssessmentModal ? 'overflow-hidden' : ''}`}>
@@ -100,7 +104,7 @@ const App: React.FC = () => {
         <CookieConsent />
         <FloatingCTA />
       </div>
-    </BrowserRouter>
+    </Router>
   );
 };
 
