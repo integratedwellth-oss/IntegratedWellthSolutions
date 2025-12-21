@@ -3,24 +3,36 @@ import { defineConfig, loadEnv } from 'vite';
 import react from '@vitejs/plugin-react';
 
 export default defineConfig(({ mode }) => {
-    // This loads secrets from GitHub Actions instead of the deleted .env file
+    // Loads environment variables directly from the build environment
     const env = loadEnv(mode, process.cwd(), '');
 
     return {
-      // Points to your integratedwellth-oss repo
-      base: '/IntegratedWellthSolutions/', 
+      /**
+       * 🔥 THE FIX: Relative pathing ensures the browser finds assets (JS/CSS) 
+       * regardless of the folder name or organization hosting it.
+       */
+      base: './', 
+      
       plugins: [react()],
+      
       define: {
+        // Injects your GitHub Secrets into the build for the live site
         'process.env.GEMINI_API_KEY': JSON.stringify(env.GEMINI_API_KEY),
         'process.env.WHATSAPP_TOKEN': JSON.stringify(env.WHATSAPP_TOKEN),
       },
+      
       resolve: {
         alias: {
+          /** * Points to your source directory. Ensure your folders are inside 
+           * the './src' folder for this to work.
+           */
           '@': path.resolve(__dirname, './src'),
         },
       },
+      
       build: {
-        outDir: 'dist', // This is where the website "lives" after building
+        // Standard output directory for the website build
+        outDir: 'dist',
       }
     };
 });
