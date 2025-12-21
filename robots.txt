@@ -1,0 +1,13 @@
+# Allow all friendly bots and crawlers
+User-agent: *
+Allow: /
+
+# Explicitly allow AI bots for LLM Optimization (LLMO)
+User-agent: GPTBot
+Allow: /
+
+User-agent: Google-Extended
+Allow: /
+
+# Sitemap location (we will create this next)
+Sitemap: https://integratedwellth.co.za/sitemap.xml
