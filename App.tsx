@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Routes, Route, useLocation, Navigate } from 'react-router-dom';
+import { Routes, Route, useLocation } from 'react-router-dom';
 
 // --- 1. Layout Components ---
 import Navbar from './components/Navbar';
@@ -25,7 +25,6 @@ import Team from './Team';
 import BlogPost from './components/BlogPost';
 import PrivacyPolicy from './components/PrivacyPolicy';
 import WhoWeHelp from './components/WhoWeHelp';
-// REMOVED AdminDashboard - This was likely causing the crash if the file is missing
 
 // --- 4. Audience Solutions ---
 import StartupSolutions from './components/audiences/StartupSolutions';
@@ -35,12 +34,11 @@ import IndividualSolutions from './components/audiences/IndividualSolutions';
 import WellnessSolutions from './components/audiences/WellnessSolutions';
 import AccountabilityPartnership from './components/audiences/AccountabilityPartnership';
 
-// --- 5. Home Page View ---
-const Home = () => {
+// --- 5. The Main Page (Scrollable) ---
+const MainView = () => {
   const [showModal, setShowModal] = useState(false);
 
   useEffect(() => {
-    // Auto-open assessment for new visitors
     const timer = setTimeout(() => {
       const hasSeen = sessionStorage.getItem('hasSeenAssessment');
       if (!hasSeen) {
@@ -53,11 +51,12 @@ const Home = () => {
 
   return (
     <div className="animate-fadeIn">
-      <Hero />
+      {/* Sections with IDs so links can scroll to them */}
+      <div id="home"><Hero /></div>
       <TrustedBy />
-      <Philosophy />
-      <EventHighlight />
-      <Services />
+      <div id="philosophy"><Philosophy /></div>
+      <div id="workshops"><EventHighlight /></div>
+      <div id="services"><Services /></div>
       <Audience />
       <FinancialHealthScore />
       <Testimonials />
@@ -83,29 +82,26 @@ const App: React.FC = () => {
   return (
     <div className="font-sans text-gray-900 bg-white min-h-screen flex flex-col">
       <ScrollToTop />
-      {/* Passing empty function to prevent Navbar crash */}
+      {/* Empty function to prevent crashes */}
       <Navbar onNavigate={() => {}} />
 
       <main className="flex-grow">
         <Routes>
-          {/* Main Home Route */}
-          <Route path="/" element={<Home />} />
+          {/* Default Route: Shows the Scrollable Home Page */}
+          <Route path="/" element={<MainView />} />
           
-          {/* Redirects /home to / */}
-          <Route path="/home" element={<Navigate to="/" replace />} />
-
-          {/* Standalone Pages (Wrapped in div to avoid navbar overlap) */}
-          <Route path="/services" element={<div className="pt-24"><Services /><Contact /></div>} />
-          <Route path="/philosophy" element={<div className="pt-24"><Philosophy /><Contact /></div>} />
-          <Route path="/workshops" element={<div className="pt-24"><EventHighlight /><Contact /></div>} />
+          {/* If the Navbar sends you to /services, we show the Main View 
+              (The user will scroll to the section manually or via anchor links) */}
+          <Route path="/services" element={<MainView />} />
+          <Route path="/home" element={<MainView />} />
           
-          {/* Detail Pages */}
+          {/* Specific Standalone Pages */}
           <Route path="/team" element={<Team />} />
           <Route path="/blog" element={<BlogPost />} />
           <Route path="/privacy" element={<PrivacyPolicy />} />
           <Route path="/who-we-help" element={<WhoWeHelp />} />
-
-          {/* Solutions */}
+          
+          {/* Audiences */}
           <Route path="/startups" element={<StartupSolutions />} />
           <Route path="/existing-business" element={<BusinessSolutions />} />
           <Route path="/npos" element={<NPOSolutions />} />
