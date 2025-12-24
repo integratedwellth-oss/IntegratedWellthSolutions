@@ -25,7 +25,7 @@ import Team from './Team';
 import BlogPost from './components/BlogPost';
 import PrivacyPolicy from './components/PrivacyPolicy';
 import WhoWeHelp from './components/WhoWeHelp';
-import AdminDashboard from './components/AdminDashboard';
+// REMOVED AdminDashboard - This was likely causing the crash if the file is missing
 
 // --- 4. Audience Solutions ---
 import StartupSolutions from './components/audiences/StartupSolutions';
@@ -35,7 +35,7 @@ import IndividualSolutions from './components/audiences/IndividualSolutions';
 import WellnessSolutions from './components/audiences/WellnessSolutions';
 import AccountabilityPartnership from './components/audiences/AccountabilityPartnership';
 
-// --- 5. Home Page View (Combines everything) ---
+// --- 5. Home Page View ---
 const Home = () => {
   const [showModal, setShowModal] = useState(false);
 
@@ -83,6 +83,7 @@ const App: React.FC = () => {
   return (
     <div className="font-sans text-gray-900 bg-white min-h-screen flex flex-col">
       <ScrollToTop />
+      {/* Passing empty function to prevent Navbar crash */}
       <Navbar onNavigate={() => {}} />
 
       <main className="flex-grow">
@@ -90,23 +91,21 @@ const App: React.FC = () => {
           {/* Main Home Route */}
           <Route path="/" element={<Home />} />
           
-          {/* 🔥 FIX 1: Add a route for /home that redirects to / */}
+          {/* Redirects /home to / */}
           <Route path="/home" element={<Navigate to="/" replace />} />
 
-          {/* 🔥 FIX 2: Add Standalone Routes for Navbar Links so they don't go blank */}
-          {/* We wrap them in a div with padding (pt-24) so they don't hide behind the navbar */}
+          {/* Standalone Pages (Wrapped in div to avoid navbar overlap) */}
           <Route path="/services" element={<div className="pt-24"><Services /><Contact /></div>} />
           <Route path="/philosophy" element={<div className="pt-24"><Philosophy /><Contact /></div>} />
           <Route path="/workshops" element={<div className="pt-24"><EventHighlight /><Contact /></div>} />
           
-          {/* Full Pages */}
+          {/* Detail Pages */}
           <Route path="/team" element={<Team />} />
           <Route path="/blog" element={<BlogPost />} />
           <Route path="/privacy" element={<PrivacyPolicy />} />
           <Route path="/who-we-help" element={<WhoWeHelp />} />
-          <Route path="/admin" element={<AdminDashboard />} />
 
-          {/* Solution Pages */}
+          {/* Solutions */}
           <Route path="/startups" element={<StartupSolutions />} />
           <Route path="/existing-business" element={<BusinessSolutions />} />
           <Route path="/npos" element={<NPOSolutions />} />
