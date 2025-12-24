@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Routes, Route, useLocation } from 'react-router-dom';
+import { Routes, Route, useLocation, Navigate } from 'react-router-dom';
 
 // --- 1. Layout Components ---
 import Navbar from './components/Navbar';
@@ -8,7 +8,7 @@ import WhatsAppButton from './components/WhatsAppButton';
 import CookieConsent from './components/CookieConsent';
 import FloatingCTA from './components/FloatingCTA';
 
-// --- 2. Page Sections (For Home) ---
+// --- 2. Page Sections ---
 import Hero from './components/Hero';
 import TrustedBy from './components/TrustedBy';
 import Philosophy from './components/Philosophy';
@@ -35,7 +35,7 @@ import IndividualSolutions from './components/audiences/IndividualSolutions';
 import WellnessSolutions from './components/audiences/WellnessSolutions';
 import AccountabilityPartnership from './components/audiences/AccountabilityPartnership';
 
-// --- 5. Home Page View ---
+// --- 5. Home Page View (Combines everything) ---
 const Home = () => {
   const [showModal, setShowModal] = useState(false);
 
@@ -69,7 +69,7 @@ const Home = () => {
   );
 };
 
-// --- 6. Scroll Helper (Scrolls to top on page change) ---
+// --- 6. Scroll Helper ---
 const ScrollToTop = () => {
   const { pathname } = useLocation();
   useEffect(() => {
@@ -83,13 +83,23 @@ const App: React.FC = () => {
   return (
     <div className="font-sans text-gray-900 bg-white min-h-screen flex flex-col">
       <ScrollToTop />
-      {/* Passing an empty function to Navbar since we use real routing now */}
       <Navbar onNavigate={() => {}} />
 
       <main className="flex-grow">
         <Routes>
-          {/* Main Pages */}
+          {/* Main Home Route */}
           <Route path="/" element={<Home />} />
+          
+          {/* 🔥 FIX 1: Add a route for /home that redirects to / */}
+          <Route path="/home" element={<Navigate to="/" replace />} />
+
+          {/* 🔥 FIX 2: Add Standalone Routes for Navbar Links so they don't go blank */}
+          {/* We wrap them in a div with padding (pt-24) so they don't hide behind the navbar */}
+          <Route path="/services" element={<div className="pt-24"><Services /><Contact /></div>} />
+          <Route path="/philosophy" element={<div className="pt-24"><Philosophy /><Contact /></div>} />
+          <Route path="/workshops" element={<div className="pt-24"><EventHighlight /><Contact /></div>} />
+          
+          {/* Full Pages */}
           <Route path="/team" element={<Team />} />
           <Route path="/blog" element={<BlogPost />} />
           <Route path="/privacy" element={<PrivacyPolicy />} />
