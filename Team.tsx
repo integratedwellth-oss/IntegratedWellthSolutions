@@ -10,15 +10,13 @@ const TEAM = [
     name: "Marcia Kgaphola",
     role: "Founder & Principal Consultant",
     bio: "Strategic visionary helping organizations navigate complex financial landscapes to achieve sustainable wealth.",
-    // FIXED: Using the shorter, verified URL from the Philosophy section
     image: "https://res.cloudinary.com/dka0498ns/image/upload/v1765057729/Founder_Marcia_Kgaphola_agebxi.jpg",
     email: "marcia@integratedwellth.co.za"
   },
   {
     name: "Thabo Leslie Motsumi",
     role: "AI & Digital Marketing Specialist",
-    bio: "Expert in AI, Google My Business Profile Optimization, SEO Automation, and Smart Digital Marketing systems.",
-    // FIXED: Formatted the URL string to better handle special characters
+    bio: "Expert in AI, Google My Business optimization, SEO Automation, and Smart Digital Marketing systems.",
     image: "https://res.cloudinary.com/dka0498ns/image/upload/v1766069617/Thabo_Leslie_Motsumi._Al_Google_my_Business_profile_optimization_Search_Everywhere_Optimation_SEO_Automation_and_Smart_digital_marketing._vncyse.png",
     email: "thabo@integratedwellth.co.za"
   },
@@ -41,7 +39,7 @@ const TEAM = [
 const Team = () => {
   return (
     <div className="bg-gray-50 min-h-screen">
-      <section id="team" className="pt-32 pb-20">
+      <section className="pt-16 pb-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <div className="inline-flex items-center gap-2 text-brand-600 font-bold uppercase tracking-widest text-sm mb-4">
@@ -79,7 +77,7 @@ const Team = () => {
                 <div className="p-6 flex flex-col flex-grow text-center">
                   <h3 className="text-xl font-bold text-gray-900">{member.name}</h3>
                   <p className="text-brand-gold font-semibold text-xs uppercase tracking-wider mt-1 mb-3">{member.role}</p>
-                  <p className="text-gray-600 text-sm leading-relaxed flex-grow font-sans">
+                  <p className="text-gray-600 text-sm leading-relaxed flex-grow">
                     {member.bio}
                   </p>
                 </div>
@@ -92,39 +90,26 @@ const Team = () => {
       <Philosophy />
 
       <section className="py-24 bg-white border-t border-gray-100">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="grid md:grid-cols-2 gap-16 items-center">
-                <RevealOnScroll>
-                    <div className="space-y-8">
-                        <h2 className="text-4xl font-bold text-brand-900">Get in Touch</h2>
-                        <p className="text-xl text-gray-600 leading-relaxed">
-                            Looking for a strategic partner to guide your business through the complexities of the South African market? Connect directly with our founder.
-                        </p>
-                        <div className="flex gap-4">
-                            <a href="#" className="p-4 bg-gray-100 rounded-full text-brand-900 hover:bg-brand-900 hover:text-white transition-all">
-                                <Linkedin size={24} />
-                            </a>
-                            <a href="mailto:enquiries@integratedwellth.co.za" className="p-4 bg-gray-100 rounded-full text-brand-900 hover:bg-brand-900 hover:text-white transition-all">
-                                <Mail size={24} />
-                            </a>
-                        </div>
-                        <Button size="lg" onClick={() => window.open('https://calendly.com/enquiries-integratedwellth/30min', '_blank')}>
-                            Schedule an Introductory Call
-                        </Button>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+            <RevealOnScroll>
+                <div className="max-w-3xl mx-auto space-y-8">
+                    <h2 className="text-4xl font-bold text-brand-900">Direct Founder Access</h2>
+                    <p className="text-xl text-gray-600 leading-relaxed">
+                        Ready to navigate the South African market with a strategic partner?
+                    </p>
+                    <div className="flex justify-center gap-6">
+                        <a href="https://linkedin.com" className="p-4 bg-gray-100 rounded-full text-brand-900 hover:bg-brand-900 hover:text-white transition-all">
+                            <Linkedin size={24} />
+                        </a>
+                        <a href="mailto:enquiries@integratedwellth.co.za" className="p-4 bg-gray-100 rounded-full text-brand-900 hover:bg-brand-900 hover:text-white transition-all">
+                            <Mail size={24} />
+                        </a>
                     </div>
-                </RevealOnScroll>
-                
-                <RevealOnScroll delay={0.3}>
-                    <div className="bg-brand-900 rounded-[3rem] p-12 text-white shadow-2xl relative overflow-hidden">
-                        <div className="absolute top-0 right-0 w-32 h-32 bg-brand-gold/10 rounded-full translate-x-10 -translate-y-10"></div>
-                        <h3 className="text-2xl font-bold mb-6 text-brand-gold">Founder's Mission</h3>
-                        <blockquote className="text-xl italic leading-relaxed text-brand-100">
-                            "I created IWS to be the firm I wished existed when I started my journey—a place where technical compliance is handled with precision, but the founder's mind is protected with equal vigor."
-                        </blockquote>
-                        <div className="mt-8 font-bold text-brand-gold">— Marcia Kgaphola</div>
-                    </div>
-                </RevealOnScroll>
-            </div>
+                    <Button size="lg" onClick={() => window.open('https://calendly.com/enquiries-integratedwellth/30min', '_blank')}>
+                        Schedule Introductory Call
+                    </Button>
+                </div>
+            </RevealOnScroll>
         </div>
       </section>
     </div>
