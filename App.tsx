@@ -22,7 +22,7 @@ import Contact from './components/Contact';
 
 // --- 3. Full Pages ---
 import Team from './Team';
-import WhoWeHelp from './components/WhoWeHelp'; // Import the missing section
+import WhoWeHelp from './components/WhoWeHelp';
 import BlogPost from './components/BlogPost';
 import PrivacyPolicy from './components/PrivacyPolicy';
 
@@ -51,24 +51,20 @@ const MainView = () => {
 
   return (
     <div className="animate-fadeIn">
-      {/* SYNCED IDs: We removed redundant div wrappers because the 
-        components internally already have the correct IDs. 
-      */}
+      {/* SECTION IDs SYNCHRONIZED WITH NAVBAR */}
       <div id="home"><Hero /></div>
       <TrustedBy />
       
-      {/* 1. Added WhoWeHelp (Matches Navbar #who-we-help) */}
+      {/* 1. Who We Help (Internal ID #who-we-help) */}
       <WhoWeHelp /> 
 
-      {/* 2. Philosophy (Internal ID #philosophy matches Navbar) */}
+      {/* 2. Philosophy (Internal ID #philosophy) */}
       <Philosophy /> 
 
-      {/* 3. Workshops (Renamed workshop wrapper to upcoming-event to match Navbar) */}
-      <div id="upcoming-event">
-        <EventHighlight />
-      </div>
+      {/* 3. Workshops (Matches Navbar link #upcoming-event) */}
+      <EventHighlight />
 
-      {/* 4. Services (Internal ID #services matches Navbar) */}
+      {/* 4. Services (Internal ID #services) */}
       <Services /> 
 
       <Audience />
@@ -76,9 +72,10 @@ const MainView = () => {
       <Testimonials />
       <Gallery />
 
-      {/* 5. Contact (Internal ID #contact matches Navbar) */}
+      {/* 5. Contact (Internal ID #contact) */}
       <Contact /> 
 
+      {/* Pop-up Assessment Modal */}
       <FinancialHealthScore 
         isModal={true} 
         isOpen={showModal} 
@@ -92,10 +89,13 @@ const MainView = () => {
 const ScrollToTop = () => {
   const { pathname, hash } = useLocation();
   useEffect(() => {
-    // If there's no hash (like #contact), scroll to top. 
-    // If there is a hash, the browser handles it automatically.
     if (!hash) {
       window.scrollTo(0, 0);
+    } else {
+      const element = document.getElementById(hash.replace('#', ''));
+      if (element) {
+        element.scrollIntoView({ behavior: 'smooth' });
+      }
     }
   }, [pathname, hash]);
   return null;
@@ -106,7 +106,7 @@ const App: React.FC = () => {
   return (
     <div className="font-sans text-gray-900 bg-white min-h-screen flex flex-col">
       <ScrollToTop />
-      {/* Navbar onNavigate empty function prevents standard link crashes */}
+      {/* Navbar empty function ensures standard links don't crash the app */}
       <Navbar onNavigate={() => {}} />
       <main className="flex-grow">
         <Routes>
@@ -118,7 +118,7 @@ const App: React.FC = () => {
           <Route path="/privacy" element={<PrivacyPolicy />} />
           <Route path="/who-we-help" element={<WhoWeHelp />} />
           
-          {/* Audience Routes */}
+          {/* Audience Specific Routes */}
           <Route path="/startups" element={<StartupSolutions />} />
           <Route path="/existing-business" element={<BusinessSolutions />} />
           <Route path="/npos" element={<NPOSolutions />} />
