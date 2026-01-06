@@ -1,14 +1,14 @@
 import React from 'react';
-import Philosophy from '../Philosophy';
-import RevealOnScroll from '../RevealOnScroll';
+import Philosophy from './components/Philosophy';
+import RevealOnScroll from './components/RevealOnScroll';
 import { Target, Linkedin, Mail } from 'lucide-react';
-import Button from '../Button';
+import Button from './components/Button';
 
-const TeamPage: React.FC = () => {
+const Team: React.FC = () => {
   return (
     <div className="animate-fadeIn">
       {/* Header Section */}
-      <div className="bg-brand-50 py-24 px-4 border-b border-brand-100">
+      <div className="bg-brand-50 py-24 px-4 border-b border-brand-100 pt-32">
         <div className="max-w-7xl mx-auto text-center">
           <div className="inline-flex items-center gap-2 text-brand-600 font-bold uppercase tracking-widest text-sm mb-4">
             <Target size={20} />
@@ -16,12 +16,11 @@ const TeamPage: React.FC = () => {
           </div>
           <h1 className="text-5xl md:text-7xl font-serif font-bold text-brand-900 mb-6">Our Identity</h1>
           <p className="text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
-            A multidisciplinary firm founded on the belief that financial strategy and human behavior are inseparable. [cite: 2657-2658]
+            A multidisciplinary firm founded on the belief that financial strategy and human behavior are inseparable.
           </p>
         </div>
       </div>
 
-      {/* Integration of the existing Philosophy component */}
       <Philosophy />
 
       {/* Founder Contact Section */}
@@ -53,7 +52,7 @@ const TeamPage: React.FC = () => {
                         <div className="absolute top-0 right-0 w-32 h-32 bg-yellow-500/10 rounded-full translate-x-10 -translate-y-10"></div>
                         <h3 className="text-2xl font-bold mb-6">Founder's Mission</h3>
                         <blockquote className="text-xl italic font-serif leading-relaxed text-brand-100">
-                            "I created IWS to be the firm I wished existed when I started my journey—a place where technical compliance is handled with precision, but the founder's mind is protected with equal vigor." [cite: 2668-2669]
+                            "I created IWS to be the firm I wished existed when I started my journey—a place where technical compliance is handled with precision, but the founder's mind is protected with equal vigor."
                         </blockquote>
                         <div className="mt-8 font-bold text-yellow-500">— Marcia Kgaphola</div>
                     </div>
@@ -65,4 +64,4 @@ const TeamPage: React.FC = () => {
   );
 };
 
-export default TeamPage;
+export default Team;
