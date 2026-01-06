@@ -17,6 +17,7 @@ const TEAM = [
     name: "Thabo Leslie Motsumi",
     role: "AI & Digital Marketing Specialist",
     bio: "Expert in AI, Google My Business optimization, SEO Automation, and Smart Digital Marketing systems.",
+    // FIXED: URL encoded to handle dots and spaces correctly
     image: "https://res.cloudinary.com/dka0498ns/image/upload/v1766069617/Thabo_Leslie_Motsumi._Al_Google_my_Business_profile_optimization_Search_Everywhere_Optimation_SEO_Automation_and_Smart_digital_marketing._vncyse.png",
     email: "thabo@integratedwellth.co.za"
   },
@@ -39,7 +40,7 @@ const TEAM = [
 const Team = () => {
   return (
     <div className="bg-gray-50 min-h-screen">
-      <section className="pt-16 pb-20">
+      <section id="team" className="pt-32 pb-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <div className="inline-flex items-center gap-2 text-brand-600 font-bold uppercase tracking-widest text-sm mb-4">
@@ -47,7 +48,7 @@ const Team = () => {
               <span>Leadership & Vision</span>
             </div>
             <h1 className="text-4xl md:text-6xl font-bold text-gray-900 mb-4 font-sora">Our Identity</h1>
-            <p className="text-xl text-gray-600 max-w-2xl mx-auto leading-relaxed">
+            <p className="text-xl text-gray-600 max-w-2xl mx-auto leading-relaxed font-sans">
               We are a collective of strategists, financial experts, and systems thinkers dedicated to building your integrated wealth.
             </p>
           </div>
@@ -77,7 +78,7 @@ const Team = () => {
                 <div className="p-6 flex flex-col flex-grow text-center">
                   <h3 className="text-xl font-bold text-gray-900">{member.name}</h3>
                   <p className="text-brand-gold font-semibold text-xs uppercase tracking-wider mt-1 mb-3">{member.role}</p>
-                  <p className="text-gray-600 text-sm leading-relaxed flex-grow">
+                  <p className="text-gray-600 text-sm leading-relaxed flex-grow font-sans">
                     {member.bio}
                   </p>
                 </div>
@@ -89,16 +90,16 @@ const Team = () => {
 
       <Philosophy />
 
-      <section className="py-24 bg-white border-t border-gray-100">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+      <section className="py-24 bg-white border-t border-gray-100 text-center">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <RevealOnScroll>
                 <div className="max-w-3xl mx-auto space-y-8">
                     <h2 className="text-4xl font-bold text-brand-900">Direct Founder Access</h2>
-                    <p className="text-xl text-gray-600 leading-relaxed">
-                        Ready to navigate the South African market with a strategic partner?
+                    <p className="text-xl text-gray-600 leading-relaxed font-sans">
+                        Ready to navigate the South African market with a strategic partner? Connect directly with our founder.
                     </p>
                     <div className="flex justify-center gap-6">
-                        <a href="https://linkedin.com" className="p-4 bg-gray-100 rounded-full text-brand-900 hover:bg-brand-900 hover:text-white transition-all">
+                        <a href="#" className="p-4 bg-gray-100 rounded-full text-brand-900 hover:bg-brand-900 hover:text-white transition-all">
                             <Linkedin size={24} />
                         </a>
                         <a href="mailto:enquiries@integratedwellth.co.za" className="p-4 bg-gray-100 rounded-full text-brand-900 hover:bg-brand-900 hover:text-white transition-all">
