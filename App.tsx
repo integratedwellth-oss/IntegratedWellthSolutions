@@ -22,9 +22,9 @@ import Contact from './components/Contact';
 
 // --- 3. Full Pages ---
 import Team from './Team';
+import WhoWeHelp from './components/WhoWeHelp'; // Import the missing section
 import BlogPost from './components/BlogPost';
 import PrivacyPolicy from './components/PrivacyPolicy';
-import WhoWeHelp from './components/WhoWeHelp';
 
 // --- 4. Audience Solutions ---
 import StartupSolutions from './components/audiences/StartupSolutions';
@@ -32,7 +32,7 @@ import BusinessSolutions from './components/audiences/BusinessSolutions';
 import NPOSolutions from './components/audiences/NPOSolutions';
 import IndividualSolutions from './components/audiences/IndividualSolutions';
 import WellnessSolutions from './components/audiences/WellnessSolutions';
-import AccountabilityPartnership from './components/audiences/AccountabilityPartnership';
+import AccountabilityPartnership from './components/audiences/Accountability Partnership';
 
 // --- 5. The Main Page (Scrollable) ---
 const MainView = () => {
@@ -51,29 +51,53 @@ const MainView = () => {
 
   return (
     <div className="animate-fadeIn">
-      {/* Sections with IDs so links can scroll to them */}
+      {/* SYNCED IDs: We removed redundant div wrappers because the 
+        components internally already have the correct IDs. 
+      */}
       <div id="home"><Hero /></div>
       <TrustedBy />
-      <div id="philosophy"><Philosophy /></div>
-      <div id="workshops"><EventHighlight /></div>
-      <div id="services"><Services /></div>
+      
+      {/* 1. Added WhoWeHelp (Matches Navbar #who-we-help) */}
+      <WhoWeHelp /> 
+
+      {/* 2. Philosophy (Internal ID #philosophy matches Navbar) */}
+      <Philosophy /> 
+
+      {/* 3. Workshops (Renamed workshop wrapper to upcoming-event to match Navbar) */}
+      <div id="upcoming-event">
+        <EventHighlight />
+      </div>
+
+      {/* 4. Services (Internal ID #services matches Navbar) */}
+      <Services /> 
+
       <Audience />
       <FinancialHealthScore />
       <Testimonials />
       <Gallery />
-      <Contact />
-      
-      <FinancialHealthScore isModal={true} isOpen={showModal} onClose={() => setShowModal(false)} />
+
+      {/* 5. Contact (Internal ID #contact matches Navbar) */}
+      <Contact /> 
+
+      <FinancialHealthScore 
+        isModal={true} 
+        isOpen={showModal} 
+        onClose={() => setShowModal(false)} 
+      />
     </div>
   );
 };
 
 // --- 6. Scroll Helper ---
 const ScrollToTop = () => {
-  const { pathname } = useLocation();
+  const { pathname, hash } = useLocation();
   useEffect(() => {
-    window.scrollTo(0, 0);
-  }, [pathname]);
+    // If there's no hash (like #contact), scroll to top. 
+    // If there is a hash, the browser handles it automatically.
+    if (!hash) {
+      window.scrollTo(0, 0);
+    }
+  }, [pathname, hash]);
   return null;
 };
 
@@ -82,26 +106,19 @@ const App: React.FC = () => {
   return (
     <div className="font-sans text-gray-900 bg-white min-h-screen flex flex-col">
       <ScrollToTop />
-      {/* Empty function to prevent crashes */}
+      {/* Navbar onNavigate empty function prevents standard link crashes */}
       <Navbar onNavigate={() => {}} />
-
       <main className="flex-grow">
         <Routes>
-          {/* Default Route: Shows the Scrollable Home Page */}
           <Route path="/" element={<MainView />} />
-          
-          {/* If the Navbar sends you to /services, we show the Main View 
-              (The user will scroll to the section manually or via anchor links) */}
-          <Route path="/services" element={<MainView />} />
           <Route path="/home" element={<MainView />} />
-          
-          {/* Specific Standalone Pages */}
+          <Route path="/services" element={<MainView />} />
           <Route path="/team" element={<Team />} />
           <Route path="/blog" element={<BlogPost />} />
           <Route path="/privacy" element={<PrivacyPolicy />} />
           <Route path="/who-we-help" element={<WhoWeHelp />} />
           
-          {/* Audiences */}
+          {/* Audience Routes */}
           <Route path="/startups" element={<StartupSolutions />} />
           <Route path="/existing-business" element={<BusinessSolutions />} />
           <Route path="/npos" element={<NPOSolutions />} />
@@ -110,7 +127,6 @@ const App: React.FC = () => {
           <Route path="/accountability" element={<AccountabilityPartnership />} />
         </Routes>
       </main>
-
       <Footer />
       <WhatsAppButton />
       <CookieConsent />
