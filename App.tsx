@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Routes, Route, useLocation } from 'react-router-dom';
 
-// --- Layout Components ---
+// Layout
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
 import WhatsAppButton from './components/WhatsAppButton';
@@ -9,32 +9,34 @@ import CookieConsent from './components/CookieConsent';
 import FloatingCTA from './components/FloatingCTA';
 import EventPopup from './components/EventPopup'; 
 
-// --- Sections ---
-import Hero from './components/Hero';
-import Philosophy from './components/Philosophy';
-import EventHighlight from './components/EventHighlight';
-import Services from './components/Services';
-import Contact from './components/Contact';
-import WhoWeHelp from './components/WhoWeHelp';
-import Audience from './components/Audience';
-import FinancialHealthScore from './components/FinancialHealthScore';
-import Testimonials from './components/Testimonials';
-import Gallery from './components/Gallery';
+// Independent Pages
+import Home from './components/pages/Home';
+import Team from './Team';
+import ServicesPage from './components/pages/ServicesPage';
+import ContactPage from './components/pages/ContactPage';
+import WorkshopPage from './components/pages/WorkshopPage';
+import WhoWeHelpPage from './components/pages/WhoWeHelpPage';
+import BlogPage from './components/pages/BlogPage';
+import PrivacyPolicy from './components/PrivacyPolicy';
 
-// --- Pages ---
-import Team from './Team'; // Imported from your root src/Team.tsx
+// Solution Details
 import StartupSolutions from './components/audiences/StartupSolutions';
 import BusinessSolutions from './components/audiences/BusinessSolutions';
 import NPOSolutions from './components/audiences/NPOSolutions';
 import IndividualSolutions from './components/audiences/IndividualSolutions';
 import WellnessSolutions from './components/audiences/WellnessSolutions';
 import AccountabilityPartnership from './components/audiences/AccountabilityPartnership';
-import PrivacyPolicy from './components/PrivacyPolicy';
-import BlogPost from './components/BlogPost';
 
-const MainView = () => {
+const App: React.FC = () => {
+  const { pathname } = useLocation();
   const [showEvent, setShowEvent] = useState(false);
 
+  // Global Page Scroll Reset
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [pathname]);
+
+  // Global Event Popup Trigger
   useEffect(() => {
     const timer = setTimeout(() => {
       if (!sessionStorage.getItem('hasSeenEvent')) {
@@ -46,44 +48,22 @@ const MainView = () => {
   }, []);
 
   return (
-    <div className="animate-fadeIn">
-      <div id="home"><Hero /></div>
-      <WhoWeHelp /> 
-      <Philosophy /> 
-      <div id="upcoming-event"><EventHighlight /></div>
-      <Services /> 
-      <Audience />
-      <FinancialHealthScore />
-      <Testimonials />
-      <Gallery />
-      <Contact /> 
-      <EventPopup isOpen={showEvent} onClose={() => setShowEvent(false)} />
-    </div>
-  );
-};
-
-const ScrollToTop = () => {
-  const { pathname, hash } = useLocation();
-  useEffect(() => {
-    if (!hash) {
-      window.scrollTo(0, 0);
-    }
-  }, [pathname, hash]);
-  return null;
-};
-
-const App: React.FC = () => {
-  return (
     <div className="font-sans text-gray-900 bg-white min-h-screen flex flex-col">
-      <ScrollToTop />
-      {/* Passing empty function to prevent Navbar crashes */}
       <Navbar onNavigate={() => {}} />
-      <main className="flex-grow">
+      
+      <main className="flex-grow pt-20">
         <Routes>
-          <Route path="/" element={<MainView />} />
+          <Route path="/" element={<Home />} />
+          <Route path="/home" element={<Home />} />
           <Route path="/team" element={<Team />} />
-          <Route path="/blog" element={<BlogPost />} />
+          <Route path="/services" element={<ServicesPage />} />
+          <Route path="/contact" element={<ContactPage />} />
+          <Route path="/workshops" element={<WorkshopPage />} />
+          <Route path="/who-we-help" element={<WhoWeHelpPage />} />
+          <Route path="/blog" element={<BlogPage />} />
           <Route path="/privacy" element={<PrivacyPolicy />} />
+          
+          {/* Solution Routes */}
           <Route path="/startups" element={<StartupSolutions />} />
           <Route path="/existing-business" element={<BusinessSolutions />} />
           <Route path="/npos" element={<NPOSolutions />} />
@@ -92,10 +72,12 @@ const App: React.FC = () => {
           <Route path="/accountability" element={<AccountabilityPartnership />} />
         </Routes>
       </main>
+
       <Footer />
       <WhatsAppButton />
       <CookieConsent />
       <FloatingCTA />
+      <EventPopup isOpen={showEvent} onClose={() => setShowEvent(false)} />
     </div>
   );
 };
