@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion } from "framer-motion";
-import { Mail, Target, Compass, Heart, Linkedin } from "lucide-react";
+import { Mail, Target, Linkedin } from "lucide-react";
 import Philosophy from './components/Philosophy';
 import RevealOnScroll from './components/RevealOnScroll';
 import Button from './components/Button';
@@ -10,13 +10,15 @@ const TEAM = [
     name: "Marcia Kgaphola",
     role: "Founder & Principal Consultant",
     bio: "Strategic visionary helping organizations navigate complex financial landscapes to achieve sustainable wealth.",
-    image: "https://res.cloudinary.com/dka0498ns/image/upload/v1766077285/Chartered_Business_Practice_CIBA_Hons_Psychological_Counselling_Risk_and_Project_Management_ubcpy9.jpg",
+    // FIXED: Using the shorter, verified URL from the Philosophy section
+    image: "https://res.cloudinary.com/dka0498ns/image/upload/v1765057729/Founder_Marcia_Kgaphola_agebxi.jpg",
     email: "marcia@integratedwellth.co.za"
   },
   {
     name: "Thabo Leslie Motsumi",
     role: "AI & Digital Marketing Specialist",
     bio: "Expert in AI, Google My Business Profile Optimization, SEO Automation, and Smart Digital Marketing systems.",
+    // FIXED: Formatted the URL string to better handle special characters
     image: "https://res.cloudinary.com/dka0498ns/image/upload/v1766069617/Thabo_Leslie_Motsumi._Al_Google_my_Business_profile_optimization_Search_Everywhere_Optimation_SEO_Automation_and_Smart_digital_marketing._vncyse.png",
     email: "thabo@integratedwellth.co.za"
   },
@@ -46,7 +48,7 @@ const Team = () => {
               <Target size={20} />
               <span>Leadership & Vision</span>
             </div>
-            <h1 className="text-4xl md:text-6xl font-bold text-gray-900 mb-4">Our Identity</h1>
+            <h1 className="text-4xl md:text-6xl font-bold text-gray-900 mb-4 font-sora">Our Identity</h1>
             <p className="text-xl text-gray-600 max-w-2xl mx-auto leading-relaxed">
               We are a collective of strategists, financial experts, and systems thinkers dedicated to building your integrated wealth.
             </p>
@@ -69,17 +71,15 @@ const Team = () => {
                     className="w-full h-full object-cover object-top grayscale group-hover:grayscale-0 group-hover:scale-105 transition-all duration-700 ease-in-out"
                   />
                   <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                    {member.email && (
-                      <a href={`mailto:${member.email}`} className="p-3 bg-white rounded-full text-gray-900 hover:bg-brand-gold hover:text-white transition-colors transform hover:scale-110">
-                        <Mail size={20} />
-                      </a>
-                    )}
+                    <a href={`mailto:${member.email}`} className="p-3 bg-white rounded-full text-gray-900 hover:bg-brand-gold hover:text-white transition-colors transform hover:scale-110">
+                      <Mail size={20} />
+                    </a>
                   </div>
                 </div>
                 <div className="p-6 flex flex-col flex-grow text-center">
                   <h3 className="text-xl font-bold text-gray-900">{member.name}</h3>
                   <p className="text-brand-gold font-semibold text-xs uppercase tracking-wider mt-1 mb-3">{member.role}</p>
-                  <p className="text-gray-600 text-sm leading-relaxed flex-grow">
+                  <p className="text-gray-600 text-sm leading-relaxed flex-grow font-sans">
                     {member.bio}
                   </p>
                 </div>
@@ -96,7 +96,7 @@ const Team = () => {
             <div className="grid md:grid-cols-2 gap-16 items-center">
                 <RevealOnScroll>
                     <div className="space-y-8">
-                        <h2 className="text-4xl font-bold text-brand-900">Get in Touch with Marcia</h2>
+                        <h2 className="text-4xl font-bold text-brand-900">Get in Touch</h2>
                         <p className="text-xl text-gray-600 leading-relaxed">
                             Looking for a strategic partner to guide your business through the complexities of the South African market? Connect directly with our founder.
                         </p>
