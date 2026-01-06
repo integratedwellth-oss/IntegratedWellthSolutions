@@ -4,11 +4,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import Button from './Button';
 import { CONTACT_INFO } from '../constants';
 
-interface NavbarProps {
-  onNavigate?: (view: string) => void;
-}
-
-const Navbar: React.FC<NavbarProps> = ({ onNavigate }) => {
+const Navbar: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const navigate = useNavigate();
@@ -16,7 +12,7 @@ const Navbar: React.FC<NavbarProps> = ({ onNavigate }) => {
 
   useEffect(() => {
     const handleScroll = () => {
-      setIsScrolled(window.scrollY > 20);
+      setIsScrolled(window.scrollY > 50);
     };
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
@@ -33,88 +29,94 @@ const Navbar: React.FC<NavbarProps> = ({ onNavigate }) => {
     setIsOpen(false);
   };
 
-  const navLinkClass = (path: string) => `
-    text-sm font-bold uppercase tracking-widest transition-all duration-300 cursor-pointer
-    ${location.pathname === path 
-      ? 'text-brand-gold border-b-2 border-brand-gold pb-1' 
-      : 'text-gray-700 hover:text-brand-900'}
-  `;
-
   const handleRouteClick = (path: string) => {
     navigate(path);
-    if (onNavigate) onNavigate(path.replace('/', ''));
     setIsOpen(false);
     window.scrollTo(0, 0);
   };
 
+  const navLinkClass = (path: string) => `
+    relative px-4 py-2 text-[10px] font-black uppercase tracking-[0.2em] transition-all duration-300 rounded-full
+    ${location.pathname === path 
+      ? 'bg-brand-gold text-brand-900 shadow-inner' 
+      : 'text-white/70 hover:text-white hover:bg-white/5'}
+  `;
+
   return (
-    <nav className={`fixed w-full z-[100] transition-all duration-500 ${isScrolled ? 'bg-white shadow-xl py-3' : 'bg-white/80 backdrop-blur-md py-5'}`}>
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center h-16">
-          {/* Logo Section */}
-          <div className="flex-shrink-0 flex items-center cursor-pointer group" onClick={() => handleRouteClick('/')}>
-            <img 
-              src="https://res.cloudinary.com/dka0498ns/image/upload/v1765049634/Integrated_Wellth_Solutions_Logo_bodmyc.png" 
-              alt="IWS Logo" 
-              className="h-14 w-auto object-contain transition-transform duration-300 group-hover:scale-105"
-            />
-          </div>
-          
-          {/* Desktop Desktop Links - Multi-page Ready */}
-          <div className="hidden lg:flex items-center space-x-10">
-            <button onClick={() => handleRouteClick('/home')} className={navLinkClass('/home')}>Home</button>
-            <button onClick={() => handleRouteClick('/who-we-help')} className={navLinkClass('/who-we-help')}>Solutions</button>
-            <button onClick={() => handleRouteClick('/team')} className={navLinkClass('/team')}>Our Team</button>
-            <button onClick={() => handleRouteClick('/services')} className={navLinkClass('/services')}>Services</button>
-            <button onClick={() => handleRouteClick('/workshops')} className={navLinkClass('/workshops')}>Workshops</button>
-            <button onClick={() => handleRouteClick('/blog')} className={navLinkClass('/blog')}>Insights</button>
-            <button onClick={() => handleRouteClick('/contact')} className={navLinkClass('/contact')}>Contact</button>
-            
-            <Button 
-              onClick={openCalendly} 
-              variant="primary" 
-              className="flex items-center gap-2 rounded-full px-6 py-3 bg-brand-900 text-white hover:bg-brand-gold hover:text-brand-900 transition-all shadow-lg"
-            >
-              <Calendar size={16} />
-              <span className="text-xs font-black uppercase">Direct Access</span>
-            </Button>
-          </div>
+    <div className="fixed w-full z-[100] flex justify-center px-4 md:px-0 pointer-events-none pt-6">
+      {/* Floating Pill Container */}
+      <nav className={`
+        pointer-events-auto flex items-center justify-between transition-all duration-500 ease-in-out
+        bg-brand-900/70 backdrop-blur-xl border border-white/10 rounded-full shadow-[0_20px_50px_rgba(0,0,0,0.3)]
+        ${isScrolled ? 'w-[95%] md:w-[85%] lg:w-[75%] px-6 py-2' : 'w-full md:w-[90%] lg:w-[85%] px-8 py-4'}
+      `}>
+        
+        {/* Logo Section */}
+        <div 
+          className="flex-shrink-0 flex items-center cursor-pointer group" 
+          onClick={() => handleRouteClick('/')}
+        >
+          <img 
+            src="https://res.cloudinary.com/dka0498ns/image/upload/v1765049634/Integrated_Wellth_Solutions_Logo_bodmyc.png" 
+            alt="IWS Logo" 
+            className={`transition-all duration-500 object-contain ${isScrolled ? 'h-10' : 'h-12'}`}
+          />
+        </div>
+        
+        {/* Desktop Links (Bento-style modules) */}
+        <div className="hidden lg:flex items-center gap-1">
+          <button onClick={() => handleRouteClick('/home')} className={navLinkClass('/home')}>Home</button>
+          <button onClick={() => handleRouteClick('/who-we-help')} className={navLinkClass('/who-we-help')}>Solutions</button>
+          <button onClick={() => handleRouteClick('/team')} className={navLinkClass('/team')}>Team</button>
+          <button onClick={() => handleRouteClick('/services')} className={navLinkClass('/services')}>Services</button>
+          <button onClick={() => handleRouteClick('/workshops')} className={navLinkClass('/workshops')}>Workshops</button>
+          <button onClick={() => handleRouteClick('/blog')} className={navLinkClass('/blog')}>Insights</button>
+          <button onClick={() => handleRouteClick('/contact')} className={navLinkClass('/contact')}>Contact</button>
+        </div>
+
+        {/* Action Section */}
+        <div className="flex items-center gap-4">
+          <Button 
+            onClick={openCalendly} 
+            variant="primary" 
+            className="hidden sm:flex items-center gap-2 rounded-full px-6 py-2.5 bg-brand-gold text-brand-900 font-black uppercase text-[10px] tracking-widest hover:scale-105 transition-all shadow-lg"
+          >
+            <Calendar size={14} />
+            Protocol Access
+          </Button>
 
           {/* Mobile Menu Toggle */}
-          <div className="lg:hidden flex items-center">
-            <button 
-              onClick={() => setIsOpen(!isOpen)} 
-              className="text-brand-900 p-2 focus:outline-none"
-              aria-label="Toggle menu"
-            >
-              {isOpen ? <X size={32} /> : <Menu size={32} />}
-            </button>
-          </div>
+          <button 
+            onClick={() => setIsOpen(!isOpen)} 
+            className="lg:hidden text-white p-2 hover:bg-white/10 rounded-full transition-colors"
+          >
+            {isOpen ? <X size={24} /> : <Menu size={24} />}
+          </button>
         </div>
-      </div>
+      </nav>
 
-      {/* Mobile Menu - Multi-page Ready */}
+      {/* Mobile Menu - Matching Glassmorphic Aesthetic */}
       {isOpen && (
-        <div className="lg:hidden bg-white fixed inset-0 z-[90] flex flex-col justify-center items-center space-y-8 animate-fadeIn">
-          <button onClick={() => handleRouteClick('/home')} className="text-2xl font-black uppercase text-brand-900">Home</button>
-          <button onClick={() => handleRouteClick('/who-we-help')} className="text-2xl font-black uppercase text-brand-900">Solutions</button>
-          <button onClick={() => handleRouteClick('/team')} className="text-2xl font-black uppercase text-brand-900">Our Team</button>
-          <button onClick={() => handleRouteClick('/services')} className="text-2xl font-black uppercase text-brand-900">Services</button>
-          <button onClick={() => handleRouteClick('/workshops')} className="text-2xl font-black uppercase text-brand-900">Workshops</button>
-          <button onClick={() => handleRouteClick('/contact')} className="text-2xl font-black uppercase text-brand-900">Contact</button>
+        <div className="lg:hidden fixed inset-0 z-[90] bg-brand-900/95 backdrop-blur-2xl flex flex-col justify-center items-center space-y-8 animate-fadeIn pointer-events-auto">
+          <button onClick={() => handleRouteClick('/home')} className="text-3xl font-black uppercase text-brand-gold tracking-tighter italic">Home</button>
+          <button onClick={() => handleRouteClick('/who-we-help')} className="text-3xl font-black uppercase text-white tracking-tighter">Solutions</button>
+          <button onClick={() => handleRouteClick('/team')} className="text-3xl font-black uppercase text-white tracking-tighter">Team</button>
+          <button onClick={() => handleRouteClick('/services')} className="text-3xl font-black uppercase text-white tracking-tighter">Services</button>
+          <button onClick={() => handleRouteClick('/workshops')} className="text-3xl font-black uppercase text-white tracking-tighter">Workshops</button>
+          <button onClick={() => handleRouteClick('/contact')} className="text-3xl font-black uppercase text-white tracking-tighter">Contact</button>
           
           <div className="pt-8">
             <Button onClick={openCalendly} size="lg" className="rounded-full px-12 py-5 bg-brand-gold text-brand-900 font-black">
-              Book Consultation
+              Book Protocol Session
             </Button>
           </div>
           
-          <button onClick={() => setIsOpen(false)} className="absolute top-10 right-10 text-brand-900">
+          <button onClick={() => setIsOpen(false)} className="absolute top-10 right-10 text-white hover:rotate-90 transition-transform">
             <X size={40} />
           </button>
         </div>
       )}
-    </nav>
+    </div>
   );
 };
 
