@@ -22,17 +22,17 @@ import Contact from './components/Contact';
 
 // --- 3. Full Pages ---
 import Team from './Team';
-import WhoWeHelp from './components/WhoWeHelp';
+import WhoWeHelp from './components/WhoWeHelp'; 
 import BlogPost from './components/BlogPost';
 import PrivacyPolicy from './components/PrivacyPolicy';
 
-// --- 4. Audience Solutions ---
+// --- 4. Audience Solutions (FIXED NAMES) ---
 import StartupSolutions from './components/audiences/StartupSolutions';
 import BusinessSolutions from './components/audiences/BusinessSolutions';
 import NPOSolutions from './components/audiences/NPOSolutions';
 import IndividualSolutions from './components/audiences/IndividualSolutions';
 import WellnessSolutions from './components/audiences/WellnessSolutions';
-import AccountabilityPartnership from './components/audiences/Accountability Partnership';
+import AccountabilityPartnership from './components/audiences/AccountabilityPartnership';
 
 // --- 5. The Main Page (Scrollable) ---
 const MainView = () => {
@@ -51,20 +51,24 @@ const MainView = () => {
 
   return (
     <div className="animate-fadeIn">
-      {/* SECTION IDs SYNCHRONIZED WITH NAVBAR */}
+      {/* SYNCED IDs: 
+        We use IDs that exactly match Navbar buttons to stop "Blank" pages.
+      */}
       <div id="home"><Hero /></div>
       <TrustedBy />
       
-      {/* 1. Who We Help (Internal ID #who-we-help) */}
+      {/* 1. Who We Help Section (ID: who-we-help) */}
       <WhoWeHelp /> 
 
-      {/* 2. Philosophy (Internal ID #philosophy) */}
+      {/* 2. Philosophy Section (ID: philosophy) */}
       <Philosophy /> 
 
-      {/* 3. Workshops (Matches Navbar link #upcoming-event) */}
-      <EventHighlight />
+      {/* 3. Workshops Section (ID: upcoming-event) */}
+      <div id="upcoming-event">
+        <EventHighlight />
+      </div>
 
-      {/* 4. Services (Internal ID #services) */}
+      {/* 4. Services Section (ID: services) */}
       <Services /> 
 
       <Audience />
@@ -72,10 +76,9 @@ const MainView = () => {
       <Testimonials />
       <Gallery />
 
-      {/* 5. Contact (Internal ID #contact) */}
+      {/* 5. Contact Section (ID: contact) */}
       <Contact /> 
 
-      {/* Pop-up Assessment Modal */}
       <FinancialHealthScore 
         isModal={true} 
         isOpen={showModal} 
@@ -106,7 +109,7 @@ const App: React.FC = () => {
   return (
     <div className="font-sans text-gray-900 bg-white min-h-screen flex flex-col">
       <ScrollToTop />
-      {/* Navbar empty function ensures standard links don't crash the app */}
+      {/* Navbar onNavigate prop ensures clicking links scrolls to sections */}
       <Navbar onNavigate={() => {}} />
       <main className="flex-grow">
         <Routes>
