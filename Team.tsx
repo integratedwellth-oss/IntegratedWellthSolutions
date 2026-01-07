@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion } from "framer-motion";
-import { Mail, Target, Compass, Heart, Linkedin } from "lucide-react";
+import { Mail, Target, Linkedin } from "lucide-react";
 import Philosophy from './components/Philosophy';
 import RevealOnScroll from './components/RevealOnScroll';
 import Button from './components/Button';
@@ -16,8 +16,8 @@ const TEAM = [
   {
     name: "Thabo Leslie Motsumi",
     role: "AI & Digital Marketing Specialist",
-    bio: "Expert in AI, Google My Business Profile Optimization, SEO Automation, and Smart Digital Marketing systems.",
-    image: "https://res.cloudinary.com/dka0498ns/image/upload/v1766069617/Thabo_Leslie_Motsumi._AI_Google_my_Business_profile_optimization_Search_Everywhere_Optimation_SEO_Automation_and_Smart_digital_marketing._vncyse.png",
+    bio: "Expert in AI, Google My Business optimization, SEO Automation, and Smart Digital Marketing systems.",
+    image: "https://res.cloudinary.com/dka0498ns/image/upload/v1766069617/Thabo%20Leslie%20Motsumi.%20AI%20Google%20my%20Business%20profile%20optimization%20Search%20Everywhere%20Optimation%20SEO%20Automation%20and%20Smart%20digital%20marketing.%20vncyse.png",
     email: "thabo@integratedwellth.co.za"
   },
   {
@@ -39,7 +39,7 @@ const TEAM = [
 const Team = () => {
   return (
     <div className="bg-gray-50 min-h-screen">
-      <section id="team" className="pt-32 pb-20">
+      <section className="pt-32 pb-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <div className="inline-flex items-center gap-2 text-brand-600 font-bold uppercase tracking-widest text-sm mb-4">
@@ -77,7 +77,7 @@ const Team = () => {
                 <div className="p-6 flex flex-col flex-grow text-center">
                   <h3 className="text-xl font-bold text-gray-900">{member.name}</h3>
                   <p className="text-brand-gold font-semibold text-xs uppercase tracking-wider mt-1 mb-3">{member.role}</p>
-                  <p className="text-gray-600 text-sm leading-relaxed flex-grow font-sans">
+                  <p className="text-gray-600 text-sm leading-relaxed flex-grow">
                     {member.bio}
                   </p>
                 </div>
@@ -91,53 +91,22 @@ const Team = () => {
 
       <section className="py-24 bg-white border-t border-gray-100 text-center">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <RevealOnScroll>
-            <div className="max-w-3xl mx-auto space-y-8">
-              <h2 className="text-4xl font-bold text-brand-900">Direct Founder Access</h2>
-              <p className="text-xl text-gray-600 leading-relaxed font-sans">
-                Ready to navigate the South African market with a strategic partner? Connect directly with our founder.
-              </p>
-              <div className="flex justify-center gap-6">
-                <a href="#" className="p-4 bg-gray-100 rounded-full text-brand-900 hover:bg-brand-900 hover:text-white transition-all">
-                  <Linkedin size={24} />
-                </a>
-                <a href="mailto:enquiries@integratedwellth.co.za" className="p-4 bg-gray-100 rounded-full text-brand-900 hover:bg-brand-900 hover:text-white transition-all">
-                  <Mail size={24} />
-                </a>
-              </div>
-              <Button size="lg" onClick={() => window.open('https://calendly.com/enquiries-integratedwellth/30min', '_blank')}>
-                Schedule Introductory Call
-              </Button>
-            </div>
-          </RevealOnScroll>
-        </div>
-      </section>
-
-      <section className="py-24 bg-brand-50 border-t border-brand-100">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid lg:grid-cols-3 gap-12">
-            <div className="flex flex-col items-center text-center p-8 bg-white rounded-2xl shadow-sm h-full">
-              <Target size={32} className="text-brand-600 mb-6" />
-              <h3 className="text-xl font-bold text-gray-900 mb-4">Vision Statement</h3>
-              <p className="text-gray-600 leading-relaxed text-sm">
-                To be the leading holistic empowerment partner in Africa, driving financial confidence, emotional resilience, and professional excellence for individuals, businesses, and communities.
-              </p>
-            </div>
-            <div className="flex flex-col items-center text-center p-8 bg-white rounded-2xl shadow-sm h-full">
-              <Compass size={32} className="text-brand-600 mb-6" />
-              <h3 className="text-xl font-bold text-gray-900 mb-4">Mission Statement</h3>
-              <p className="text-gray-600 leading-relaxed text-sm">
-                To empower clients with integrated solutions that blend financial management, emotional intelligence, professional development, and digital innovation.
-              </p>
-            </div>
-            <div className="flex flex-col items-center text-center p-8 bg-white rounded-2xl shadow-sm h-full">
-              <Heart size={32} className="text-brand-600 mb-6" />
-              <h3 className="text-xl font-bold text-gray-900 mb-4">Our Values</h3>
-              <p className="text-gray-600 leading-relaxed text-sm">
-                We value integrity, empathy, and collaboration, partnering with clients to co-create solutions that align with their specific financial and emotional goals.
-              </p>
-            </div>
-          </div>
+            <RevealOnScroll>
+                <div className="max-w-3xl mx-auto space-y-8">
+                    <h2 className="text-4xl font-bold text-brand-900">Direct Founder Access</h2>
+                    <p className="text-xl text-gray-600 leading-relaxed">
+                        Ready to navigate the South African market with a strategic partner?
+                    </p>
+                    <div className="flex justify-center gap-6">
+                        <a href="mailto:enquiries@integratedwellth.co.za" className="p-4 bg-gray-100 rounded-full text-brand-900 hover:bg-brand-900 hover:text-white transition-all">
+                            <Mail size={24} />
+                        </a>
+                    </div>
+                    <Button size="lg" onClick={() => window.open('https://calendly.com/enquiries-integratedwellth/30min', '_blank')}>
+                        Schedule Introductory Call
+                    </Button>
+                </div>
+            </RevealOnScroll>
         </div>
       </section>
     </div>
