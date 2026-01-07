@@ -18,6 +18,7 @@ import WorkshopPage from './components/pages/WorkshopPage';
 import WhoWeHelpPage from './components/pages/WhoWeHelpPage';
 import BlogPage from './components/pages/BlogPage';
 import PrivacyPolicy from './components/PrivacyPolicy';
+import AdminDashboard from './components/pages/AdminDashboard'; // RESTORED
 
 // Solution Details
 import StartupSolutions from './components/audiences/StartupSolutions';
@@ -31,12 +32,10 @@ const App: React.FC = () => {
   const { pathname } = useLocation();
   const [showEvent, setShowEvent] = useState(false);
 
-  // Global Page Scroll Reset
   useEffect(() => {
     window.scrollTo(0, 0);
   }, [pathname]);
 
-  // Global Event Popup Trigger
   useEffect(() => {
     const timer = setTimeout(() => {
       if (!sessionStorage.getItem('hasSeenEvent')) {
@@ -49,9 +48,9 @@ const App: React.FC = () => {
 
   return (
     <div className="font-sans text-gray-900 bg-white min-h-screen flex flex-col">
-      <Navbar onNavigate={() => {}} />
+      <Navbar />
       
-      <main className="flex-grow pt-20">
+      <main className="flex-grow">
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/home" element={<Home />} />
@@ -63,6 +62,9 @@ const App: React.FC = () => {
           <Route path="/blog" element={<BlogPage />} />
           <Route path="/privacy" element={<PrivacyPolicy />} />
           
+          {/* Private Route */}
+          <Route path="/admin" element={<AdminDashboard />} />
+
           {/* Solution Routes */}
           <Route path="/startups" element={<StartupSolutions />} />
           <Route path="/existing-business" element={<BusinessSolutions />} />
