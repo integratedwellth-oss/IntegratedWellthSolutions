@@ -21,9 +21,6 @@ import AdminDashboard from './components/pages/AdminDashboard';
 import AssessmentPage from './components/pages/AssessmentPage';
 import AssessmentSuccess from './components/pages/AssessmentSuccess';
 
-// Legal
-import PrivacyPolicy from './components/PrivacyPolicy';
-
 // Solution Details (Referencing src/components/audiences/)
 import StartupSolutions from './components/audiences/StartupSolutions';
 import BusinessSolutions from './components/audiences/BusinessSolutions';
@@ -34,12 +31,10 @@ const App: React.FC = () => {
   const { pathname } = useLocation();
   const [showEvent, setShowEvent] = useState(false);
 
-  // Reset scroll on every navigation
   useEffect(() => {
     window.scrollTo(0, 0);
   }, [pathname]);
 
-  // Global Event Protocol: Popup triggers after 5 seconds
   useEffect(() => {
     const timer = setTimeout(() => {
       if (!sessionStorage.getItem('hasSeenEvent')) {
@@ -53,10 +48,8 @@ const App: React.FC = () => {
   return (
     <div className="font-sans text-gray-900 bg-white min-h-screen flex flex-col">
       <Navbar />
-      
       <main className="flex-grow">
         <Routes>
-          {/* Base Navigation */}
           <Route path="/" element={<Home />} />
           <Route path="/home" element={<Home />} />
           <Route path="/team" element={<TeamPage />} />
@@ -65,31 +58,22 @@ const App: React.FC = () => {
           <Route path="/workshops" element={<WorkshopPage />} />
           <Route path="/who-we-help" element={<WhoWeHelpPage />} />
           <Route path="/blog" element={<BlogPage />} />
-          <Route path="/privacy" element={<PrivacyPolicy />} />
-          
-          {/* Functional Destinations */}
           <Route path="/admin" element={<AdminDashboard />} />
           <Route path="/assessment" element={<AssessmentPage />} />
           <Route path="/assessment-success" element={<AssessmentSuccess />} />
 
-          {/* Deep-Dive Audience Routes */}
+          {/* Solution Routes */}
           <Route path="/startups" element={<StartupSolutions />} />
           <Route path="/existing-business" element={<BusinessSolutions />} />
           <Route path="/npos" element={<NPOSolutions />} />
           <Route path="/individuals" element={<IndividualSolutions />} />
         </Routes>
       </main>
-
       <Footer />
       <WhatsAppButton />
       <CookieConsent />
       <FloatingCTA />
-      
-      {/* Managed Modals */}
-      <EventPopup 
-        isOpen={showEvent} 
-        onClose={() => setShowEvent(false)} 
-      />
+      <EventPopup isOpen={showEvent} onClose={() => setShowEvent(false)} />
     </div>
   );
 };
