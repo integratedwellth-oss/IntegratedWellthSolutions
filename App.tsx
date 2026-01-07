@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Routes, Route, useLocation } from 'react-router-dom';
 
-// Layout
+// Layout & Global Components
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
 import WhatsAppButton from './components/WhatsAppButton';
@@ -9,7 +9,7 @@ import CookieConsent from './components/CookieConsent';
 import FloatingCTA from './components/FloatingCTA';
 import EventPopup from './components/EventPopup'; 
 
-// Independent Pages
+// Independent Pages (Matching your components/pages structure)
 import Home from './components/pages/Home';
 import Team from './Team';
 import ServicesPage from './components/pages/ServicesPage';
@@ -18,9 +18,9 @@ import WorkshopPage from './components/pages/WorkshopPage';
 import WhoWeHelpPage from './components/pages/WhoWeHelpPage';
 import BlogPage from './components/pages/BlogPage';
 import PrivacyPolicy from './components/PrivacyPolicy';
-import AdminDashboard from './components/pages/AdminDashboard'; // RESTORED
+import AdminDashboard from './components/pages/AdminDashboard'; 
 
-// Solution Details
+// Solution Details (Matching your components/audiences structure)
 import StartupSolutions from './components/audiences/StartupSolutions';
 import BusinessSolutions from './components/audiences/BusinessSolutions';
 import NPOSolutions from './components/audiences/NPOSolutions';
@@ -61,8 +61,6 @@ const App: React.FC = () => {
           <Route path="/who-we-help" element={<WhoWeHelpPage />} />
           <Route path="/blog" element={<BlogPage />} />
           <Route path="/privacy" element={<PrivacyPolicy />} />
-          
-          {/* Private Route */}
           <Route path="/admin" element={<AdminDashboard />} />
 
           {/* Solution Routes */}
