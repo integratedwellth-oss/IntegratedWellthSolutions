@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Routes, Route, useLocation } from 'react-router-dom';
 
-// Layout
+// --- Layout & Global Components ---
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
 import WhatsAppButton from './components/WhatsAppButton';
@@ -9,19 +9,21 @@ import CookieConsent from './components/CookieConsent';
 import FloatingCTA from './components/FloatingCTA';
 import EventPopup from './components/EventPopup'; 
 
-// Pages
+// --- Primary Page Hubs (from src/components/pages/) ---
 import Home from './components/pages/Home';
-import Team from './Team';
+import Team from './Team'; // Located in root src
 import ServicesPage from './components/pages/ServicesPage';
 import ContactPage from './components/pages/ContactPage';
 import WorkshopPage from './components/pages/WorkshopPage';
 import WhoWeHelpPage from './components/pages/WhoWeHelpPage';
 import BlogPage from './components/pages/BlogPage';
-import PrivacyPolicy from './components/PrivacyPolicy';
 import AdminDashboard from './components/pages/AdminDashboard';
-import AssessmentPage from './components/pages/AssessmentPage'; // NEW PAGE
+import AssessmentPage from './components/pages/AssessmentPage'; // REGISTERED HERE
 
-// Solution Details
+// --- Policy Pages ---
+import PrivacyPolicy from './components/PrivacyPolicy';
+
+// --- Solution Deep-Dives (from src/components/audiences/) ---
 import StartupSolutions from './components/audiences/StartupSolutions';
 import BusinessSolutions from './components/audiences/BusinessSolutions';
 import NPOSolutions from './components/audiences/NPOSolutions';
@@ -33,10 +35,12 @@ const App: React.FC = () => {
   const { pathname } = useLocation();
   const [showEvent, setShowEvent] = useState(false);
 
+  // Global Page Scroll Reset: Ensures every new page starts at the top
   useEffect(() => {
     window.scrollTo(0, 0);
   }, [pathname]);
 
+  // Automated Event Protocol: Triggers the popup after 5 seconds
   useEffect(() => {
     const timer = setTimeout(() => {
       if (!sessionStorage.getItem('hasSeenEvent')) {
@@ -53,6 +57,7 @@ const App: React.FC = () => {
       
       <main className="flex-grow">
         <Routes>
+          {/* Main Navigation Routes */}
           <Route path="/" element={<Home />} />
           <Route path="/home" element={<Home />} />
           <Route path="/team" element={<Team />} />
@@ -62,10 +67,12 @@ const App: React.FC = () => {
           <Route path="/who-we-help" element={<WhoWeHelpPage />} />
           <Route path="/blog" element={<BlogPage />} />
           <Route path="/privacy" element={<PrivacyPolicy />} />
+          
+          {/* Functional Destinations */}
           <Route path="/admin" element={<AdminDashboard />} />
           <Route path="/assessment" element={<AssessmentPage />} />
 
-          {/* Solution Routes */}
+          {/* Deep-Dive Solution Routes */}
           <Route path="/startups" element={<StartupSolutions />} />
           <Route path="/existing-business" element={<BusinessSolutions />} />
           <Route path="/npos" element={<NPOSolutions />} />
@@ -79,6 +86,8 @@ const App: React.FC = () => {
       <WhatsAppButton />
       <CookieConsent />
       <FloatingCTA />
+      
+      {/* Global Modals */}
       <EventPopup isOpen={showEvent} onClose={() => setShowEvent(false)} />
     </div>
   );
