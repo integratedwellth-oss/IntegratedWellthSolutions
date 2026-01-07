@@ -17,7 +17,7 @@ const TEAM = [
     name: "Thabo Leslie Motsumi",
     role: "AI & Digital Marketing Specialist",
     bio: "Expert in AI, Google My Business optimization, SEO Automation, and Smart Digital Marketing systems.",
-    image: "https://res.cloudinary.com/dka0498ns/image/upload/v1766069617/Thabo%20Leslie%20Motsumi.%20AI%20Google%20my%20Business%20profile%20optimization%20Search%20Everywhere%20Optimation%20SEO%20Automation%20and%20Smart%20digital%20marketing.%20vncyse.png",
+    image: "https://res.cloudinary.com/dka0498ns/image/upload/v1766069617/Thabo_Leslie_Motsumi._AI_Google_my_Business_profile_optimization_Search_Everywhere_Optimation_SEO_Automation_and_Smart_digital_marketing._vncyse.png",
     email: "thabo@integratedwellth.co.za"
   },
   {
@@ -56,11 +56,7 @@ const Team = () => {
             {TEAM.map((member, index) => (
               <motion.div
                 key={index}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: index * 0.1 }}
-                className="bg-white rounded-2xl overflow-hidden shadow-md hover:shadow-xl transition-shadow border border-gray-100 group flex flex-col"
+                className="bg-white rounded-2xl overflow-hidden shadow-md border border-gray-100 group flex flex-col"
               >
                 <div className="relative aspect-[3/4] bg-gray-200 overflow-hidden">
                   <img
@@ -74,41 +70,17 @@ const Team = () => {
                     </a>
                   </div>
                 </div>
-                <div className="p-6 flex flex-col flex-grow text-center">
+                <div className="p-6 text-center">
                   <h3 className="text-xl font-bold text-gray-900">{member.name}</h3>
-                  <p className="text-brand-gold font-semibold text-xs uppercase tracking-wider mt-1 mb-3">{member.role}</p>
-                  <p className="text-gray-600 text-sm leading-relaxed flex-grow">
-                    {member.bio}
-                  </p>
+                  <p className="text-brand-gold font-semibold text-xs uppercase mt-1 mb-3">{member.role}</p>
+                  <p className="text-gray-600 text-sm leading-relaxed">{member.bio}</p>
                 </div>
               </motion.div>
             ))}
           </div>
         </div>
       </section>
-
       <Philosophy />
-
-      <section className="py-24 bg-white border-t border-gray-100 text-center">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <RevealOnScroll>
-                <div className="max-w-3xl mx-auto space-y-8">
-                    <h2 className="text-4xl font-bold text-brand-900">Direct Founder Access</h2>
-                    <p className="text-xl text-gray-600 leading-relaxed">
-                        Ready to navigate the South African market with a strategic partner?
-                    </p>
-                    <div className="flex justify-center gap-6">
-                        <a href="mailto:enquiries@integratedwellth.co.za" className="p-4 bg-gray-100 rounded-full text-brand-900 hover:bg-brand-900 hover:text-white transition-all">
-                            <Mail size={24} />
-                        </a>
-                    </div>
-                    <Button size="lg" onClick={() => window.open('https://calendly.com/enquiries-integratedwellth/30min', '_blank')}>
-                        Schedule Introductory Call
-                    </Button>
-                </div>
-            </RevealOnScroll>
-        </div>
-      </section>
     </div>
   );
 };
