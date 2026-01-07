@@ -1,133 +1,99 @@
 import React, { useState, useEffect } from 'react';
-import { 
-  Users, ShieldAlert, Calendar, CheckCircle2, 
-  Search, Filter, ArrowUpRight, MessageSquare, 
-  FileText, Zap, Phone, Mail, AlertCircle, Lightbulb, Target, User, Building
-} from 'lucide-react';
-import { db } from '../../firebase';
+import { db } from '../../firebase'; // Verified Firestore connection
 import { collection, query, orderBy, onSnapshot } from 'firebase/firestore';
+import { Mail, Phone, AlertCircle, CheckCircle2, Lightbulb, Zap, ArrowUpRight } from 'lucide-react';
 import RevealOnScroll from '../RevealOnScroll';
 
-interface Lead {
-  id: string;
-  name: string;
-  enterprise: string;
-  email: string;
-  phone: string;
-  score: number;
-  resultType: string;
-}
+const AdminDashboard = () => {
+  const [leads, setLeads] = useState<any[]>([]);
+  const [selectedLead, setSelectedLead] = useState<any>(null);
 
-const AdminDashboard: React.FC = () => {
-  const [leads, setLeads] = useState<Lead[]>([]);
-  const [selectedLead, setSelectedLead] = useState<Lead | null>(null);
-
-  // REAL-TIME FIREBASE SYNC: Pulling directly from your 'leads' collection
   useEffect(() => {
+    // Real-time sync with the 'leads' collection
     const q = query(collection(db, "leads"), orderBy("timestamp", "desc"));
-    const unsubscribe = onSnapshot(q, (querySnapshot) => {
-      const leadsData: Lead[] = [];
-      querySnapshot.forEach((doc) => {
-        leadsData.push({ id: doc.id, ...doc.data() } as Lead);
-      });
-      setLeads(leadsData);
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      setLeads(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
     });
     return () => unsubscribe();
   }, []);
 
-  // Strategic Intelligence Mapping
-  const getIntelligence = (score: number) => {
-    if (score < 20) return {
-      problems: ["SARS AI Era Vulnerability", "Retrospective Technical Debt", "Leadership Isolation"],
-      solutions: ["Immediate Compliance Triage", "Real-time Bookkeeping Stack", "Neural Resilience Protocol"],
-      recommendation: "Deploy defensive buffer immediately to avoid automated SARS flags."
-    };
-    return {
-      problems: ["Strategic Stagnation", "Cognitive Overload", "Legacy Gaps"],
-      solutions: ["Institutional Scaling Framework", "Capacity Assessment", "Wealth Mapping"],
-      recommendation: "Focus on engineering the business for institutional scale and long-term legacy."
-    };
-  };
-
   return (
-    <div className="pt-32 pb-20 px-6 min-h-screen bg-gray-50">
+    <div className="pt-32 pb-20 px-8 bg-gray-50 min-h-screen">
       <div className="max-w-[1600px] mx-auto">
-        <div className="flex justify-between items-center mb-12">
-          <RevealOnScroll>
-            <h1 className="text-4xl font-sora font-extrabold text-brand-900 tracking-tighter uppercase italic">
-              Strategic <span className="text-brand-gold">Intelligence Center.</span>
-            </h1>
-          </RevealOnScroll>
+        <div className="flex items-center gap-3 text-brand-gold font-black uppercase tracking-[0.4em] text-[10px] mb-8">
+           <Zap size={14} className="animate-pulse" />
+           <span>Sovereign Intelligence Protocol</span>
         </div>
 
         <div className="grid lg:grid-cols-3 gap-8">
-          {/* LEFT: Segmented Lead List */}
-          <div className="lg:col-span-2 bg-white rounded-[2.5rem] shadow-xl border border-gray-100 overflow-hidden">
+          {/* LEFT: Segmented Entry List */}
+          <div className="lg:col-span-2 bg-white rounded-[2.5rem] shadow-sm border border-gray-100 overflow-hidden">
             <table className="w-full text-left">
-              <thead className="bg-gray-50">
-                <tr className="text-[10px] font-black uppercase tracking-widest text-gray-400">
-                  <th className="px-8 py-5">Enterprise & Contact</th>
-                  <th className="px-8 py-5">Score</th>
-                  <th className="px-8 py-5">Diagnostic Tier</th>
-                  <th className="px-8 py-5 text-right">View Deep-Dive</th>
+              <thead className="bg-gray-50 text-[10px] uppercase font-black tracking-widest text-gray-400">
+                <tr>
+                  <th className="p-8">Enterprise & Founder</th>
+                  <th className="p-8">Tier</th>
+                  <th className="p-8 text-right">Intelligence</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-50">
-                {leads.map((lead) => (
-                  <tr key={lead.id} onClick={() => setSelectedLead(lead)} className={`cursor-pointer transition-all ${selectedLead?.id === lead.id ? 'bg-brand-50' : 'hover:bg-gray-50'}`}>
-                    <td className="px-8 py-6">
-                      <p className="font-black text-brand-900 uppercase">{lead.enterprise}</p>
-                      <p className="text-[9px] font-bold text-gray-400 uppercase">{lead.name} • {lead.phone}</p>
+                {leads.map(lead => (
+                  <tr key={lead.id} onClick={() => setSelectedLead(lead)} 
+                      className={`cursor-pointer transition-all ${selectedLead?.id === lead.id ? 'bg-brand-50' : 'hover:bg-gray-50'}`}>
+                    <td className="p-8">
+                      <p className="font-black text-brand-900 uppercase tracking-tighter">{lead.enterprise}</p>
+                      <p className="text-[10px] font-bold text-gray-400 mt-1 uppercase">{lead.name}</p>
                     </td>
-                    <td className="px-8 py-6 font-black text-brand-900 italic">#{lead.score}</td>
-                    <td className="px-8 py-6">
+                    <td className="p-8">
                       <span className={`text-[9px] font-black uppercase tracking-widest px-4 py-1.5 rounded-full ${lead.score < 20 ? 'bg-red-50 text-red-500' : 'bg-emerald-50 text-emerald-500'}`}>
-                        {lead.resultType}
+                        {lead.resultType || "Pending"}
                       </span>
                     </td>
-                    <td className="px-8 py-6 text-right"><ArrowUpRight size={18} className="text-gray-300 ml-auto" /></td>
+                    <td className="p-8 text-right font-black text-brand-gold text-xs">DEEP DIVE <ArrowUpRight className="inline ml-1" size={14}/></td>
                   </tr>
                 ))}
               </tbody>
             </table>
           </div>
 
-          {/* RIGHT: High-Resolution Deep-Dive */}
+          {/* RIGHT: Detailed Intelligence Segment */}
           <div className="lg:col-span-1">
             {selectedLead ? (
-              <div className="bg-white rounded-[3rem] shadow-2xl p-10 space-y-8 animate-fadeIn border-t-8 border-brand-gold">
-                <div>
-                  <h2 className="text-2xl font-black text-brand-900 uppercase tracking-tighter">{selectedLead.enterprise}</h2>
-                  <div className="flex gap-4 mt-2">
-                    <a href={`mailto:${selectedLead.email}`} className="text-[10px] font-bold text-gray-400 flex items-center gap-1 hover:text-brand-gold"><Mail size={12}/> EMAIL</a>
-                    <a href={`tel:${selectedLead.phone}`} className="text-[10px] font-bold text-gray-400 flex items-center gap-1 hover:text-brand-gold"><Phone size={12}/> CONTACT</a>
+              <div className="bg-white rounded-[3rem] p-10 shadow-2xl border-t-8 border-brand-gold space-y-10 animate-fadeIn">
+                <section>
+                  <h2 className="text-3xl font-black text-brand-900 uppercase tracking-tighter leading-none">{selectedLead.enterprise}</h2>
+                  <div className="flex gap-4 mt-4 text-[10px] font-black text-gray-400">
+                    <span className="flex items-center gap-1 hover:text-brand-900"><Mail size={12}/> {selectedLead.email}</span>
+                    <span className="flex items-center gap-1 hover:text-brand-900"><Phone size={12}/> {selectedLead.phone}</span>
                   </div>
-                </div>
+                </section>
 
-                {/* 1. PROBLEMS (Where business lacks) */}
-                <div className="space-y-4">
+                {/* PROBLEMS (Vulnerabilities) */}
+                <section className="space-y-4">
                   <h4 className="flex items-center gap-2 text-red-500 font-black uppercase text-[10px] tracking-widest"><AlertCircle size={14}/> Identified Problems</h4>
-                  {getIntelligence(selectedLead.score).problems.map((p, i) => (
-                    <div key={i} className="p-4 bg-red-50 rounded-xl border border-red-100 text-xs font-bold text-red-700">{p}</div>
-                  ))}
-                </div>
+                  {selectedLead.gaps ? selectedLead.gaps.map((gap: string, i: number) => (
+                    <div key={i} className="p-4 bg-red-50 text-red-700 text-xs font-bold rounded-2xl border border-red-100">{gap}</div>
+                  )) : <p className="text-gray-400 text-[10px] font-bold italic">No gaps recorded.</p>}
+                </section>
 
-                {/* 2. SOLUTIONS */}
-                <div className="space-y-4">
-                  <h4 className="flex items-center gap-2 text-emerald-500 font-black uppercase text-[10px] tracking-widest"><CheckCircle2 size={14}/> IWS Recommendations</h4>
-                  {getIntelligence(selectedLead.score).solutions.map((s, i) => (
-                    <div key={i} className="p-4 bg-emerald-50 rounded-xl border border-emerald-100 text-xs font-bold text-emerald-700">{s}</div>
-                  ))}
-                </div>
+                {/* SOLUTIONS (Recommendations) */}
+                <section className="space-y-4">
+                  <h4 className="flex items-center gap-2 text-emerald-500 font-black uppercase text-[10px] tracking-widest"><CheckCircle2 size={14}/> Proposed Solutions</h4>
+                  {selectedLead.solutions ? selectedLead.solutions.map((sol: string, i: number) => (
+                    <div key={i} className="p-4 bg-emerald-50 text-emerald-700 text-xs font-bold rounded-2xl border border-emerald-100">{sol}</div>
+                  )) : <p className="text-gray-400 text-[10px] font-bold italic">No solutions generated.</p>}
+                </section>
 
-                {/* 3. STRATEGIC ADVICE */}
-                <div className="p-8 bg-brand-900 rounded-[2.5rem] text-white">
-                  <h4 className="text-brand-gold font-black uppercase text-[9px] tracking-[0.3em] mb-4">Final Recommendation</h4>
-                  <p className="text-sm font-medium italic leading-relaxed">"{getIntelligence(selectedLead.score).recommendation}"</p>
-                </div>
+                {/* STRATEGIC ADVICE */}
+                <section className="p-8 bg-brand-900 rounded-[2.5rem] text-white shadow-xl">
+                  <h4 className="text-brand-gold font-black uppercase text-[9px] tracking-widest mb-4">Sovereign Recommendation</h4>
+                  <p className="text-sm font-medium italic leading-relaxed text-brand-50">
+                    "{selectedLead.recommendation || "Pending strategic analysis..."}"
+                  </p>
+                </section>
               </div>
             ) : (
-              <div className="h-full bg-white rounded-[3rem] border-2 border-dashed border-gray-200 flex items-center justify-center p-12 text-gray-400 font-bold uppercase text-xs">
+              <div className="h-full bg-white rounded-[3rem] p-20 text-center border-2 border-dashed border-gray-200 text-gray-400 uppercase font-black text-xs">
                 Select entry to initialize deep-dive
               </div>
             )}
