@@ -1,6 +1,7 @@
 import React from 'react';
 import Team from '../../Team'; 
-import Philosophy from '../Philosophy'; // Corrected relative path
+// FIX: Changed path from './components/Philosophy' to '../Philosophy'
+import Philosophy from '../Philosophy'; 
 
 const TeamPage: React.FC = () => {
   return (
