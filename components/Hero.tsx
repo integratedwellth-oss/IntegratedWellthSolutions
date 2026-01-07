@@ -3,17 +3,11 @@ import Button from './Button';
 import { ArrowRight, ShieldCheck } from 'lucide-react';
 
 const Hero: React.FC = () => {
-  const triggerAssessment = () => {
-    window.location.hash = '#assessment';
-  };
-
+  const triggerAssessment = () => { window.location.hash = '#assessment'; };
   const scrollToServices = () => {
     const servicesSection = document.getElementById('services-anchor');
-    if (servicesSection) {
-      servicesSection.scrollIntoView({ behavior: 'smooth' });
-    } else {
-      window.location.hash = '#services';
-    }
+    if (servicesSection) servicesSection.scrollIntoView({ behavior: 'smooth' });
+    else window.location.hash = '#services';
   };
 
   return (
