@@ -3,35 +3,106 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Integrated Wellth Solutions</title>
-    <meta name="description" content="Holistic consulting merging accounting and psychology." />
+    <title>Integrated Wellth Solutions | Strategic Business Consulting</title>
+    <meta name="description" content="Holistic consulting merging accounting and psychology for SMEs, startups, and NPOs in South Africa. Expert tax compliance, financial management, and emotional intelligence support." />
     <link rel="icon" type="image/png" href="https://res.cloudinary.com/dka0498ns/image/upload/v1765747786/favicon_ofkkb1.png" />
     
+    <!-- Tailwind CDN for quick styling -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
       tailwind.config = {
         theme: {
           extend: {
             colors: {
-              brand: { 50: '#f0fdfa', 100: '#ccfbf1', 500: '#14b8a6', 600: '#0d9488', 900: '#134e4a', gold: '#d4af37' }
+              brand: { 
+                50: '#f0fdfa', 
+                100: '#ccfbf1', 
+                200: '#99f6e4',
+                500: '#14b8a6', 
+                600: '#0d9488', 
+                700: '#0f766e',
+                800: '#115e59',
+                900: '#134e4a', 
+                gold: '#d4af37' 
+              }
+            },
+            fontFamily: {
+              sans: ['Inter', 'system-ui', 'sans-serif'],
+              sora: ['Sora', 'sans-serif'],
             },
             animation: {
               fadeIn: 'fadeIn 0.5s ease-out forwards',
+              scaleIn: 'scaleIn 0.3s ease-out forwards',
+              'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
             },
             keyframes: {
-              fadeIn: { '0%': { opacity: '0' }, '100%': { opacity: '1' } }
+              fadeIn: { 
+                '0%': { opacity: '0' }, 
+                '100%': { opacity: '1' } 
+              },
+              scaleIn: {
+                '0%': { transform: 'scale(0.95)', opacity: '0' },
+                '100%': { transform: 'scale(1)', opacity: '1' }
+              }
             }
           }
         }
       }
     </script>
     
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Sora:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- External Dependencies -->
     <link href="https://assets.calendly.com/assets/external/widget.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
+    
+    <!-- Global Styles -->
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      
+      html {
+        scroll-behavior: smooth;
+      }
+      
+      body {
+        font-family: 'Inter', system-ui, sans-serif;
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+      }
+      
+      #root {
+        min-height: 100vh;
+      }
+      
+      /* Custom scrollbar */
+      ::-webkit-scrollbar {
+        width: 10px;
+      }
+      
+      ::-webkit-scrollbar-track {
+        background: #f0fdfa;
+      }
+      
+      ::-webkit-scrollbar-thumb {
+        background: #14b8a6;
+        border-radius: 5px;
+      }
+      
+      ::-webkit-scrollbar-thumb:hover {
+        background: #0d9488;
+      }
+    </style>
   </head>
   <body>
     <div id="root"></div>
-    <script type="module" src="./main.tsx"></script>
+    <script type="module" src="/src/main.tsx"></script>
     <script src="https://assets.calendly.com/assets/external/widget.js" async></script>
   </body>
 </html>
