@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 // Force the .ts extension to avoid collision with firebase.json
-import { db } from '../../firebase.ts'; 
+import { db } from '../../firebase'; 
 import { collection, query, orderBy, onSnapshot } from 'firebase/firestore';
 import { Mail, Phone, AlertCircle, CheckCircle2, Zap, ArrowUpRight, BarChart3 } from 'lucide-react';
 
