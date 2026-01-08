@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { X, ChevronRight, Lock } from 'lucide-react';
-import { QUIZ_QUESTIONS } from '../constants'; // Ensure this matches constants.ts
+import { QUIZ_QUESTIONS } from '../constants'; 
 import Button from './Button';
 import { db } from '../firebase';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
@@ -17,7 +17,6 @@ const FinancialHealthScore = ({ isOpen, onClose, isModal = false }: any) => {
 
   const handleOptionSelect = (optionScore: number) => {
     setScore(score + optionScore);
-    // FIX: Corrected spelling from QUI_QUESTIONS to QUIZ_QUESTIONS
     if (step < QUIZ_QUESTIONS.length - 1) {
       setStep(step + 1);
     } else {
@@ -67,7 +66,7 @@ const FinancialHealthScore = ({ isOpen, onClose, isModal = false }: any) => {
             </div>
             <div className="grid gap-4">
               <input required placeholder="Full Name" className="w-full p-4 bg-gray-50 border rounded-xl font-bold" onChange={e => setLeadData({...leadData, name: e.target.value})} />
-              <input required placeholder="Enterprise" className="w-full p-4 bg-gray-50 rounded-xl font-bold" onChange={e => setLeadData({...leadData, enterprise: e.target.value})} />
+              <input required placeholder="Enterprise" className="w-full p-4 bg-gray-50 border rounded-xl font-bold" onChange={e => setLeadData({...leadData, enterprise: e.target.value})} />
               <input required type="email" placeholder="Email Address" className="w-full p-4 bg-gray-50 border rounded-xl font-bold" onChange={e => setLeadData({...leadData, email: e.target.value})} />
               <input required placeholder="Phone Number" className="w-full p-4 bg-gray-50 border rounded-xl font-bold" onChange={e => setLeadData({...leadData, phone: e.target.value})} />
               <Button type="submit" className="w-full py-5 font-black uppercase tracking-widest text-xs">Initialize My Strategy</Button>
