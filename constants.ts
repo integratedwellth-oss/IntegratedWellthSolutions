@@ -1,16 +1,138 @@
+// ===========================
+// CONTACT INFORMATION
+// ===========================
+
 export const CONTACT_INFO = {
   email: "enquiries@integratedwellth.co.za",
   phone: "+27 74 494 0771",
   address: "Munyaka Lifestyle Estate, Pretoria, SA",
   calendlyUrl: "https://calendly.com/enquiries-integratedwellth/30min",
-  quicketUrl: "https://www.quicket.co.za/events/352598-financial-clarity-for-non-financial-business-owners/#/"
+  quicketUrl: "https://www.quicket.co.za/events/352598-financial-clarity-for-non-financial-business-owners/#/",
+  whatsapp: "https://wa.me/27744940771"
 };
+
+// ===========================
+// TYPE DEFINITIONS
+// ===========================
 
 export interface QuizQuestion {
   question: string;
   category: string;
   options: { text: string; score: number }[];
 }
+
+export interface Pillar {
+  title: string;
+  description: string;
+  details: string[];
+}
+
+export interface Audience {
+  id: string;
+  label: string;
+  content: string;
+  services: string[];
+  image: string;
+}
+
+export interface Testimonial {
+  name: string;
+  role: string;
+  quote: string;
+  type: string;
+}
+
+// ===========================
+// PILLARS (Required by Services.tsx)
+// ===========================
+
+export const PILLARS: Pillar[] = [
+  {
+    title: "Financial Management",
+    description: "Technical IQ readiness for the 2026 SARS AI era.",
+    details: ["Continuous Accounting", "Tax Triage", "Audit Readiness"]
+  },
+  {
+    title: "Emotional Intelligence",
+    description: "Behavioral EQ to resolve Leadership Isolation.",
+    details: ["Neural Resilience", "Decision Support", "Mindset Strategy"]
+  },
+  {
+    title: "Digital Innovation",
+    description: "Automated tech-stacks that eliminate manual debt.",
+    details: ["System Integration", "Data Triangulation", "Workflow Logic"]
+  }
+];
+
+// ===========================
+// AUDIENCES (Required by Audience.tsx)
+// ===========================
+
+export const AUDIENCES: Audience[] = [
+  {
+    id: "startups",
+    label: "Startups",
+    content: "Build a solid foundation before you scale. We help you structure for success from day one.",
+    services: ["Business Registration", "Tax Clearance", "Initial Strategy"],
+    image: "https://res.cloudinary.com/dka0498ns/image/upload/v1765744607/Integrated_Wellth_that_support_for_startup_businesses_wtnrwq.png"
+  },
+  {
+    id: "business",
+    label: "Existing Business",
+    content: "Optimize your operations and ensure 2026 Compliance while managing growth.",
+    services: ["Monthly bookkeeping", "Management Accounts", "Annual Financial Statements", "Tax Planning", "Strategic Workshops"],
+    image: "https://res.cloudinary.com/dka0498ns/image/upload/v1765745275/Integrated_Wellth_in_support_for_existing_businesses._nnnmib.png"
+  },
+  {
+    id: "npo",
+    label: "NGOs / NPOs",
+    content: "Navigate the complex world of PBO registration and grant management.",
+    services: ["Compliance and Financial Oversight", "NPO Registration", "PBO Registration", "Grant Management", "Reporting (Accounting Officer)"],
+    image: "https://res.cloudinary.com/dka0498ns/image/upload/v1765745902/Integrated_Wellth_in_support_for_NGOs_NPOs_u7exko.png"
+  },
+  {
+    id: "individuals",
+    label: "Individuals & Teens",
+    content: "Plan your career and personal wealth map early for a secure future.",
+    services: ["Career Guidance", "Personal Wealth Mapping", "Tax Returns"],
+    image: "https://res.cloudinary.com/dka0498ns/image/upload/v1765746428/Integrated_Wellth_in_support_for_Individuals_Teens_Solutions._j58vsp.png"
+  }
+];
+
+// ===========================
+// TESTIMONIALS
+// ===========================
+
+export const TESTIMONIALS: Testimonial[] = [
+  {
+    name: "Thabiso Nothana",
+    role: "Executive Director, Nothana Holdings",
+    quote: "Ms. Kgaphola successfully consolidated two years of complex financial data... reducing our reconciliation time by over 40%. Her management accounts provided us with actionable insights.",
+    type: "Holdings & Investment"
+  },
+  {
+    name: "Kidibone Lidovho",
+    role: "Director & CEO, Bluevalley Transport",
+    quote: "Marcia played a pivotal role in securing an appointment with SARS and facilitating the settlement of our outstanding VAT. We are now compliant and payments are structured.",
+    type: "Logistics & Transport"
+  },
+  {
+    name: "Johannes Setladi",
+    role: "CEO, The Ludo League SA",
+    quote: "Their team assisted us in developing several Business Plans and provided sound advice during critical moments. They listened, understood our challenges, and provided practical solutions.",
+    type: "Sports & Recreation"
+  },
+  {
+    name: "Makoma Nothana",
+    role: "Mnoth Facility Solutions",
+    quote: "Demonstrated reliability, professionalism, and efficiency in delivering financial bookkeeping and consolidations. Their commitment to timely delivery was instrumental.",
+    type: "Facility Management"
+  }
+];
+
+// ===========================
+// QUIZ QUESTIONS (12 Questions)
+// ===========================
 
 export const QUIZ_QUESTIONS: QuizQuestion[] = [
   // PILLAR 1: TECHNICAL IQ
