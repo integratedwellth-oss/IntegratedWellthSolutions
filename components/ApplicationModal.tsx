@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { X, Send, Briefcase, User, Phone, Mail, Loader2, Calendar } from 'lucide-react';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore'; 
-import { db } from '../firebaseConfig'; 
+import { db } from '../firebase'; 
 
 interface ApplicationModalProps {
   isOpen: boolean;
