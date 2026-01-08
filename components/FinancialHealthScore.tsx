@@ -3,8 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import { X, ChevronRight, Activity, ShieldCheck, Lock, User, Building, Mail, Phone } from 'lucide-react';
 import { QUIZ_QUESTIONS } from '../constants';
 import Button from './Button';
-// Updated import to point to firebase-config.ts
-import { db } from '../firebase-config'; 
+// Correct relative path from components/ to src/
+import { db } from '../firebase';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 
 interface FinancialHealthScoreProps {
