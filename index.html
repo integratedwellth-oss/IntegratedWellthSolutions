@@ -3,32 +3,47 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Integrated Wellth Solutions | Strategic Intelligence</title>
+    <title>Integrated Wellth Solutions</title>
+    <link rel="icon" type="image/png" href="https://res.cloudinary.com/dka0498ns/image/upload/v1765747786/favicon_ofkkb1.png" />
     
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&family=Sora:wght@400;800&display=swap" rel="stylesheet">
-    
+    <!-- Tailwind CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
       tailwind.config = {
         theme: {
           extend: {
             colors: {
-              brand: { 50: '#f0fdfa', 500: '#14b8a6', 900: '#134e4a', gold: '#d4af37' }
+              brand: { 
+                50: '#f0fdfa', 
+                100: '#ccfbf1', 
+                200: '#99f6e4',
+                500: '#14b8a6', 
+                600: '#0d9488', 
+                700: '#0f766e',
+                800: '#115e59',
+                900: '#134e4a', 
+                gold: '#d4af37' 
+              }
             },
-            fontFamily: { sora: ['Sora', 'sans-serif'], inter: ['Inter', 'sans-serif'] }
+            fontFamily: {
+              sans: ['Inter', 'system-ui', 'sans-serif'],
+              sora: ['Sora', 'sans-serif'],
+            }
           }
         }
       }
     </script>
-    <style>
-      body { margin: 0; font-family: 'Inter', sans-serif; }
-      #root { min-height: 100vh; }
-    </style>
+    
+    <!-- External CSS -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Sora:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://assets.calendly.com/assets/external/widget.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
   </head>
   <body>
     <div id="root"></div>
-    <script type="module" src="./src/main.tsx"></script>
+    <script type="module" src="/src/main.tsx"></script>
+    <script src="https://assets.calendly.com/assets/external/widget.js" async></script>
   </body>
 </html>
