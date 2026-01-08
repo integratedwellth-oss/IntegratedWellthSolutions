@@ -1,24 +1,38 @@
 import React from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 
-// Simple placeholder components that CANNOT crash
-const SafeHome = () => (
-  <div className="min-h-screen flex flex-col items-center justify-center bg-teal-900 text-white p-4 text-center">
-    <h1 className="text-4xl font-bold mb-4">Integrated Wellth Solutions</h1>
-    <div className="p-6 bg-white/10 rounded-xl border border-white/20">
-      <p className="text-xl font-bold text-yellow-400">System Status: ONLINE</p>
-      <p className="mt-2">The Strategic Intelligence Platform is initializing...</p>
-    </div>
-    <p className="mt-8 text-sm opacity-50">Safe Mode Protocol Active</p>
+// Temporary simple components to test if build works
+const TestHome = () => (
+  <div style={{ padding: '40px', textAlign: 'center' }}>
+    <h1 style={{ color: '#134e4a', fontSize: '48px' }}>Integrated Wellth Solutions</h1>
+    <p style={{ fontSize: '20px', marginTop: '20px' }}>
+      If you see this, the build is working!
+    </p>
+    <p style={{ color: '#666', marginTop: '40px' }}>
+      Next step: Gradually add back your components one by one
+    </p>
   </div>
 );
 
 function App() {
   return (
-    <Routes>
-      <Route path="/" element={<SafeHome />} />
-      <Route path="*" element={<Navigate to="/" replace />} />
-    </Routes>
+    <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
+      <header style={{ background: '#134e4a', color: 'white', padding: '20px' }}>
+        <h2>IWS Test Build</h2>
+      </header>
+      
+      <main style={{ flex: 1 }}>
+        <Routes>
+          <Route path="/" element={<TestHome />} />
+          <Route path="/home" element={<TestHome />} />
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
+      </main>
+      
+      <footer style={{ background: '#f1f1f1', padding: '20px', textAlign: 'center' }}>
+        <p>© 2024 Integrated Wellth Solutions</p>
+      </footer>
+    </div>
   );
 }
 
