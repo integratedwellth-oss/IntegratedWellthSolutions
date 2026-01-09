@@ -25,8 +25,9 @@ const Founder = () => {
           <div className="md:col-span-5 sticky top-32">
             <div className="relative">
               <div className="absolute -inset-4 bg-brand-gold/10 rounded-[2rem] transform -rotate-2"></div>
+              {/* REAL IMAGE: Marcia Kgaphola */}
               <img 
-                src="https://res.cloudinary.com/dka0498ns/image/upload/v1765057729/Founder_Marcia_Kgaphola_agebxi.jpg" 
+                src="https://res.cloudinary.com/dka0498ns/image/upload/v1765321877/Integrated_Wellth_Solution_Founder._Marcia_Kgaphola_t5u2ea.jpg" 
                 alt="Marcia Kgaphola" 
                 className="w-full rounded-[2rem] shadow-2xl relative z-10" 
               />
