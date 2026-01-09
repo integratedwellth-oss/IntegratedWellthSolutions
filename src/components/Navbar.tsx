@@ -26,10 +26,10 @@ const Navbar = () => {
     <nav className="fixed w-full z-50 top-6 flex justify-center pointer-events-none px-4">
       <div className={`
         pointer-events-auto transition-all duration-500 ease-out
-        ${scrolled ? 'py-2 px-6 bg-brand-900/90' : 'py-4 px-8 bg-brand-900/80'}
-        backdrop-blur-xl border border-white/20 shadow-[0_8px_32px_0_rgba(0,0,0,0.36)]
-        rounded-full flex justify-between items-center gap-8 lg:gap-12
-        max-w-6xl w-auto
+        ${scrolled ? 'py-2 px-6 bg-brand-900/95' : 'py-4 px-8 bg-brand-900/85'}
+        backdrop-blur-xl border border-white/10 shadow-[0_8px_32px_0_rgba(0,0,0,0.36)]
+        rounded-full flex justify-between items-center gap-4 lg:gap-8
+        max-w-7xl w-auto
       `}>
         
         {/* LOGO */}
@@ -45,21 +45,22 @@ const Navbar = () => {
         <div className="hidden lg:flex items-center gap-1">
           {[
             { name: 'Base', path: '/' },
+            { name: 'About', path: '/founder' }, // NEW
             { name: 'Solutions', path: '/who-we-help' },
             { name: 'Services', path: '/services' },
-            { name: 'Gallery', path: '/gallery' }, // NEW LINK
-            { name: 'Team', path: '/team' },
+            { name: 'Intelligence', path: '/blog' }, // NEW (Blogs)
+            { name: 'Gallery', path: '/gallery' },
             { name: 'Contact', path: '/contact' },
           ].map((link) => (
             <button
               key={link.name}
               onClick={() => navTo(link.path)}
               className={`
-                px-4 py-2 rounded-full text-sm font-medium tracking-wide transition-all duration-300
+                px-4 py-2 rounded-full text-xs font-bold tracking-widest uppercase transition-all duration-300
                 font-inter
                 ${isActive(link.path) 
-                  ? 'bg-white text-brand-900 shadow-lg font-bold' 
-                  : 'text-white/80 hover:text-white hover:bg-white/10'}
+                  ? 'bg-white text-brand-900 shadow-lg' 
+                  : 'text-white/70 hover:text-white hover:bg-white/10'}
               `}
             >
               {link.name}
@@ -71,7 +72,7 @@ const Navbar = () => {
         <div className="hidden lg:block">
           <button 
             onClick={() => navTo('/war-room')} 
-            className="flex items-center gap-2 px-5 py-2 rounded-full bg-gradient-to-r from-red-600 to-red-500 text-white text-xs font-bold uppercase tracking-wider shadow-lg shadow-red-500/30 hover:shadow-red-500/50 hover:scale-105 transition-all duration-300"
+            className="flex items-center gap-2 px-5 py-2 rounded-full bg-gradient-to-r from-red-600 to-red-500 text-white text-[10px] font-black uppercase tracking-widest shadow-lg shadow-red-500/30 hover:shadow-red-500/50 hover:scale-105 transition-all duration-300"
           >
             <ShieldAlert size={14} /> War Room
           </button>
@@ -85,15 +86,16 @@ const Navbar = () => {
 
       {/* MOBILE MENU */}
       {isOpen && (
-        <div className="fixed inset-0 bg-brand-900/98 backdrop-blur-3xl z-40 flex flex-col items-center justify-center gap-8 pointer-events-auto animate-in fade-in duration-200">
-          <button onClick={() => navTo('/')} className="text-3xl font-bold text-white font-sora">Base</button>
-          <button onClick={() => navTo('/who-we-help')} className="text-3xl font-bold text-white font-sora">Solutions</button>
-          <button onClick={() => navTo('/services')} className="text-3xl font-bold text-white font-sora">Services</button>
-          <button onClick={() => navTo('/gallery')} className="text-3xl font-bold text-white font-sora">Gallery</button>
-          <button onClick={() => navTo('/team')} className="text-3xl font-bold text-white font-sora">Team</button>
-          <button onClick={() => navTo('/contact')} className="text-3xl font-bold text-white font-sora">Contact</button>
+        <div className="fixed inset-0 bg-brand-900/98 backdrop-blur-3xl z-40 flex flex-col items-center justify-center gap-6 pointer-events-auto animate-in fade-in duration-200">
+          <button onClick={() => navTo('/')} className="text-2xl font-bold text-white font-sora">Base</button>
+          <button onClick={() => navTo('/founder')} className="text-2xl font-bold text-white font-sora">About Founder</button>
+          <button onClick={() => navTo('/who-we-help')} className="text-2xl font-bold text-white font-sora">Solutions</button>
+          <button onClick={() => navTo('/services')} className="text-2xl font-bold text-white font-sora">Services</button>
+          <button onClick={() => navTo('/blog')} className="text-2xl font-bold text-white font-sora">Intelligence</button>
+          <button onClick={() => navTo('/gallery')} className="text-2xl font-bold text-white font-sora">Gallery</button>
+          <button onClick={() => navTo('/contact')} className="text-2xl font-bold text-white font-sora">Contact</button>
           <div className="w-16 h-1 bg-brand-gold/30 rounded-full my-4"></div>
-          <button onClick={() => navTo('/war-room')} className="text-2xl font-bold text-red-500 flex items-center gap-3 bg-red-500/10 px-6 py-3 rounded-full border border-red-500/20">
+          <button onClick={() => navTo('/war-room')} className="text-xl font-bold text-red-500 flex items-center gap-3 bg-red-500/10 px-6 py-3 rounded-full border border-red-500/20">
             <ShieldAlert /> War Room
           </button>
           
