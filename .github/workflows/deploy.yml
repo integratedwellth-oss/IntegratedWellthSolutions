@@ -25,13 +25,16 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 20
-          # Cache line removed to prevent lock-file error
           
       - name: Install dependencies
         run: npm install
         
       - name: Build
         run: npm run build
+        
+      # THIS IS THE NEW MAGIC STEP THAT FIXES THE 404 ERROR
+      - name: Create 404 Fallback
+        run: cp dist/index.html dist/404.html
         
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
