@@ -1,42 +1,87 @@
 export const QUIZ_QUESTIONS = [
+  // SECTION 1: FINANCIAL IQ
   {
-    category: "Technical IQ",
-    question: "Accounting Frequency: How often are your records reconciled?",
+    category: "Financial Hygiene",
+    question: "How often are your management accounts reconciled and reviewed?",
     options: [
-      { text: "Retrospective: Only at year-end.", score: 1 },
-      { text: "Quarterly: Catch up every few months.", score: 2 },
-      { text: "Monthly: Month-end process.", score: 3 },
-      { text: "Continuous: Live data integration.", score: 4 }
+      { text: "Annually (Only for tax season)", score: 1 },
+      { text: "Quarterly (Catch-up)", score: 2 },
+      { text: "Monthly (Standard)", score: 3 },
+      { text: "Weekly/Continuous (Real-time intel)", score: 4 }
     ]
   },
   {
-    category: "Technical IQ",
-    question: "The Digital Trail: Is every transaction proofed?",
+    category: "Financial Hygiene",
+    question: "Do you have a documented 12-month cash flow forecast?",
     options: [
-      { text: "No: Bank descriptions only.", score: 1 },
-      { text: "Partially: Missing small receipts.", score: 2 },
-      { text: "Most: Scanned/App based.", score: 3 },
-      { text: "Complete: 100% Audit Ready.", score: 4 }
+      { text: "No, I run on bank balance.", score: 1 },
+      { text: "Rough mental estimate.", score: 2 },
+      { text: "Yes, distinct from the budget.", score: 3 },
+      { text: "Yes, stress-tested for scenarios.", score: 4 }
     ]
   },
   {
-    category: "Behavioral EQ",
-    question: "Decision Fatigue: Impact on leadership?",
+    category: "Financial Hygiene",
+    question: "Is your personal wealth separated from business capital?",
     options: [
-      { text: "High: I am drowning in admin.", score: 1 },
-      { text: "Significant: Drains my energy.", score: 2 },
-      { text: "Moderate: Some systems in place.", score: 3 },
-      { text: "Low: Focus entirely on vision.", score: 4 }
+      { text: "No, it's all one pot.", score: 1 },
+      { text: "Mostly, but I dip in occasionally.", score: 2 },
+      { text: "Yes, clear separation.", score: 3 },
+      { text: "Yes, with a holding structure.", score: 4 }
+    ]
+  },
+  
+  // SECTION 2: BEHAVIORAL EQ
+  {
+    category: "Founder Psychology",
+    question: "How dependent is the business on your daily presence?",
+    options: [
+      { text: "It stops if I stop.", score: 1 },
+      { text: "Decisions wait for me.", score: 2 },
+      { text: "Teams run operations, I lead strategy.", score: 3 },
+      { text: "Fully autonomous (Legacy Ready).", score: 4 }
     ]
   },
   {
-    category: "Cash Flow",
-    question: "Cash Buffer: Survival timeline?",
+    category: "Founder Psychology",
+    question: "How would you rate your decision fatigue levels?",
     options: [
-      { text: "< 15 Days: Survival Mode.", score: 1 },
-      { text: "30-60 Days: Fragile.", score: 2 },
-      { text: "90 Days: Standard.", score: 3 },
-      { text: "120+ Days: Strategic.", score: 4 }
+      { text: "Overwhelming / Burnout imminent.", score: 1 },
+      { text: "High stress, constant firefighting.", score: 2 },
+      { text: "Manageable pressure.", score: 3 },
+      { text: "Clear, calm, strategic.", score: 4 }
+    ]
+  },
+  {
+    category: "Founder Psychology",
+    question: "Do you have a succession plan in place?",
+    options: [
+      { text: "No plan.", score: 1 },
+      { text: "Vague idea in my head.", score: 2 },
+      { text: "Documented but not communicated.", score: 3 },
+      { text: "Fully legal and communicated plan.", score: 4 }
+    ]
+  },
+
+  // SECTION 3: SYSTEM EFFICIENCY
+  {
+    category: "Digital Maturity",
+    question: "How manual are your administrative workflows?",
+    options: [
+      { text: "100% Manual / Paper-based.", score: 1 },
+      { text: "Excel heavy / Disconnected apps.", score: 2 },
+      { text: "Cloud accounting + some tools.", score: 3 },
+      { text: "Fully integrated tech stack.", score: 4 }
+    ]
+  },
+  {
+    category: "Digital Maturity",
+    question: "Are your tax submissions automated or manual triage?",
+    options: [
+      { text: "Panic at the deadline.", score: 1 },
+      { text: "Manual preparation every time.", score: 2 },
+      { text: "Outsourced but reactive.", score: 3 },
+      { text: "Automated & proactive compliance.", score: 4 }
     ]
   }
 ];
