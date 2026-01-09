@@ -1,14 +1,39 @@
 import React from 'react';
 
 const Gallery = () => {
-  // Using placeholders. You can replace these URLs with your specific event photos later.
   const images = [
-    { url: "https://res.cloudinary.com/dka0498ns/image/upload/v1765057729/Founder_Marcia_Kgaphola_agebxi.jpg", caption: "Executive Strategy Session" },
-    { url: "https://images.unsplash.com/photo-1556761175-5973dc0f32e7?q=80&w=1932&auto=format&fit=crop", caption: "Boardroom Governance" },
-    { url: "https://images.unsplash.com/photo-1542744173-8e7e53415bb0?q=80&w=2070&auto=format&fit=crop", caption: "Financial IQ Workshop" },
-    { url: "https://images.unsplash.com/photo-1551836022-d5d88e9218df?q=80&w=2070&auto=format&fit=crop", caption: "Team Alignment" },
-    { url: "https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?q=80&w=2070&auto=format&fit=crop", caption: "Legacy Planning" },
-    { url: "https://images.unsplash.com/photo-1531545514256-b1400bc00f31?q=80&w=1974&auto=format&fit=crop", caption: "Digital Systems Integration" },
+    { 
+      url: "https://res.cloudinary.com/dka0498ns/image/upload/v1765321879/Integrated_Wellth_War_room_mfqafl.jpg", 
+      caption: "The War Room Strategy Session" 
+    },
+    { 
+      url: "https://res.cloudinary.com/dka0498ns/image/upload/v1765321879/Integrated_Wellth_-_Women_empowerment_tahf5l.jpg", 
+      caption: "Women Empowerment Initiative" 
+    },
+    { 
+      url: "https://res.cloudinary.com/dka0498ns/image/upload/v1765321879/Integrated_Wellth_Business_Lunch_raaj59.jpg", 
+      caption: "Executive Business Lunch" 
+    },
+    { 
+      url: "https://res.cloudinary.com/dka0498ns/image/upload/v1765321879/Integrated_Wellth_with_HEIR_pdqsye.jpg", 
+      caption: "IWS with HEIR" 
+    },
+    { 
+      url: "https://res.cloudinary.com/dka0498ns/image/upload/v1765321879/Integrated_Wellth_kids_Miss_Tembisa_oizqwt.jpg", 
+      caption: "Miss Tembisa Community Support" 
+    },
+    { 
+      url: "https://res.cloudinary.com/dka0498ns/image/upload/v1765321878/Integrated_Wellth_Financial_Literacy._nscht7.jpg", 
+      caption: "Financial Literacy Training" 
+    },
+    { 
+      url: "https://res.cloudinary.com/dka0498ns/image/upload/v1765321878/Integrated_Wellth_Financial_Literacy_sessions_gkvdll.jpg", 
+      caption: "Classroom Sessions" 
+    },
+    { 
+      url: "https://res.cloudinary.com/dka0498ns/image/upload/v1765644818/Accountability_Partnership._SMMEs_review_session._egzihs.jpg", 
+      caption: "SMME Accountability Review" 
+    }
   ];
 
   return (
@@ -19,7 +44,7 @@ const Gallery = () => {
             Operational <span className="text-brand-gold">Theater.</span>
           </h1>
           <p className="text-lg text-gray-500 max-w-2xl mx-auto font-medium">
-            Visual intelligence from our workshops, strategy sessions, and client engagements.
+            Visual intelligence from our workshops, strategy sessions, and community engagements.
           </p>
         </div>
 
