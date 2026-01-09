@@ -4,10 +4,11 @@ import Navbar from './components/Navbar';
 import Home from './pages/Home';
 import WarRoom from './components/WarRoom';
 import Services from './pages/Services'; 
-import Team from './pages/Team'; // NEW
-import WhoWeHelp from './pages/WhoWeHelp'; // NEW
-import Contact from './pages/Contact'; // NEW
+import Team from './pages/Team'; 
+import WhoWeHelp from './pages/WhoWeHelp'; 
+import Contact from './pages/Contact'; 
 import NeuralCFO from './components/NeuralCFO';
+import Admin from './pages/Admin'; // NEW IMPORT
 
 const App = () => {
   return (
@@ -22,9 +23,13 @@ const App = () => {
           <Route path="/" element={<Home />} />
           <Route path="/war-room" element={<WarRoom />} />
           <Route path="/services" element={<Services />} />
-          <Route path="/team" element={<Team />} /> {/* NEW */}
-          <Route path="/who-we-help" element={<WhoWeHelp />} /> {/* NEW */}
-          <Route path="/contact" element={<Contact />} /> {/* NEW */}
+          <Route path="/team" element={<Team />} /> 
+          <Route path="/who-we-help" element={<WhoWeHelp />} /> 
+          <Route path="/contact" element={<Contact />} />
+          
+          {/* CLASSIFIED ROUTE */}
+          <Route path="/command" element={<Admin />} /> 
+          
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </main>
