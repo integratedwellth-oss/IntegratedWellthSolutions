@@ -8,7 +8,6 @@ const Navbar = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
-  // Detect scroll to tighten the navbar further when moving
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 20);
     window.addEventListener('scroll', handleScroll);
@@ -29,11 +28,11 @@ const Navbar = () => {
         pointer-events-auto transition-all duration-500 ease-out
         ${scrolled ? 'py-2 px-6 bg-brand-900/90' : 'py-4 px-8 bg-brand-900/80'}
         backdrop-blur-xl border border-white/20 shadow-[0_8px_32px_0_rgba(0,0,0,0.36)]
-        rounded-full flex justify-between items-center gap-12
-        max-w-5xl w-auto
+        rounded-full flex justify-between items-center gap-8 lg:gap-12
+        max-w-6xl w-auto
       `}>
         
-        {/* LOGO (Bright & Clear) */}
+        {/* LOGO */}
         <div onClick={() => navTo('/')} className="flex-shrink-0 cursor-pointer hover:opacity-80 transition-opacity">
           <img 
             src="https://res.cloudinary.com/dka0498ns/image/upload/v1765049634/Integrated_Wellth_Solutions_Logo_bodmyc.png" 
@@ -42,12 +41,13 @@ const Navbar = () => {
           />
         </div>
 
-        {/* DESKTOP LINKS (Professional Font) */}
+        {/* DESKTOP LINKS */}
         <div className="hidden lg:flex items-center gap-1">
           {[
             { name: 'Base', path: '/' },
             { name: 'Solutions', path: '/who-we-help' },
             { name: 'Services', path: '/services' },
+            { name: 'Gallery', path: '/gallery' }, // NEW LINK
             { name: 'Team', path: '/team' },
             { name: 'Contact', path: '/contact' },
           ].map((link) => (
@@ -55,7 +55,7 @@ const Navbar = () => {
               key={link.name}
               onClick={() => navTo(link.path)}
               className={`
-                px-5 py-2 rounded-full text-sm font-medium tracking-wide transition-all duration-300
+                px-4 py-2 rounded-full text-sm font-medium tracking-wide transition-all duration-300
                 font-inter
                 ${isActive(link.path) 
                   ? 'bg-white text-brand-900 shadow-lg font-bold' 
@@ -67,7 +67,7 @@ const Navbar = () => {
           ))}
         </div>
 
-        {/* WAR ROOM BUTTON (Distinct) */}
+        {/* WAR ROOM BUTTON */}
         <div className="hidden lg:block">
           <button 
             onClick={() => navTo('/war-room')} 
@@ -83,12 +83,13 @@ const Navbar = () => {
         </button>
       </div>
 
-      {/* MOBILE MENU OVERLAY */}
+      {/* MOBILE MENU */}
       {isOpen && (
         <div className="fixed inset-0 bg-brand-900/98 backdrop-blur-3xl z-40 flex flex-col items-center justify-center gap-8 pointer-events-auto animate-in fade-in duration-200">
           <button onClick={() => navTo('/')} className="text-3xl font-bold text-white font-sora">Base</button>
           <button onClick={() => navTo('/who-we-help')} className="text-3xl font-bold text-white font-sora">Solutions</button>
           <button onClick={() => navTo('/services')} className="text-3xl font-bold text-white font-sora">Services</button>
+          <button onClick={() => navTo('/gallery')} className="text-3xl font-bold text-white font-sora">Gallery</button>
           <button onClick={() => navTo('/team')} className="text-3xl font-bold text-white font-sora">Team</button>
           <button onClick={() => navTo('/contact')} className="text-3xl font-bold text-white font-sora">Contact</button>
           <div className="w-16 h-1 bg-brand-gold/30 rounded-full my-4"></div>
