@@ -1,127 +1,110 @@
-import React from 'react';
-import { ShieldAlert, Zap, BarChart3, Lock, ShieldCheck, ArrowRight, Activity } from 'lucide-react';
-import FinancialHealthScore from '../components/FinancialHealthScore';
+import React, { useState } from 'react';
+import { 
+  ShieldAlert, Zap, TrendingDown, Lock, Activity, Terminal, 
+  AlertTriangle, ArrowRight, Brain, Calculator, ShieldCheck 
+} from 'lucide-react';
 import ComplianceCalendar from '../components/ComplianceCalendar';
 
 const WarRoom = () => {
+  // Defensive State Initialization
+  const [cash, setCash] = useState<number>(500000);
+  const [burn, setBurn] = useState<number>(50000);
+  const [revenue, setRevenue] = useState<number>(75000);
+  const [shock, setShock] = useState<number>(0);
+
+  // Meticulous Math with Fallbacks to prevent NaN crashes
+  const adjustedRevenue = (revenue || 0) * (1 - (shock || 0) / 100);
+  const netCashFlow = adjustedRevenue - (burn || 0);
+  
+  // Calculate Runway with a safety check for division by zero
+  const runway = netCashFlow >= 0 
+    ? 'Infinite' 
+    : Math.abs(Math.floor((cash || 0) / netCashFlow));
+
+  const getStatus = () => {
+    if (netCashFlow > 20000) return { label: 'SOVEREIGN', color: 'text-emerald-400', bg: 'bg-emerald-500/10', border: 'border-emerald-500/20' };
+    if (netCashFlow > 0) return { label: 'STABLE', color: 'text-blue-400', bg: 'bg-blue-500/10', border: 'border-blue-500/20' };
+    if (runway !== 'Infinite' && Number(runway) < 6) return { label: 'CRITICAL', color: 'text-red-500', bg: 'bg-red-500/10', border: 'border-red-500/20' };
+    return { label: 'CAUTION', color: 'text-brand-gold', bg: 'bg-brand-gold/10', border: 'border-brand-gold/20' };
+  };
+
+  const status = getStatus();
+
   return (
-    <div className="min-h-screen bg-slate-900 text-white font-inter">
+    <div className="min-h-screen bg-[#05070a] text-slate-300 font-mono">
       
-      {/* HEADER: COMMAND CENTER AUTHENTICATION */}
-      <section className="pt-40 pb-20 px-6 border-b border-white/5 bg-gradient-to-b from-brand-900 to-slate-900">
-        <div className="max-w-7xl mx-auto">
-          <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-8">
-            <div className="space-y-4">
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-md bg-red-500/10 border border-red-500/20 text-red-500 text-[10px] font-black uppercase tracking-[0.2em]">
-                <Lock size={12} /> Secure Access: Founder Level
-              </div>
-              <h1 className="text-5xl md:text-7xl font-black font-sora tracking-tighter">
-                The <span className="text-brand-gold">War Room.</span>
-              </h1>
-              <p className="text-xl text-gray-400 max-w-2xl font-light">
-                This is where we strip away the noise. No marketing fluff. Just data, governance, and strategic execution.
-              </p>
+      {/* HEADER */}
+      <div className="pt-32 pb-12 px-6 border-b border-white/5 bg-gradient-to-b from-[#0a0c10] to-transparent">
+        <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+          <div className="space-y-2">
+            <div className="flex items-center gap-2 text-brand-gold mb-2">
+              <Terminal size={18} />
+              <span className="text-[10px] font-black uppercase tracking-[0.4em]">IWS Tactical Interface v4.0.1</span>
             </div>
-            
-            <div className="grid grid-cols-2 gap-4 w-full md:w-auto">
-              <div className="p-4 bg-white/5 border border-white/10 rounded-2xl">
-                <Activity className="text-brand-gold mb-2" size={20} />
-                <span className="block text-[10px] uppercase text-gray-500 font-bold">System Pulse</span>
-                <span className="text-sm font-bold text-emerald-400 uppercase tracking-widest">Active</span>
+            <h1 className="text-4xl md:text-6xl font-black text-white font-sora tracking-tighter uppercase">
+              War <span className="text-brand-gold">Room.</span>
+            </h1>
+          </div>
+          <div className={`px-6 py-4 rounded-xl border ${status.border} ${status.bg} backdrop-blur-xl`}>
+            <span className="block text-[10px] uppercase font-black text-gray-400 mb-1 tracking-widest">Operational Status</span>
+            <span className={`text-2xl font-black tracking-tighter ${status.color}`}>{status.label}</span>
+          </div>
+        </div>
+      </div>
+
+      <div className="max-w-7xl mx-auto px-6 py-12 grid lg:grid-cols-12 gap-8">
+        {/* LEFT: SIMULATOR & COMPLIANCE */}
+        <div className="lg:col-span-8 space-y-8">
+          <div className="bg-[#0f1218] border border-white/5 rounded-3xl p-8 shadow-2xl relative overflow-hidden">
+            <div className="absolute top-0 right-0 p-4 opacity-5"><Calculator size={120} /></div>
+            <div className="flex items-center gap-3 mb-8">
+              <ShieldAlert className="text-brand-gold" size={24} />
+              <h2 className="text-xl font-bold text-white uppercase font-sora">Black Swan Stress Test</h2>
+            </div>
+            <div className="grid md:grid-cols-3 gap-8">
+              <div className="space-y-4">
+                <label className="block text-[10px] font-black text-gray-500 uppercase">Liquid Cash (R)</label>
+                <input type="number" value={cash} onChange={(e) => setCash(Number(e.target.value))} className="w-full bg-black/50 border border-white/10 rounded-lg px-4 py-3 text-white focus:border-brand-gold outline-none" />
               </div>
-              <div className="p-4 bg-white/5 border border-white/10 rounded-2xl">
-                <BarChart3 className="text-brand-gold mb-2" size={20} />
-                <span className="block text-[10px] uppercase text-gray-500 font-bold">Data Stream</span>
-                <span className="text-sm font-bold text-emerald-400 uppercase tracking-widest">Syncing</span>
+              <div className="space-y-4">
+                <label className="block text-[10px] font-black text-gray-500 uppercase">Monthly Burn (R)</label>
+                <input type="number" value={burn} onChange={(e) => setBurn(Number(e.target.value))} className="w-full bg-black/50 border border-white/10 rounded-lg px-4 py-3 text-white focus:border-brand-gold outline-none" />
+              </div>
+              <div className="space-y-4">
+                <label className="block text-[10px] font-black text-gray-500 uppercase">Revenue Shock ({shock}%)</label>
+                <input type="range" min="0" max="100" value={shock} onChange={(e) => setShock(Number(e.target.value))} className="w-full accent-brand-gold" />
+              </div>
+            </div>
+            <div className="mt-12 grid md:grid-cols-2 gap-6">
+              <div className="p-6 rounded-2xl bg-black/40 border border-white/5">
+                <span className="text-[10px] font-black text-gray-500 uppercase block mb-2">Adjusted Net Flow</span>
+                <span className={`text-3xl font-black ${netCashFlow >= 0 ? 'text-emerald-400' : 'text-red-500'}`}>R {netCashFlow.toLocaleString()}</span>
+              </div>
+              <div className="p-6 rounded-2xl bg-black/40 border border-white/5">
+                <span className="text-[10px] font-black text-gray-500 uppercase block mb-2">Survival Runway</span>
+                <span className="text-3xl font-black text-white">{runway} {runway === 'Infinite' ? '' : 'Months'}</span>
               </div>
             </div>
           </div>
+          <ComplianceCalendar />
         </div>
-      </section>
 
-      {/* SECTION 1: THE DIAGNOSTIC ENGINE */}
-      <section className="py-24 px-6 relative overflow-hidden">
-        <div className="absolute top-1/2 left-0 w-64 h-64 bg-brand-gold/5 rounded-full blur-[120px] -translate-x-1/2"></div>
-        <div className="max-w-7xl mx-auto">
-          <div className="grid lg:grid-cols-12 gap-16 items-start">
-            <div className="lg:col-span-4 space-y-8">
-              <div className="p-4 bg-brand-gold/10 border-l-4 border-brand-gold rounded-r-2xl">
-                <h3 className="text-brand-gold font-bold uppercase tracking-widest text-sm flex items-center gap-2">
-                  <ShieldAlert size={18} /> Phase 1: Triage
-                </h3>
-              </div>
-              <h2 className="text-3xl md:text-4xl font-black font-sora leading-tight">
-                Identify The <br/> <span className="text-brand-gold">Friction.</span>
-              </h2>
-              <p className="text-gray-400 leading-relaxed">
-                Most business failures are silent. They happen in the gaps between your bank statement and your tax obligations. Our diagnostic engine highlights exactly where your foundation is cracking.
-              </p>
-              <ul className="space-y-4">
-                <li className="flex items-center gap-3 text-sm font-bold text-gray-300 uppercase tracking-widest">
-                  <Zap size={16} className="text-brand-gold" /> Operational Liquidity
-                </li>
-                <li className="flex items-center gap-3 text-sm font-bold text-gray-300 uppercase tracking-widest">
-                  <Zap size={16} className="text-brand-gold" /> Governance Integrity
-                </li>
-                <li className="flex items-center gap-3 text-sm font-bold text-gray-300 uppercase tracking-widest">
-                  <Zap size={16} className="text-brand-gold" /> Behavioral Risk
-                </li>
+        {/* RIGHT: PSYCHOLOGY */}
+        <div className="lg:col-span-4 space-y-8">
+          <div className="bg-brand-900 border border-brand-gold/20 rounded-3xl p-8 relative overflow-hidden">
+            <div className="absolute top-0 right-0 p-4 opacity-10"><Brain size={100} /></div>
+            <h3 className="text-brand-gold font-bold uppercase tracking-widest text-xs mb-6 flex items-center gap-2"><Activity size={16} /> Psychological Protocol</h3>
+            <div className="space-y-6 relative z-10">
+              <p className="text-white text-lg font-bold">{status.label === 'CRITICAL' ? 'Emergency Decoupling Required.' : 'Fortress Mentality Engaged.'}</p>
+              <p className="text-gray-400 text-sm italic">"{status.label === 'CRITICAL' ? 'Stop all non-essential spending. Stabilize the ego before the bank account.' : 'Stability is the foundation of institutional daring.'}"</p>
+              <ul className="space-y-4 text-xs font-bold text-gray-400 uppercase">
+                <li className="flex items-center gap-3"><AlertTriangle className="text-brand-gold" size={14} /> Audit Behavioral Leaks</li>
+                <li className="flex items-center gap-3"><ShieldCheck className="text-brand-gold" size={14} /> Enforce Governance</li>
               </ul>
             </div>
-            
-            <div className="lg:col-span-8 bg-white/5 p-8 rounded-[3rem] border border-white/10 backdrop-blur-sm shadow-2xl">
-              <FinancialHealthScore />
-            </div>
           </div>
         </div>
-      </section>
-
-      {/* SECTION 2: THE COMPLIANCE RADAR */}
-      <section className="py-24 px-6 bg-slate-950 relative">
-        <div className="max-w-7xl mx-auto grid lg:grid-cols-12 gap-16 items-center">
-          <div className="lg:col-span-7 order-2 lg:order-1">
-            <ComplianceCalendar />
-          </div>
-          
-          <div className="lg:col-span-5 space-y-8 order-1 lg:order-2">
-            <div className="p-4 bg-emerald-500/10 border-l-4 border-emerald-500 rounded-r-2xl">
-              <h3 className="text-emerald-400 font-bold uppercase tracking-widest text-sm flex items-center gap-2">
-                <ShieldCheck size={18} /> Phase 2: Fortification
-              </h3>
-            </div>
-            <h2 className="text-3xl md:text-4xl font-black font-sora leading-tight">
-              Maintain <br/> <span className="text-brand-gold">Sovereign Compliance.</span>
-            </h2>
-            <p className="text-gray-400 leading-relaxed">
-              Compliance is not a chore; it is your shield. By mastering the statutory cycle, you ensure that the state and creditors can never interfere with your growth trajectory.
-            </p>
-            <div className="p-8 bg-white/5 rounded-3xl border border-white/10 italic text-gray-300">
-              "We monitor the calendar so you can focus on the vision."
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* SECTION 3: CALL TO COMMAND */}
-      <section className="py-32 px-6 text-center">
-        <div className="max-w-4xl mx-auto space-y-12">
-          <h2 className="text-4xl md:text-6xl font-black font-sora tracking-tighter">
-            Ready To <span className="text-brand-gold">Deploy?</span>
-          </h2>
-          <p className="text-xl text-gray-400 font-light">
-            Analysis is useless without action. Book a Strategic Deployment Session with our engineering team today.
-          </p>
-          <div className="flex flex-col md:flex-row gap-6 justify-center">
-            <button className="px-12 py-5 bg-brand-gold text-brand-900 font-black uppercase tracking-widest rounded-full hover:scale-105 transition-all flex items-center justify-center gap-2">
-              Book Tactical Review <ArrowRight size={20} />
-            </button>
-            <button className="px-12 py-5 border border-white/20 bg-white/5 text-white font-black uppercase tracking-widest rounded-full hover:bg-white/10 transition-all">
-              Download IWS Framework
-            </button>
-          </div>
-        </div>
-      </section>
-
+      </div>
     </div>
   );
 };
