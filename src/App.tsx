@@ -1,15 +1,15 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 
-// Layout & Global Components
+// Layout & Global Components (From src/components)
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
-import TrustedBy from './components/TrustedBy';
+import TrustedBy from './components/TrustedBy'; // Correct path
 
-// Pages
+// Pages (From src/pages)
 import Home from './pages/Home';
-import Solutions from './pages/Solutions'; // This is your "Who We Help" page
-import WarRoomPage from './pages/WarRoom';
+import Solutions from './pages/Solutions';
+import WarRoom from './pages/WarRoom'; // Corrected path after move
 import Founder from './pages/Founder';
 import Contact from './pages/Contact';
 
@@ -21,7 +21,7 @@ function App() {
 
         <main className="flex-grow">
           <Routes>
-            {/* HOME ROUTE: Landing + Industry Alignment */}
+            {/* HOME ROUTE */}
             <Route 
               path="/" 
               element={
@@ -32,22 +32,22 @@ function App() {
               } 
             />
 
-            {/* SOLUTIONS: "Who We Help" Sector Breakdown */}
+            {/* SOLUTIONS ROUTE */}
             <Route path="/solutions" element={<Solutions />} />
             
-            {/* Compatibility for old link name if needed */}
+            {/* Redirect old path if users bookmark it */}
             <Route path="/who-we-help" element={<Navigate to="/solutions" replace />} />
 
-            {/* WAR ROOM: Crisis Simulation Environment */}
-            <Route path="/war-room" element={<WarRoomPage />} />
+            {/* WAR ROOM ROUTE */}
+            <Route path="/war-room" element={<WarRoom />} />
 
-            {/* FOUNDER: Marcia Kgaphola Profile */}
+            {/* FOUNDER ROUTE */}
             <Route path="/founder" element={<Founder />} />
 
-            {/* CONTACT: Strategic Triage */}
+            {/* CONTACT ROUTE */}
             <Route path="/contact" element={<Contact />} />
 
-            {/* REDIRECT: Catch-all to prevent blank 404 pages */}
+            {/* 404 FALLBACK */}
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </main>
