@@ -1,7 +1,8 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import FinancialHealthScore from '../components/FinancialHealthScore';
-import { Zap, ChevronRight, User } from 'lucide-react';
+import ComplianceCalendar from '../components/ComplianceCalendar';
+import { Zap, ChevronRight, User, ShieldCheck, Target, TrendingUp } from 'lucide-react';
 
 const Home = () => {
   const navigate = useNavigate();
@@ -9,18 +10,18 @@ const Home = () => {
   return (
     <div className="min-h-screen bg-slate-50 font-inter">
       
-      {/* HERO SECTION */}
-      <section className="relative pt-48 pb-32 px-6 rounded-b-[3rem] overflow-hidden shadow-2xl">
+      {/* HERO SECTION - Featuring the Accountability Partnership Image */}
+      <section className="relative pt-48 pb-32 px-6 rounded-b-[3.5rem] overflow-hidden shadow-2xl">
         
-        {/* BACKGROUND IMAGE - REAL: Accountability Partnership Session */}
+        {/* BACKGROUND IMAGE - AUTHENTIC SESSION */}
         <div className="absolute inset-0 z-0">
           <img 
             src="https://res.cloudinary.com/dka0498ns/image/upload/v1765644818/Accountability_Partnership._SMMEs_review_session._egzihs.jpg" 
-            alt="Accountability Partnership - SMME Review Session" 
-            className="w-full h-full object-cover object-center" 
+            alt="Accountability Partnership Session with Thabo Leslie Motsumi" 
+            className="w-full h-full object-cover object-center"
           />
-          {/* Lightened gradient so we can SEE the people (Thabo, etc) */}
-          <div className="absolute inset-0 bg-gradient-to-r from-brand-900/80 via-brand-900/60 to-transparent"></div>
+          {/* Sophisticated gradient overlay to ensure text legibility while keeping the team visible */}
+          <div className="absolute inset-0 bg-gradient-to-r from-brand-900/90 via-brand-900/70 to-brand-900/30"></div>
         </div>
 
         <div className="max-w-7xl mx-auto grid lg:grid-cols-2 gap-12 items-center relative z-10">
@@ -42,7 +43,7 @@ const Home = () => {
             </h1>
             
             <p className="text-xl text-white/90 max-w-lg leading-relaxed font-medium drop-shadow-md">
-              We bridge the gap between Technical IQ and Behavioral EQ. Move from survival mode to sovereign command.
+              Bridging the gap between Technical IQ and Behavioral EQ. Move from survival mode to sovereign command.
             </p>
             
             <div className="flex flex-wrap gap-4 pt-2">
@@ -56,49 +57,112 @@ const Home = () => {
                 onClick={() => navigate('/founder')} 
                 className="px-8 py-4 border border-white/20 bg-white/5 backdrop-blur-sm text-white font-black uppercase tracking-widest rounded-full hover:bg-white/20 transition-all flex items-center gap-2"
               >
-                <User size={18} /> Meet Marcia
+                <User size={18} /> Meet The Architect
               </button>
             </div>
           </div>
         </div>
       </section>
 
-      {/* FOUNDER TEASER */}
-      <section className="py-20 bg-white">
+      {/* FOUNDER TEASER - Real Keynote Image */}
+      <section className="py-24 bg-white">
         <div className="max-w-7xl mx-auto px-6">
-          <div className="flex flex-col md:flex-row items-center gap-12">
-            <div className="w-full md:w-1/2 relative">
-              <div className="absolute inset-0 bg-brand-gold/20 rounded-[2rem] transform rotate-3"></div>
-              {/* REAL IMAGE: Marcia Kgaphola */}
+          <div className="flex flex-col lg:row items-center gap-16 lg:flex-row">
+            <div className="w-full lg:w-1/2 relative">
+              <div className="absolute -inset-4 bg-brand-gold/15 rounded-[2.5rem] transform rotate-3"></div>
               <img 
-                src="https://res.cloudinary.com/dka0498ns/image/upload/v1765321877/Integrated_Wellth_Solution_Founder._Marcia_Kgaphola_t5u2ea.jpg" 
-                alt="Marcia Kgaphola" 
-                className="relative rounded-[2rem] shadow-2xl w-full h-auto object-cover"
+                src="https://res.cloudinary.com/dka0498ns/image/upload/v1768022744/Marcia_Kgaphola._The_founder_of_Integrated_Wellth_Solution_giving_a_keynote_speech_at_a_women_business_conference_rr55ol.jpg" 
+                alt="Marcia Kgaphola Keynote" 
+                className="relative rounded-[2.5rem] shadow-2xl w-full h-[550px] object-cover"
               />
             </div>
-            <div className="w-full md:w-1/2 space-y-6">
-              <span className="text-brand-gold font-bold uppercase tracking-widest text-sm">The Architect</span>
-              <h2 className="text-4xl font-black text-brand-900 font-sora">Marcia Kgaphola.</h2>
-              <p className="text-lg text-gray-600 leading-relaxed">
+            <div className="w-full lg:w-1/2 space-y-8">
+              <span className="text-brand-gold font-bold uppercase tracking-[0.3em] text-sm">The Architect</span>
+              <h2 className="text-4xl md:text-5xl font-black text-brand-900 font-sora leading-tight">Marcia Kgaphola.</h2>
+              <p className="text-lg text-gray-600 leading-relaxed font-medium">
                 "Business is not just math; it is psychology. I built Integrated Wellth to serve the founder who has conquered the market but is still fighting the chaos within their own operations."
               </p>
-              <button onClick={() => navigate('/founder')} className="text-brand-900 font-bold border-b-2 border-brand-gold pb-1 hover:text-brand-gold transition-colors flex items-center gap-2">
-                Read Full Bio <ChevronRight size={16} />
+              
+              <div className="grid grid-cols-2 gap-6 pb-4">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 bg-brand-50 rounded-lg text-brand-gold"><Target size={20} /></div>
+                  <span className="font-bold text-brand-900 text-sm uppercase tracking-wider">Strategy</span>
+                </div>
+                <div className="flex items-center gap-3">
+                  <div className="p-2 bg-brand-50 rounded-lg text-brand-gold"><TrendingUp size={20} /></div>
+                  <span className="font-bold text-brand-900 text-sm uppercase tracking-wider">Growth</span>
+                </div>
+              </div>
+
+              <button 
+                onClick={() => navigate('/founder')} 
+                className="text-brand-900 font-black border-b-4 border-brand-gold pb-1 hover:text-brand-gold transition-colors flex items-center gap-2 uppercase tracking-widest text-sm"
+              >
+                View Founder Profile <ChevronRight size={18} />
               </button>
             </div>
           </div>
         </div>
       </section>
 
-      {/* DIAGNOSTIC SECTION */}
-      <section id="assess" className="py-24 px-6 bg-slate-50 relative">
+      {/* COMPLIANCE RADAR SECTION - The Governance Tool */}
+      <section className="py-24 px-6 bg-slate-100 relative overflow-hidden">
+        <div className="absolute top-0 right-0 w-1/3 h-full bg-brand-gold/5 pointer-events-none"></div>
+        <div className="max-w-7xl mx-auto grid lg:grid-cols-12 gap-16 items-start">
+          <div className="lg:col-span-5 space-y-6">
+            <span className="text-brand-gold font-bold uppercase tracking-[0.2em] text-sm">Governance Intelligence</span>
+            <h2 className="text-4xl md:text-5xl font-black text-brand-900 font-sora leading-tight">
+              Master Your <br/> <span className="text-brand-gold">Compliance</span> Cycle.
+            </h2>
+            <p className="text-lg text-gray-600 leading-relaxed">
+              Regulatory compliance is the foundation of institutional trust. Our roadmap ensures your business remains audit-ready, shielding you from penalties and legal friction.
+            </p>
+            <ul className="space-y-4 pt-4">
+              <li className="flex items-center gap-3 font-bold text-brand-900">
+                <ShieldCheck className="text-emerald-500" /> SARS Alignment Protocol
+              </li>
+              <li className="flex items-center gap-3 font-bold text-brand-900">
+                <ShieldCheck className="text-emerald-500" /> CIPC Annual Governance
+              </li>
+              <li className="flex items-center gap-3 font-bold text-brand-900">
+                <ShieldCheck className="text-emerald-500" /> Labour Law Compliance (UIF/SDL)
+              </li>
+            </ul>
+          </div>
+          
+          <div className="lg:col-span-7">
+            <ComplianceCalendar />
+          </div>
+        </div>
+      </section>
+
+      {/* STRATEGIC TRIAGE SECTION (Assessment) */}
+      <section id="assess" className="py-24 px-6 bg-white relative">
         <div className="max-w-4xl mx-auto text-center mb-16">
-          <h2 className="text-4xl font-black text-brand-900 uppercase tracking-tighter mb-4 font-sora">Strategic Triage</h2>
-          <div className="w-24 h-1.5 bg-brand-gold mx-auto rounded-full"></div>
-          <p className="text-gray-500 mt-6 text-lg">Determine your operational readiness with our comprehensive diagnostic engine.</p>
+          <span className="text-brand-gold font-bold uppercase tracking-[0.3em] text-sm block mb-4">Immediate Diagnostic</span>
+          <h2 className="text-4xl md:text-5xl font-black text-brand-900 uppercase tracking-tighter font-sora">Strategic Triage</h2>
+          <div className="w-24 h-2 bg-brand-gold mx-auto rounded-full mt-4"></div>
+          <p className="text-gray-500 mt-8 text-xl max-w-2xl mx-auto">
+            Before we engineer the solution, we must measure the friction. Use our diagnostic engine to determine your operational readiness.
+          </p>
         </div>
         <FinancialHealthScore />
       </section>
+
+      {/* FINAL CTA */}
+      <section className="py-20 bg-brand-900 text-white text-center px-6">
+        <div className="max-w-3xl mx-auto space-y-8">
+          <h2 className="text-4xl font-bold font-sora">Ready to enter the War Room?</h2>
+          <p className="text-gray-400 text-lg">Stop firefighting. Start building. Secure your strategic consultation today.</p>
+          <button 
+            onClick={() => navigate('/contact')} 
+            className="px-12 py-5 bg-white text-brand-900 font-black uppercase tracking-widest rounded-full hover:bg-brand-gold hover:text-brand-900 transition-all shadow-2xl"
+          >
+            Initiate Contact
+          </button>
+        </div>
+      </section>
+
     </div>
   );
 };
