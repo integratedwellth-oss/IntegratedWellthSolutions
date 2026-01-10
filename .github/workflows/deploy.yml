@@ -1,24 +1,35 @@
-name: IWS Bulletproof Deploy
+name: IWS Bulletproof Production Deploy
 
 on:
   push:
     branches: [ main ]
 
 jobs:
-  build_and_verify:
+  verify_and_deploy:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      
-      - name: Install Dependencies
+      - name: 1. Clone Sovereign Repository
+        uses: actions/checkout@v4
+
+      - name: 2. Set Node.js 20.x Environment
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: 3. Clean Install Dependencies
         run: npm ci
 
-      - name: Interrogate Code (10-Point Check)
-        # This command checks for TypeScript errors, missing files, and broken imports
-        # If this fails, the deployment STOPS immediately.
+      - name: 4. Interrogate Code Integrity
+        # This is the "10x Checked" step. 
+        # It detects missing files or broken Firebase imports.
         run: npm run validate
 
-      - name: Deploy if Verified
+      - name: 5. Deploy to Production
         if: success()
-        run: echo "Code verified against IWS Integrity Standards. Proceeding to Cloud."
-        # Add your vercel or hosting deploy command here
+        uses: amondnet/vercel-action@v20
+        with:
+          vercel-token: ${{ secrets.VERCEL_TOKEN }}
+          vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
+          vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
+          vercel-args: '--prod'
