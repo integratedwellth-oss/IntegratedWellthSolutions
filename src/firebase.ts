@@ -1,12 +1,14 @@
 /**
  * IWS SOVEREIGNTY ENGINE - FIREBASE CORE
  * VERIFIED AGAINST PROJECT: integratedwellthsolutions
+ * STATUS: PRODUCTION READY
  */
 
 import { initializeApp, getApps, getApp } from "firebase/app";
 import { getFirestore } from "firebase/firestore";
 import { getAnalytics, isSupported } from "firebase/analytics";
 
+// Your verified configuration from the Firebase Console
 const firebaseConfig = {
   apiKey: "AIzaSyByrYwESDF82C9AiZxtg77eUfNcIVGOwmQ",
   authDomain: "integratedwellthsolutions.firebaseapp.com",
@@ -17,13 +19,31 @@ const firebaseConfig = {
   measurementId: "G-KR4PRVGLLG"
 };
 
-// Singleton pattern to prevent re-initialization crashes during Hot Module Replacement (HMR)
+/**
+ * DEFENSIVE INITIALIZATION
+ * 1. Checks if an app instance already exists (prevents HMR crashes).
+ * 2. Initializes the core Firebase app.
+ */
 const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
 
-// Export Firestore for lead collection
+/**
+ * FIRESTORE (THE DATA VAULT)
+ * Exported for use in TriageForm.tsx and Admin.tsx.
+ */
 export const db = getFirestore(app);
 
-// Analytics is wrapped in a promise check because it fails in some private browsers/environments
-export const analytics = isSupported().then(yes => yes ? getAnalytics(app) : null);
+/**
+ * ANALYTICS (BEHAVIORAL INSIGHTS)
+ * Wrapped in a support-check to prevent "Blank Screen" crashes 
+ * in private browsers or environments with ad-blockers.
+ */
+export const analyticsPromise = isSupported().then((yes) => {
+  if (yes) {
+    return getAnalytics(app);
+  }
+  console.warn("IWS Intelligence: Analytics not supported in this browser environment.");
+  return null;
+});
 
+// Default export for the primary app instance
 export default app;
