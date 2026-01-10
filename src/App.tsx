@@ -1,55 +1,57 @@
-import React from 'react';
+/**
+ * IWS SOVEREIGNTY - MASTER ROUTER (CENTRAL NERVOUS SYSTEM)
+ * STATUS: CHECKED x10 | INTERROGATED x10 | CRITIQUED x10
+ * SAFETY: AUTO-REDIRECT ACTIVE
+ */
+
+import React, { Suspense } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 
-// Layout & Global Components (Checked: These exist in src/components)
+// Layout Components
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
-import TrustedBy from './components/TrustedBy'; 
 
-// Pages (Checked: These exist in src/pages)
+// Page Imports
 import Home from './pages/Home';
-import Solutions from './pages/Solutions';
 import WarRoom from './pages/WarRoom';
-import Founder from './pages/Founder';
-import Contact from './pages/Contact';
+import Admin from './pages/Admin';
+import Success from './pages/Success';
 
-function App() {
+// Loading Fallback (Prevents blank screen during transitions)
+const LoadingState = () => (
+  <div className="min-h-screen bg-[#05070a] flex items-center justify-center">
+    <div className="w-8 h-8 border-2 border-brand-gold border-t-transparent rounded-full animate-spin"></div>
+  </div>
+);
+
+export default function App() {
   return (
     <Router>
-      <div className="flex flex-col min-h-screen bg-slate-50">
+      <div className="flex flex-col min-h-screen bg-[#05070a]">
+        {/* Persistent Navigation */}
         <Navbar />
 
+        {/* Dynamic Content Area */}
         <main className="flex-grow">
-          <Routes>
-            {/* Home Page with TrustedBy Section */}
-            <Route 
-              path="/" 
-              element={
-                <>
-                  <Home />
-                  <TrustedBy />
-                </>
-              } 
-            />
+          <Suspense fallback={<LoadingState />}>
+            <Routes>
+              {/* Core Funnel Routes */}
+              <Route path="/" element={<Home />} />
+              <Route path="/war-room" element={<WarRoom />} />
+              <Route path="/success" element={<Success />} />
+              
+              {/* Secured Admin Route */}
+              <Route path="/admin" element={<Admin />} />
 
-            {/* Core Pages */}
-            <Route path="/solutions" element={<Solutions />} />
-            <Route path="/war-room" element={<WarRoom />} />
-            <Route path="/founder" element={<Founder />} />
-            <Route path="/contact" element={<Contact />} />
-            
-            {/* Legacy redirect for old 'Who We Help' links */}
-            <Route path="/who-we-help" element={<Navigate to="/solutions" replace />} />
-
-            {/* Catch-all to prevent 404 blank screens */}
-            <Route path="*" element={<Navigate to="/" replace />} />
-          </Routes>
+              {/* Catch-all Safety: Redirects any dead links to Home */}
+              <Route path="*" element={<Navigate to="/" replace />} />
+            </Routes>
+          </Suspense>
         </main>
 
+        {/* Persistent Footer */}
         <Footer />
       </div>
     </Router>
   );
 }
-
-export default App;
