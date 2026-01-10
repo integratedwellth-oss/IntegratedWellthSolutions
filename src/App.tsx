@@ -8,21 +8,20 @@ import TrustedBy from './components/TrustedBy';
 
 // Pages
 import Home from './pages/Home';
-import Solutions from './pages/Solutions';
-import WarRoomPage from './pages/WarRoom'; // Using the page wrapper we established
+import Solutions from './pages/Solutions'; // This is your "Who We Help" page
+import WarRoomPage from './pages/WarRoom';
 import Founder from './pages/Founder';
 import Contact from './pages/Contact';
 
 function App() {
   return (
     <Router>
-      <div className="flex flex-col min-h-screen">
-        {/* Navigation remains constant across all routes */}
+      <div className="flex flex-col min-h-screen bg-slate-50">
         <Navbar />
 
         <main className="flex-grow">
           <Routes>
-            {/* HOME ROUTE: Includes the TrustedBy Section */}
+            {/* HOME ROUTE: Landing + Industry Alignment */}
             <Route 
               path="/" 
               element={
@@ -33,24 +32,26 @@ function App() {
               } 
             />
 
-            {/* SOLUTIONS ROUTE: The "Who We Help" Page */}
+            {/* SOLUTIONS: "Who We Help" Sector Breakdown */}
             <Route path="/solutions" element={<Solutions />} />
+            
+            {/* Compatibility for old link name if needed */}
+            <Route path="/who-we-help" element={<Navigate to="/solutions" replace />} />
 
-            {/* WAR ROOM ROUTE: Tactical Command Center */}
+            {/* WAR ROOM: Crisis Simulation Environment */}
             <Route path="/war-room" element={<WarRoomPage />} />
 
-            {/* FOUNDER ROUTE: Marcia's Profile */}
+            {/* FOUNDER: Marcia Kgaphola Profile */}
             <Route path="/founder" element={<Founder />} />
 
-            {/* CONTACT ROUTE: Strategic Triage Request */}
+            {/* CONTACT: Strategic Triage */}
             <Route path="/contact" element={<Contact />} />
 
-            {/* CATCH-ALL REDIRECT: Prevents "Blank Page" on 404 errors */}
+            {/* REDIRECT: Catch-all to prevent blank 404 pages */}
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </main>
 
-        {/* Global Footer */}
         <Footer />
       </div>
     </Router>
