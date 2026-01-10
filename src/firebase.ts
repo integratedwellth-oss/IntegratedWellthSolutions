@@ -1,5 +1,11 @@
-import { initializeApp } from "firebase/app";
+/**
+ * IWS SOVEREIGNTY ENGINE - FIREBASE CORE
+ * VERIFIED AGAINST PROJECT: integratedwellthsolutions
+ */
+
+import { initializeApp, getApps, getApp } from "firebase/app";
 import { getFirestore } from "firebase/firestore";
+import { getAnalytics, isSupported } from "firebase/analytics";
 
 const firebaseConfig = {
   apiKey: "AIzaSyByrYwESDF82C9AiZxtg77eUfNcIVGOwmQ",
@@ -11,5 +17,13 @@ const firebaseConfig = {
   measurementId: "G-KR4PRVGLLG"
 };
 
-const app = initializeApp(firebaseConfig);
+// Singleton pattern to prevent re-initialization crashes during Hot Module Replacement (HMR)
+const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
+
+// Export Firestore for lead collection
 export const db = getFirestore(app);
+
+// Analytics is wrapped in a promise check because it fails in some private browsers/environments
+export const analytics = isSupported().then(yes => yes ? getAnalytics(app) : null);
+
+export default app;
