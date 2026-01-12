@@ -7,7 +7,7 @@ import React from 'react';
 import { MessageSquare } from 'lucide-react';
 
 export default function WhatsAppButton() {
-  const phoneNumber = "27123456789"; // Replace with your actual office number
+  const phoneNumber = "27812355910"; // Replace with your actual office number
   const message = encodeURIComponent("I require a structural triage. Please initialize protocol.");
 
   return (
