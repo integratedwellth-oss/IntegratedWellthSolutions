@@ -2,19 +2,62 @@
 @tailwind components;
 @tailwind utilities;
 
+:root {
+  --brand-gold: #C5A059;
+  --brand-dark: #05070a;
+}
+
 @layer base {
   body {
-    @apply antialiased text-slate-900 bg-slate-50;
+    @apply bg-[#05070a] text-white antialiased selection:bg-[#C5A059] selection:text-black;
+    font-feature-settings: "ss01", "ss02", "cv01", "cv02";
   }
 }
 
-@layer utilities {
-  .animate-float {
-    animation: float 6s ease-in-out infinite;
+@layer components {
+  /* Tactical Gold Gradient */
+  .bg-gold-gradient {
+    background: linear-gradient(135deg, #C5A059 0%, #D4B67C 50%, #B38E47 100%);
+  }
+
+  /* Obsidian Panel Effect */
+  .panel-blur {
+    @apply bg-[#0a0c12]/80 backdrop-blur-xl border border-white/5;
   }
 }
 
+/* Custom Scrollbar for Terminal Feel */
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #05070a;
+}
+::-webkit-scrollbar-thumb {
+  background: #1a1d23;
+  border-radius: 10px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #C5A059;
+}
+
+/* Sovereign Keyframes */
 @keyframes float {
-  0%, 100% { transform: translateY(0); }
+  0% { transform: translateY(0px); }
   50% { transform: translateY(-10px); }
+  100% { transform: translateY(0px); }
+}
+
+.animate-float {
+  animation: float 6s ease-in-out infinite;
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-5px); }
+  75% { transform: translateX(5px); }
+}
+
+.animate-shake {
+  animation: shake 0.2s ease-in-out 0s 2;
 }
