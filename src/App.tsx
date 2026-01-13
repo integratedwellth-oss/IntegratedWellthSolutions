@@ -1,17 +1,15 @@
 import React from 'react';
+import Layout from './components/Layout';
 
 export default function App() {
   return (
-    <div style={{ textAlign: 'center', padding: '20px' }}>
-      <h1 style={{ color: '#C5A059', fontSize: '3rem', fontWeight: '900', textTransform: 'uppercase', letterSpacing: '0.3em', margin: '0' }}>
-        IWS Sovereignty
-      </h1>
-      <p style={{ color: '#475569', fontSize: '1rem', fontWeight: 'bold', textTransform: 'uppercase', marginTop: '10px' }}>
-        System Ignition Successful • 2026 Deployment Active
-      </p>
-      <div style={{ marginTop: '30px', display: 'inline-block', padding: '10px 20px', border: '1px solid #C5A059', color: '#C5A059', fontSize: '0.7rem', fontWeight: '900', letterSpacing: '0.2em' }}>
-        CORE ENGINE LIVE
+    <Layout>
+      <div className="flex flex-col items-center justify-center py-20 text-center">
+        <h1 className="text-[#C5A059] text-5xl font-black uppercase tracking-[0.3em] mb-4">
+          Phase 2 Active
+        </h1>
+        <p className="text-gray-500 font-mono text-sm uppercase">Navigation Systems Online</p>
       </div>
-    </div>
+    </Layout>
   );
 }
