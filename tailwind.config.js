@@ -7,9 +7,10 @@ export default {
   theme: {
     extend: {
       colors: {
-        brand: {
+        iws: {
+          teal: '#1a4d4d',
           gold: '#C5A059',
-          dark: '#05070a',
+          red: '#ef4444'
         }
       }
     },
