@@ -2,13 +2,22 @@
 @tailwind components;
 @tailwind utilities;
 
-body {
-  background-color: #05070a;
-  color: white;
-  margin: 0;
-  font-family: ui-sans-serif, system-ui, sans-serif;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  min-height: 100vh;
+@layer base {
+  body {
+    @apply bg-[#05070a] text-white antialiased selection:bg-[#C5A059] selection:text-black;
+    font-feature-settings: "ss01", "ss02", "cv01", "cv02";
+  }
+}
+
+.glass-panel {
+  @apply bg-white/5 border border-white/10 backdrop-blur-md rounded-[40px];
+}
+
+@keyframes pulse-gold {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+.animate-gold {
+  animation: pulse-gold 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 }
