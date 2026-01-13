@@ -1,19 +1,18 @@
 import React from 'react';
 import Navbar from './Navbar';
 import Footer from './Footer';
+import WhatsAppButton from './WhatsAppButton';
+import { HelmetProvider } from 'react-helmet-async';
 
-export interface LayoutProps {
-  children: React.ReactNode;
-}
-
-export default function Layout({ children }: LayoutProps) {
+export default function Layout({ children }: { children: React.ReactNode }) {
   return (
-    <div className="min-h-screen bg-[#05070a] flex flex-col">
-      <Navbar />
-      <main className="flex-grow pt-20">
-        {children}
-      </main>
-      <Footer />
-    </div>
+    <HelmetProvider>
+      <div className="min-h-screen flex flex-col font-sans">
+        <Navbar />
+        <main className="flex-grow">{children}</main>
+        <Footer />
+        <WhatsAppButton />
+      </div>
+    </HelmetProvider>
   );
 }
