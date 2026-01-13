@@ -5,9 +5,10 @@ export const BRAND = {
     dark: '#05070a',
   },
   contact: {
-    whatsapp: '27000000000', 
+    // Replace with your actual WhatsApp number (include country code, no '+')
+    whatsapp: '27XXXXXXXXX', 
     email: 'intelligence@integratedwellth.co.za'
   }
 };
 
-export const SYSTEM_STATUS = 'PHASE 2: NAVIGATION ACTIVE';
+export const SYSTEM_STATUS = 'OPERATIONAL';
