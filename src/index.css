@@ -4,12 +4,13 @@
 
 @layer base {
   body {
-    @apply bg-[#f4f7f6] text-[#1a4d4d] antialiased;
+    @apply bg-[#f8f9fa] text-[#1a4d4d] antialiased;
     font-family: 'Inter', system-ui, sans-serif;
   }
 }
 
 @layer components {
+  /* Restores the curved capsule nav seen in your screenshots */
   .nav-capsule {
     @apply bg-[#1a4d4d] rounded-full px-8 py-3 flex items-center gap-6 shadow-2xl border border-white/10 backdrop-blur-md;
   }
@@ -18,19 +19,11 @@
     @apply text-white/70 hover:text-white text-[10px] font-black uppercase tracking-widest transition-all px-3 py-1 rounded-full;
   }
 
-  .nav-link-active {
-    @apply bg-white/10 text-white border border-white/20;
-  }
-
-  .btn-war-room {
+  .btn-red {
     @apply bg-[#ef4444] text-white px-6 py-2 rounded-full text-[10px] font-black uppercase tracking-widest shadow-lg flex items-center gap-2 hover:scale-105 transition-transform;
   }
 
   .premium-card {
-    @apply bg-white rounded-[32px] overflow-hidden shadow-xl border border-gray-100 hover:shadow-2xl transition-all duration-500;
-  }
-
-  .gold-accent {
-    @apply text-[#C5A059];
+    @apply bg-white rounded-[40px] p-10 shadow-xl border border-gray-100 hover:shadow-2xl transition-all;
   }
 }
