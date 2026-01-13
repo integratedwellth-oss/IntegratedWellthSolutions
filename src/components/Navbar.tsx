@@ -1,20 +1,31 @@
 import React from 'react';
-import { Shield, Menu } from 'lucide-react';
+import { Link, useLocation } from 'react-router-dom';
+import { Shield } from 'lucide-react';
 
 export default function Navbar() {
+  const { pathname } = useLocation();
+
   return (
-    <nav className="fixed w-full z-50 bg-[#05070a]/80 backdrop-blur-md border-b border-white/5 px-6 py-4">
-      <div className="max-w-7xl mx-auto flex justify-between items-center">
-        <div className="flex items-center gap-2">
-          <Shield className="text-[#C5A059]" size={24} />
-          <span className="text-white font-black uppercase tracking-tighter text-xl">IWS Sovereignty</span>
+    <nav className="fixed top-8 left-0 right-0 z-50 flex justify-center px-6">
+      <div className="nav-capsule backdrop-blur-md bg-[#1a4d4d]/90">
+        <Link to="/" className="flex items-center mr-4">
+           <div className="bg-white p-1.5 rounded-lg shadow-inner">
+             <img src="/logo.png" alt="IWS" className="h-6 w-6 object-contain" />
+           </div>
+        </Link>
+        
+        <div className="hidden md:flex items-center gap-8">
+          <Link to="/" className={`nav-link ${pathname === '/' ? 'nav-link-active' : ''}`}>Base</Link>
+          <Link to="/about" className="nav-link">About</Link>
+          <Link to="/solutions" className="nav-link">Solutions</Link>
+          <Link to="/services" className="nav-link">Services</Link>
+          <Link to="/team" className={`nav-link ${pathname === '/team' ? 'nav-link-active' : ''}`}>Team</Link>
+          <Link to="/contact" className="nav-link">Contact</Link>
         </div>
-        <div className="hidden md:flex gap-8 text-[10px] font-bold uppercase tracking-[0.2em] text-gray-400">
-          <a href="/" className="hover:text-[#C5A059] transition-colors">Intelligence</a>
-          <a href="/war-room" className="hover:text-[#C5A059] transition-colors">War Room</a>
-          <a href="/contact" className="hover:text-[#C5A059] transition-colors">Contact</a>
-        </div>
-        <Menu className="text-white md:hidden" size={20} />
+
+        <Link to="/war-room" className="btn-war-room ml-4">
+          <Shield size={14} /> War Room
+        </Link>
       </div>
     </nav>
   );
