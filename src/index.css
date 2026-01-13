@@ -4,20 +4,30 @@
 
 @layer base {
   body {
+    /* This restores the deep dark background seen in the successful build */
     @apply bg-[#05070a] text-white antialiased selection:bg-[#C5A059] selection:text-black;
-    font-feature-settings: "ss01", "ss02", "cv01", "cv02";
+    font-family: 'Inter', system-ui, sans-serif;
   }
 }
 
-.glass-panel {
-  @apply bg-white/5 border border-white/10 backdrop-blur-md rounded-[40px];
+@layer components {
+  /* This creates that high-end "Glass" look for your cards */
+  .glass-card {
+    @apply bg-white/5 border border-white/10 backdrop-blur-md rounded-[40px] p-8 transition-all hover:border-[#C5A059]/30;
+  }
+  
+  /* The "Gold" branding style */
+  .text-gold {
+    @apply text-[#C5A059];
+  }
 }
 
+/* Custom animations for the War Room */
 @keyframes pulse-gold {
   0%, 100% { opacity: 1; }
   50% { opacity: 0.5; }
 }
 
 .animate-gold {
-  animation: pulse-gold 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  animation: pulse-gold 3s infinite;
 }
