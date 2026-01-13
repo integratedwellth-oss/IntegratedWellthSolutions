@@ -3,7 +3,7 @@ import { MessageCircle } from 'lucide-react';
 import { BRAND } from '../constants';
 
 export default function WhatsAppButton() {
-  const message = encodeURIComponent("I require a structural shielding audit for my ZAR assets.");
+  const message = encodeURIComponent("I require a structural shielding audit.");
   const url = `https://wa.me/${BRAND.contact.whatsapp}?text=${message}`;
 
   return (
