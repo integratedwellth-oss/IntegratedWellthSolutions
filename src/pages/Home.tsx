@@ -1,30 +1,43 @@
 import React from 'react';
-import { Shield, Lock, Globe } from 'lucide-react';
 
 export default function Home() {
   return (
-    <div className="max-w-7xl mx-auto px-6 py-24">
-      <div className="max-w-4xl space-y-8">
-        <h1 className="text-7xl md:text-9xl font-black text-white uppercase tracking-tighter italic leading-[0.85]">
-          Capital <span className="text-[#C5A059]">Sovereignty</span>
-        </h1>
-        <p className="text-gray-400 text-xl font-medium max-w-2xl italic border-l-2 border-[#C5A059] pl-6">
-          Advanced fiscal shielding for a volatile era. We architect structural resilience for global citizens.
-        </p>
+    <div className="relative overflow-hidden bg-[#f8f9fa]">
+      {/* Background Decorative Text */}
+      <div className="absolute top-20 left-10 opacity-[0.03] select-none pointer-events-none">
+        <h1 className="text-[15rem] font-black leading-none">CAPITAL</h1>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mt-32">
-        {[
-          { icon: <Globe size={32}/>, title: "Jurisdiction", desc: "Optimized offshore placement." },
-          { icon: <Lock size={32}/>, title: "Shielding", desc: "Multi-layered asset sequestration." },
-          { icon: <Shield size={32}/>, title: "Audits", desc: "Stress-testing local exposure." }
-        ].map((item, i) => (
-          <div key={i} className="group p-12 bg-[#0a0c12] border border-white/5 rounded-[48px] hover:border-[#C5A059]/40 transition-all">
-            <div className="text-[#C5A059] mb-8 group-hover:scale-110 transition-transform">{item.icon}</div>
-            <h3 className="text-white font-black uppercase tracking-widest text-sm mb-4">{item.title}</h3>
-            <p className="text-gray-500 text-[11px] leading-relaxed font-bold uppercase">{item.desc}</p>
+      <div className="max-w-7xl mx-auto px-6 pt-20 pb-32 relative z-10">
+        <div className="grid lg:grid-cols-2 gap-16 items-center">
+          {/* Left: The Image Card from your Screenshot */}
+          <div className="relative">
+            <div className="bg-[#C5A059]/20 absolute -inset-4 rounded-[50px] rotate-3"></div>
+            <img 
+              src="/marcia-hero.jpg" 
+              alt="The Architect" 
+              className="relative rounded-[40px] shadow-2xl w-full object-cover aspect-[4/5]"
+            />
           </div>
-        ))}
+
+          {/* Right: The Content */}
+          <div className="space-y-8">
+            <div>
+              <span className="text-iws-gold font-bold uppercase tracking-[0.2em] text-xs">The Architect</span>
+              <h2 className="text-5xl md:text-6xl font-black text-iws-teal mt-4 leading-tight">
+                Marcia Kgaphola.
+              </h2>
+            </div>
+            
+            <p className="text-xl text-iws-teal/80 leading-relaxed italic font-medium">
+              "Business is not just math; it is psychology. I built Integrated Wellth to serve the founder who has conquered the market but is still fighting the chaos within their own operations."
+            </p>
+
+            <button className="group flex items-center gap-3 text-iws-teal font-black uppercase tracking-widest text-xs border-b-2 border-iws-gold pb-2 hover:gap-5 transition-all">
+              Read Full Bio <span className="text-iws-gold">→</span>
+            </button>
+          </div>
+        </div>
       </div>
     </div>
   );
