@@ -12,14 +12,10 @@ const firebaseConfig = {
   measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID
 };
 
-// Initialize Firebase
 const app = initializeApp(firebaseConfig);
 
-// Initialize Services
 export const db = getFirestore(app);
-export const analytics = typeof window !== "undefined" ? getAnalytics(app) : null;
-
-// Helper function for lead capture
+export const analytics = typeof window !== "undefined" ? getAnalytics(app) : undefined;
 export { serverTimestamp };
 
 export default app;
