@@ -233,7 +233,7 @@ const WarRoom: React.FC = () => {
                     <button
                       key={id}
                       onClick={() => setActiveStream(id as StreamType)}
-                      className={`flex flex-col items-center justify-center min-w-[110px] px-6 py-4 rounded-full transition-all duration-500 ${activeStream === id ? 'bg-brand-gold text-brand-900 shadow-2xl scale-105' : 'text-white/30 hover:text-white/60'}`}
+                      className={`flex flex-col items-center justify-center min-w-[140px] px-6 py-4 rounded-full transition-all duration-500 ${activeStream === id ? 'bg-brand-gold text-brand-900 shadow-2xl scale-105' : 'text-white/30 hover:text-white/60'}`}
                     >
                       <span className="text-[10px] font-black uppercase tracking-widest leading-none">{STREAM_LABELS[id as StreamType]}</span>
                     </button>

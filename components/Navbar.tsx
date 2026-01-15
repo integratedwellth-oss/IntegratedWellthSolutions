@@ -55,12 +55,10 @@ const Navbar: React.FC<NavbarProps> = ({ onNavigate }) => {
         .glossy-mustard {
           background: linear-gradient(to bottom, #facc15 0%, #d4af37 45%, #b8962d 100%);
           box-shadow: inset 0 1px 1px rgba(255,255,255,0.8), 0 2px 4px rgba(0,0,0,0.1);
-          position: relative;
         }
         .glossy-teal {
           background: linear-gradient(to bottom, #134e4a 0%, #0d3d3a 100%);
           box-shadow: inset 0 1px 1px rgba(255,255,255,0.2), 0 2px 4px rgba(0,0,0,0.2);
-          position: relative;
         }
         .tactical-red {
           background: linear-gradient(135deg, #dc2626 0%, #991b1b 100%);
@@ -87,21 +85,26 @@ const Navbar: React.FC<NavbarProps> = ({ onNavigate }) => {
         
         {/* Brand Architecture (Left) */}
         <div 
-          className="flex items-start gap-2 md:gap-3 cursor-pointer shrink-0" 
+          className="flex items-start gap-1 md:gap-2 cursor-pointer shrink-0" 
           onClick={() => handleLinkClick('#home')}
         >
-          <div className="w-10 h-10 md:w-16 md:h-16 rounded-xl bg-brand-900 border border-white/10 overflow-hidden shadow-2xl flex-shrink-0">
+          {/* Logo Container - Using local logo.png */}
+          <div className="w-10 h-10 md:w-16 md:h-16 rounded-xl bg-white border border-brand-900/10 overflow-hidden shadow-2xl flex-shrink-0 flex items-center justify-center p-1">
              <img 
-              src="https://res.cloudinary.com/dka0498ns/image/upload/v1765747786/favicon_ofkkb1.png" 
-              className="w-full h-full object-cover invert" 
+              src="/logo.png" 
+              className="w-full h-full object-contain" 
               alt="IWS" 
+              onError={(e) => {
+                // Fallback in case /logo.png fails
+                (e.target as HTMLImageElement).src = "https://res.cloudinary.com/dka0498ns/image/upload/v1765747786/favicon_ofkkb1.png";
+              }}
             />
           </div>
           
           <div className="flex flex-col">
             <div className="flex items-center overflow-hidden rounded-md font-sora font-black text-[9px] md:text-xl uppercase tracking-tighter mb-0.5 md:mb-1">
                {/* "Integrated" - Teal text on Mustard bg */}
-               <div className="glossy-mustard px-2 md:px-4 py-1 md:py-1.5 text-brand-900 min-w-[65px] md:min-w-[120px] text-center border-r border-brand-900/10">
+               <div className="glossy-mustard px-2 md:px-4 py-1 md:py-1.5 text-brand-900 min-w-[65px] md:min-w-[120px] text-center">
                   INTEGRATED
                </div>
                {/* "Wellth" - Mustard text on Teal bg */}
@@ -168,8 +171,8 @@ const Navbar: React.FC<NavbarProps> = ({ onNavigate }) => {
       <div className={`fixed inset-0 z-[200] mobile-drawer flex flex-col transition-all duration-500 transform ${isMobileMenuOpen ? 'translate-x-0 opacity-100' : 'translate-x-full opacity-0 pointer-events-none'}`}>
          <div className="flex justify-between items-center px-6 pt-10 mb-10">
             <div className="flex items-center gap-3">
-               <div className="w-10 h-10 rounded-xl bg-brand-900 border border-white/10 p-2">
-                  <img src="https://res.cloudinary.com/dka0498ns/image/upload/v1765747786/favicon_ofkkb1.png" className="w-full h-full object-contain invert" alt="IWS" />
+               <div className="w-10 h-10 rounded-xl bg-white border border-brand-900/10 p-2">
+                  <img src="/logo.png" className="w-full h-full object-contain" alt="IWS" />
                </div>
                <h2 className="text-white font-black text-lg tracking-tighter uppercase">COMMAND CENTER</h2>
             </div>
