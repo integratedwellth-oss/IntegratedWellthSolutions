@@ -1,12 +1,152 @@
-<!doctype html>
+
+<!DOCTYPE html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>IWS Sovereignty</title>
+    
+    <!-- Polyfill for process.env to prevent Uncaught ReferenceErrors -->
+    <script>
+      if (typeof window.process === 'undefined') {
+        window.process = { env: {} };
+      }
+    </script>
+
+    <!-- Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-R6CYBXMR5C"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-R6CYBXMR5C');
+    </script>
+
+    <title>Integrated Wellth Solutions | Financial & Psychological Well-being</title>
+    <meta name="description" content="Integrated Wellth Solutions (IWS) provides holistic consulting merging accounting and psychology. We optimize financial health and mental well-being for businesses." />
+    <link rel="icon" type="image/png" href="https://res.cloudinary.com/dka0498ns/image/upload/v1765747786/favicon_ofkkb1.png" />
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              brand: {
+                50: '#f0fdfa',
+                100: '#ccfbf1',
+                500: '#14b8a6',
+                600: '#0d9488',
+                700: '#0f766e',
+                800: '#115e59',
+                900: '#134e4a',
+                gold: '#d4af37'
+              }
+            },
+            animation: {
+              'pulse-slow': 'pulse 6s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+              'float': 'float 6s ease-in-out infinite',
+              'spin-slow': 'spin 12s linear infinite',
+              'reveal': 'reveal 1.2s cubic-bezier(0.77, 0, 0.175, 1)',
+              'scan': 'scan 3s linear infinite',
+              'fadeIn': 'fadeIn 0.5s ease-out forwards'
+            },
+            keyframes: {
+              float: {
+                '0%, 100%': { transform: 'translateY(0)' },
+                '50%': { transform: 'translateY(-20px)' }
+              },
+              reveal: {
+                '0%': { transform: 'translateY(100%)', opacity: '0' },
+                '100%': { transform: 'translateY(0)', opacity: '1' }
+              },
+              scan: {
+                '0%': { top: '0%' },
+                '100%': { top: '100%' }
+              },
+              fadeIn: {
+                '0%': { opacity: '0', transform: 'translateY(10px)' },
+                '100%': { opacity: '1', transform: 'translateY(0)' }
+              }
+            }
+          }
+        }
+      }
+    </script>
+
+    <style>
+      @import url('https://fonts.googleapis.com/css2?family=Sora:wght@300;400;600;800&family=Plus+Jakarta+Sans:wght@200;400;700&display=swap');
+      
+      body {
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        background-color: #ffffff;
+        color: #134e4a;
+        overflow-x: hidden;
+      }
+      
+      .font-sora { font-family: 'Sora', sans-serif; }
+      
+      .mesh-gradient {
+        background-color: #ffffff;
+        background-image: 
+          radial-gradient(at 0% 0%, hsla(174, 84%, 93%, 1) 0, transparent 50%), 
+          radial-gradient(at 100% 0%, hsla(45, 68%, 95%, 1) 0, transparent 50%),
+          radial-gradient(at 100% 100%, hsla(174, 84%, 95%, 1) 0, transparent 50%),
+          radial-gradient(at 0% 100%, hsla(45, 68%, 93%, 1) 0, transparent 50%);
+      }
+
+      .glass-card {
+        background: rgba(255, 255, 255, 0.7);
+        backdrop-filter: blur(12px);
+        border: 1px solid rgba(19, 78, 74, 0.1);
+      }
+
+      .futuristic-border {
+        position: relative;
+        overflow: hidden;
+      }
+      
+      .futuristic-border::after {
+        content: '';
+        position: absolute;
+        top: 0; left: 0; width: 100%; height: 2px;
+        background: linear-gradient(90deg, transparent, #14b8a6, transparent);
+        animation: scan 3s linear infinite;
+      }
+
+      ::-webkit-scrollbar { width: 6px; }
+      ::-webkit-scrollbar-track { background: #f0fdfa; }
+      ::-webkit-scrollbar-thumb { background: #134e4a; border-radius: 10px; }
+    </style>
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
+    <link href="https://assets.calendly.com/assets/external/widget.css" rel="stylesheet">
+    <script src="https://assets.calendly.com/assets/external/widget.js" type="text/javascript" async></script>
+    
+    <script type="importmap">
+{
+  "imports": {
+    "@google/genai": "https://esm.sh/@google/genai@^1.33.0",
+    "react-dom/": "https://esm.sh/react-dom@^19.2.3/",
+    "react/": "https://esm.sh/react@^19.2.3/",
+    "react": "https://esm.sh/react@^19.2.3",
+    "lucide-react": "https://esm.sh/lucide-react@^0.561.0",
+    "swiper": "https://esm.sh/swiper@11",
+    "swiper/react": "https://esm.sh/swiper@11/react",
+    "swiper/modules": "https://esm.sh/swiper@11/modules",
+    "firebase/app": "https://esm.sh/firebase@11.1.0/app",
+    "firebase/analytics": "https://esm.sh/firebase@11.1.0/analytics",
+    "firebase/firestore": "https://esm.sh/firebase@11.1.0/firestore",
+    "framer-motion": "https://esm.sh/framer-motion@^12.24.7",
+    "jspdf": "https://esm.sh/jspdf@^2.5.1",
+    "jspdf-autotable": "https://esm.sh/jspdf-autotable@^3.8.2",
+    "swiper/": "https://esm.sh/swiper@^12.0.3/",
+    "firebase/": "https://esm.sh/firebase@^12.8.0/"
+  }
+}
+</script>
   </head>
-  <body>
+  <body class="mesh-gradient">
     <div id="root"></div>
-    <script type="module" src="/src/main.tsx"></script>
+    <script type="module" src="index.tsx"></script>
   </body>
 </html>
