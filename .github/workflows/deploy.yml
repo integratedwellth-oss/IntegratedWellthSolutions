@@ -2,7 +2,8 @@ name: Deploy to Firebase Hosting
 on:
   push:
     branches:
-      - main
+      - main # Triggers when you push to the main branch
+
 jobs:
   build_and_deploy:
     runs-on: ubuntu-latest
@@ -22,12 +23,15 @@ jobs:
       - name: Build Project
         run: npm run build
         env:
+          # These map your GitHub Secrets to the Vite Environment
           VITE_FIREBASE_API_KEY: ${{ secrets.VITE_FIREBASE_API_KEY }}
           VITE_FIREBASE_AUTH_DOMAIN: ${{ secrets.VITE_FIREBASE_AUTH_DOMAIN }}
           VITE_FIREBASE_PROJECT_ID: ${{ secrets.VITE_FIREBASE_PROJECT_ID }}
           VITE_FIREBASE_STORAGE_BUCKET: ${{ secrets.VITE_FIREBASE_STORAGE_BUCKET }}
           VITE_FIREBASE_MESSAGING_SENDER_ID: ${{ secrets.VITE_FIREBASE_MESSAGING_SENDER_ID }}
           VITE_FIREBASE_APP_ID: ${{ secrets.VITE_FIREBASE_APP_ID }}
+          # Use VITE_ prefix here so the app can see the key
+          VITE_GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }} 
 
       - name: Deploy to Firebase Hosting
         uses: FirebaseExtended/action-hosting-deploy@v0
@@ -35,4 +39,4 @@ jobs:
           repoToken: '${{ secrets.GITHUB_TOKEN }}'
           firebaseServiceAccount: '${{ secrets.FIREBASE_SERVICE_ACCOUNT_IWS }}'
           channelId: live
-          projectId: ${{ secrets.VITE_FIREBASE_PROJECT_ID }}
+          projectId: integrated-wellth-solutions
