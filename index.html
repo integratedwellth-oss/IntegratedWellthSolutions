@@ -19,7 +19,7 @@
     </script>
 
     <title>Integrated Wellth Solutions | Financial & Psychological Well-being</title>
-    <meta name="description" content="Integrated Wellth Solutions (IWS) provides holistic consulting merging accounting and psychology. We optimize financial health and mental well-being for businesses." />
+    <meta name="description" content="Integrated Wellth Solutions (IWS) provides holistic consulting merging accounting and psychology." />
     <link rel="icon" type="image/png" href="https://res.cloudinary.com/dka0498ns/image/upload/v1765747786/favicon_ofkkb1.png" />
 
     <script src="https://cdn.tailwindcss.com"></script>
@@ -48,22 +48,10 @@
               'fadeIn': 'fadeIn 0.5s ease-out forwards'
             },
             keyframes: {
-              float: {
-                '0%, 100%': { transform: 'translateY(0)' },
-                '50%': { transform: 'translateY(-20px)' }
-              },
-              reveal: {
-                '0%': { transform: 'translateY(100%)', opacity: '0' },
-                '100%': { transform: 'translateY(0)', opacity: '1' }
-              },
-              scan: {
-                '0%': { top: '0%' },
-                '100%': { top: '100%' }
-              },
-              fadeIn: {
-                '0%': { opacity: '0', transform: 'translateY(10px)' },
-                '100%': { opacity: '1', transform: 'translateY(0)' }
-              }
+              float: { '0%, 100%': { transform: 'translateY(0)' }, '50%': { transform: 'translateY(-20px)' } },
+              reveal: { '0%': { transform: 'translateY(100%)', opacity: '0' }, '100%': { transform: 'translateY(0)', opacity: '1' } },
+              scan: { '0%': { top: '0%' }, '100%': { top: '100%' } },
+              fadeIn: { '0%': { opacity: '0', transform: 'translateY(10px)' }, '100%': { opacity: '1', transform: 'translateY(0)' } }
             }
           }
         }
@@ -72,16 +60,8 @@
 
     <style>
       @import url('https://fonts.googleapis.com/css2?family=Sora:wght@300;400;600;800&family=Plus+Jakarta+Sans:wght@200;400;700&display=swap');
-      
-      body {
-        font-family: 'Plus Jakarta Sans', sans-serif;
-        background-color: #ffffff;
-        color: #134e4a;
-        overflow-x: hidden;
-      }
-      
+      body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #ffffff; color: #134e4a; overflow-x: hidden; }
       .font-sora { font-family: 'Sora', sans-serif; }
-      
       .mesh-gradient {
         background-color: #ffffff;
         background-image: 
@@ -90,26 +70,9 @@
           radial-gradient(at 100% 100%, hsla(174, 84%, 95%, 1) 0, transparent 50%),
           radial-gradient(at 0% 100%, hsla(45, 68%, 93%, 1) 0, transparent 50%);
       }
-
-      .glass-card {
-        background: rgba(255, 255, 255, 0.7);
-        backdrop-filter: blur(12px);
-        border: 1px solid rgba(19, 78, 74, 0.1);
-      }
-
-      .futuristic-border {
-        position: relative;
-        overflow: hidden;
-      }
-      
-      .futuristic-border::after {
-        content: '';
-        position: absolute;
-        top: 0; left: 0; width: 100%; height: 2px;
-        background: linear-gradient(90deg, transparent, #14b8a6, transparent);
-        animation: scan 3s linear infinite;
-      }
-
+      .glass-card { background: rgba(255, 255, 255, 0.7); backdrop-filter: blur(12px); border: 1px solid rgba(19, 78, 74, 0.1); }
+      .futuristic-border { position: relative; overflow: hidden; }
+      .futuristic-border::after { content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 2px; background: linear-gradient(90deg, transparent, #14b8a6, transparent); animation: scan 3s linear infinite; }
       ::-webkit-scrollbar { width: 6px; }
       ::-webkit-scrollbar-track { background: #f0fdfa; }
       ::-webkit-scrollbar-thumb { background: #134e4a; border-radius: 10px; }
