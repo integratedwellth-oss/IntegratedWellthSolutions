@@ -1,18 +1,15 @@
-
 <!DOCTYPE html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     
-    <!-- Polyfill for process.env to prevent Uncaught ReferenceErrors -->
     <script>
       if (typeof window.process === 'undefined') {
         window.process = { env: {} };
       }
     </script>
 
-    <!-- Analytics -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-R6CYBXMR5C"></script>
     <script>
       window.dataLayer = window.dataLayer || [];
@@ -121,32 +118,9 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
     <link href="https://assets.calendly.com/assets/external/widget.css" rel="stylesheet">
     <script src="https://assets.calendly.com/assets/external/widget.js" type="text/javascript" async></script>
-    
-    <script type="importmap">
-{
-  "imports": {
-    "@google/genai": "https://esm.sh/@google/genai@^1.33.0",
-    "react-dom/": "https://esm.sh/react-dom@^19.2.3/",
-    "react/": "https://esm.sh/react@^19.2.3/",
-    "react": "https://esm.sh/react@^19.2.3",
-    "lucide-react": "https://esm.sh/lucide-react@^0.561.0",
-    "swiper": "https://esm.sh/swiper@11",
-    "swiper/react": "https://esm.sh/swiper@11/react",
-    "swiper/modules": "https://esm.sh/swiper@11/modules",
-    "firebase/app": "https://esm.sh/firebase@11.1.0/app",
-    "firebase/analytics": "https://esm.sh/firebase@11.1.0/analytics",
-    "firebase/firestore": "https://esm.sh/firebase@11.1.0/firestore",
-    "framer-motion": "https://esm.sh/framer-motion@^12.24.7",
-    "jspdf": "https://esm.sh/jspdf@^2.5.1",
-    "jspdf-autotable": "https://esm.sh/jspdf-autotable@^3.8.2",
-    "swiper/": "https://esm.sh/swiper@^12.0.3/",
-    "firebase/": "https://esm.sh/firebase@^12.8.0/"
-  }
-}
-</script>
   </head>
   <body class="mesh-gradient">
     <div id="root"></div>
-    <script type="module" src="index.tsx"></script>
+    <script type="module" src="/index.tsx"></script>
   </body>
 </html>
