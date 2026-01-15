@@ -267,12 +267,12 @@ const WarRoom: React.FC = () => {
                         </div>
                      </div>
                      <div className="w-full max-w-sm bg-black/40 rounded-3xl p-8 font-mono border border-white/5 shadow-inner">
-                        {transmissionLogs.map((log, i) => (
-                          <p key={i} className="text-[10px] text-emerald-500/80 mb-2 leading-none">
-                            <span className="opacity-30 mr-2">[{new Date().toLocaleTimeString()}]</span>
-                            >> {log}
-                          </p>
-                        ))}
+                     {transmissionLogs.map((log, i) => (
+  <p key={i} className="text-[10px] text-emerald-500/80 mb-2 leading-none">
+    <span className="opacity-30 mr-2">[{new Date().toLocaleTimeString()}]</span>
+    &gt;&gt; {log}
+  </p>
+))}
                         <div className="w-2 h-4 bg-emerald-500 animate-pulse inline-block mt-2"></div>
                      </div>
                      <p className="text-xs font-black uppercase tracking-[0.5em] text-white/40 animate-pulse">Establishing Sovereignty Tunnel...</p>
