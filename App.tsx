@@ -1,56 +1,59 @@
-import React, { Suspense, lazy } from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { ArrowRight } from 'lucide-react';
 
-// Layout Components
+// Layout (inside components/)
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
 import WhatsAppButton from './components/WhatsAppButton';
 import CookieConsent from './components/CookieConsent';
 
-// Root Pages
+// Root level files
 import Team from './Team';
 
-// Lazy Loaded Pages (Optimizes performance)
-const Home = lazy(() => import('./components/pages/Home'));
-const WorkshopPage = lazy(() => import('./components/pages/WorkshopPage'));
-const BlogPage = lazy(() => import('./components/pages/BlogPage'));
-const ContactPage = lazy(() => import('./components/pages/Contact Page'));
+// Pages (inside components/pages/)
+import Home from './components/pages/Home';
+import WorkshopPage from './components/pages/WorkshopPage';
+import BlogPage from './components/pages/BlogPage';
+import ContactPage from './components/pages/ContactPage';
 
-// Audience Pages
-const StartupSolutions = lazy(() => import('./components/audiences/StartupSolutions'));
-const BusinessSolutions = lazy(() => import('./components/audiences/BusinessSolutions'));
-const NPOSolutions = lazy(() => import('./components/audiences/NPOSolutions'));
+// Audiences (inside components/audiences/)
+import StartupSolutions from './components/audiences/StartupSolutions';
+import NPOSolutions from './components/audiences/NPOSolutions';
 
 const App: React.FC = () => {
-  return (
-    <Router>
-      <div className="min-h-screen bg-slate-950 text-white selection:bg-teal-500/30">
-        <Navbar />
-        
-        <Suspense fallback={
-          <div className="flex h-screen items-center justify-center bg-slate-950">
-            <div className="h-12 w-12 animate-spin rounded-full border-4 border-teal-500 border-t-transparent"></div>
-          </div>
-        }>
-          <Routes>
-            <Route path="/" element={<Home />} />
-            <Route path="/team" element={<Team />} />
-            <Route path="/workshop" element={<WorkshopPage />} />
-            <Route path="/blog" element={<BlogPage />} />
-            <Route path="/contact" element={<ContactPage />} />
-            
-            {/* Audience Routes */}
-            <Route path="/solutions/startup" element={<StartupSolutions />} />
-            <Route path="/solutions/business" element={<BusinessSolutions />} />
-            <Route path="/solutions/npo" element={<NPOSolutions />} />
-          </Routes>
-        </Suspense>
+  const [currentView, setCurrentView] = useState('home');
 
-        <Footer />
-        <WhatsAppButton />
-        <CookieConsent />
-      </div>
-    </Router>
+  useEffect(() => {
+    const handleHash = () => {
+      const hash = window.location.hash.replace('#', '') || 'home';
+      setCurrentView(hash);
+      window.scrollTo(0, 0);
+    };
+    window.addEventListener('hashchange', handleHash);
+    handleHash();
+    return () => window.removeEventListener('hashchange', handleHash);
+  }, []);
+
+  const renderView = () => {
+    switch (currentView) {
+      case 'team': return <Team />;
+      case 'workshops': return <WorkshopPage />;
+      case 'blog': return <BlogPage />;
+      case 'contact': return <ContactPage />;
+      case 'startups': return <StartupSolutions />;
+      case 'npos': return <NPOSolutions />;
+      default: return <Home onOpenAssessment={() => {}} />;
+    }
+  };
+
+  return (
+    <div className="min-h-screen flex flex-col">
+      <Navbar onNavigate={setCurrentView} />
+      <main className="flex-grow">{renderView()}</main>
+      <Footer />
+      <WhatsAppButton />
+      <CookieConsent />
+    </div>
   );
 };
 
