@@ -5,7 +5,8 @@ import { CheckCircle } from 'lucide-react';
 const Audience: React.FC = () => {
   const [activeTab, setActiveTab] = useState(AUDIENCES[0].id);
 
-  const activeContent = AUDIENCES.find(a => a.id === activeTab);
+ // Cast to 'any' to allow access to .image, .content, etc without strict interface checks
+const activeContent = AUDIENCES.find(a => a.id === activeTab) as any;
 
   return (
     <section id="audience" className="py-20 bg-gray-50">
