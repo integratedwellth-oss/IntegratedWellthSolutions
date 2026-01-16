@@ -19,10 +19,15 @@ interface ExportData {
  * Generates a branded IWS PDF Report.
  */
 export const generatePDFReport = (data: ExportData, filename: string = 'IWS_Strategic_Brief.pdf') => {
-  const doc = new jsPDF();
-  const brandGold = [212, 175, 55];
-  const brandDark = [19, 78, 74];
+// ... imports
 
+  // Inside generatePDFReport function:
+  const doc = new jsPDF();
+  // Cast these to 'any' to bypass strict tuple checking in jspdf-autotable
+  const brandGold: any = [212, 175, 55];
+  const brandDark: any = [19, 78, 74];
+
+  // ... rest of the code
   // Header Background
   doc.setFillColor(brandDark[0], brandDark[1], brandDark[2]);
   doc.rect(0, 0, 210, 40, 'F');
