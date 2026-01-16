@@ -23,7 +23,7 @@ export const generatePDFReport = (data: ExportData, filename: string = 'IWS_Stra
 
   // Inside generatePDFReport function:
   const doc = new jsPDF();
-  // Cast these to 'any' to bypass strict tuple checking in jspdf-autotable
+  // FORCE Type Casting to prevent tuple errors
   const brandGold: any = [212, 175, 55];
   const brandDark: any = [19, 78, 74];
 
