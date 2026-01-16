@@ -3,11 +3,10 @@ import { AUDIENCES } from '../constants';
 import { CheckCircle } from 'lucide-react';
 
 const Audience: React.FC = () => {
-  // 1. Ensure we have a default to prevent undefined errors
   const [activeTab, setActiveTab] = useState(AUDIENCES[0]?.id || 'startups');
   
-  // 2. Find the content based on the tab
-  const activeContent = AUDIENCES.find((a: any) => a.id === activeTab);
+  // Cast to 'any' to bypass strict type checks on the constant data
+  const activeContent: any = AUDIENCES.find((a: any) => a.id === activeTab);
 
   if (!activeContent) return null;
 
@@ -18,7 +17,6 @@ const Audience: React.FC = () => {
           <h2 className="text-3xl font-bold text-brand-900">Who We Help</h2>
         </div>
         
-        {/* Tab Navigation */}
         <div className="flex flex-wrap justify-center gap-2 mb-12">
           {AUDIENCES.map((audience: any) => (
             <button
@@ -35,7 +33,6 @@ const Audience: React.FC = () => {
           ))}
         </div>
 
-        {/* Content Display */}
         <div className="bg-white rounded-2xl p-8 md:p-12 shadow-sm border border-gray-200 min-h-[300px]">
           <div className="grid md:grid-cols-2 gap-12 items-center animate-fadeIn">
             <div>
@@ -44,7 +41,7 @@ const Audience: React.FC = () => {
               </h3>
               <p className="text-lg text-gray-600 mb-6">{activeContent.content}</p>
               <ul className="space-y-3">
-                {/* 3. Explicitly type the map parameters here to fix the build error */}
+                {/* Explicitly typed parameters to satisfy compiler */}
                 {activeContent.services.map((service: string, idx: number) => (
                   <li key={idx} className="flex items-center text-gray-700 font-medium">
                     <CheckCircle className="w-5 h-5 text-yellow-500 mr-3" />
