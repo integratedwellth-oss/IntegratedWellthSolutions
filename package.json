@@ -1,8 +1,7 @@
-
 {
   "name": "integrated-wellth-solutions",
   "version": "1.0.0",
-  "description": "Strategic business consultancy combining financial expertise with behavioral psychology.",
+  "description": "Strategic business consultancy",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -20,7 +19,7 @@
     "react-dom": "^19.2.3",
     "swiper": "^11.2.4"
   },
- "devDependencies": {
+  "devDependencies": {
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",
     "@vitejs/plugin-react": "^4.2.1",
@@ -30,4 +29,4 @@
     "typescript": "^5.3.3",
     "vite": "^5.1.4"
   }
-  }
+}
