@@ -1,4 +1,3 @@
-
 import { jsPDF } from 'jspdf';
 import autoTable from 'jspdf-autotable';
 
@@ -15,19 +14,13 @@ interface ExportData {
   }[];
 }
 
-/**
- * Generates a branded IWS PDF Report.
- */
 export const generatePDFReport = (data: ExportData, filename: string = 'IWS_Strategic_Brief.pdf') => {
-// ... imports
-
-  // Inside generatePDFReport function:
   const doc = new jsPDF();
-  // FORCE Type Casting to prevent tuple errors
+  
+  // Cast to 'any' to resolve strict Tuple type errors in jspdf-autotable
   const brandGold: any = [212, 175, 55];
   const brandDark: any = [19, 78, 74];
 
-  // ... rest of the code
   // Header Background
   doc.setFillColor(brandDark[0], brandDark[1], brandDark[2]);
   doc.rect(0, 0, 210, 40, 'F');
@@ -60,7 +53,6 @@ export const generatePDFReport = (data: ExportData, filename: string = 'IWS_Stra
   doc.text('HIGHLY CONFIDENTIAL | SOVEREIGN INTEL HUB', 150, 55);
 
   data.sections.forEach((section) => {
-    // Check page break
     if (currentY > 250) {
       doc.addPage();
       currentY = 20;
@@ -70,8 +62,9 @@ export const generatePDFReport = (data: ExportData, filename: string = 'IWS_Stra
     doc.setFontSize(12);
     doc.setTextColor(brandDark[0], brandDark[1], brandDark[2]);
     doc.text(section.heading.toUpperCase(), 15, currentY);
+    
     currentY += 8;
-
+    
     doc.setFont('helvetica', 'normal');
     doc.setFontSize(10);
     doc.setTextColor(60, 60, 60);
@@ -100,7 +93,6 @@ export const generatePDFReport = (data: ExportData, filename: string = 'IWS_Stra
       });
       currentY = (doc as any).lastAutoTable.finalY + 15;
     }
-
     currentY += 5;
   });
 
@@ -116,9 +108,6 @@ export const generatePDFReport = (data: ExportData, filename: string = 'IWS_Stra
   doc.save(filename);
 };
 
-/**
- * Generates a standard CSV from an array of objects.
- */
 export const generateCSVExport = (data: any[], filename: string = 'IWS_Export.csv') => {
   if (data.length === 0) return;
   
