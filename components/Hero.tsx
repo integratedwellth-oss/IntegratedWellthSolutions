@@ -1,5 +1,6 @@
 import React from 'react';
-import Button from '../Button';
+// FIXED IMPORT: Button is in the same folder as Hero (components/)
+import Button from './Button'; 
 import { ArrowRight, ShieldCheck, Zap } from 'lucide-react';
 
 const Hero: React.FC = () => {
@@ -23,10 +24,9 @@ const Hero: React.FC = () => {
         <img
           src="https://res.cloudinary.com/dka0498ns/image/upload/v1765321879/Integrated_Wellth_Business_Lunch_raaj59.jpg"
           alt="Business Meeting"
-          className="w-full h-full object-cover opacity-40 mix-blend-normal object-center" // Increased opacity
+          className="w-full h-full object-cover opacity-40 mix-blend-normal object-center"
         />
         <div className="absolute inset-0 bg-gradient-to-r from-brand-900 via-brand-900/90 to-brand-900/30"></div>
-        {/* Subtle Grid Overlay */}
         <div className="absolute inset-0 opacity-[0.05]" style={{ backgroundImage: 'radial-gradient(#ffffff 1px, transparent 1px)', backgroundSize: '60px 60px' }}></div>
       </div>
 
@@ -37,7 +37,6 @@ const Hero: React.FC = () => {
         </div>
 
         <div className="space-y-2">
-          {/* Title sized correctly for readability */}
           <h1 className="text-5xl md:text-7xl lg:text-[7rem] font-sora font-black tracking-tighter text-white leading-[0.95] max-w-5xl">
             Where you <br className="hidden md:block"/>
             are going <br className="hidden md:block"/>
@@ -69,7 +68,6 @@ const Hero: React.FC = () => {
         </div>
       </div>
 
-      {/* Reassurance Floating Element - Resized and Repositioned */}
       <div className="absolute bottom-24 right-6 lg:bottom-32 lg:right-24 hidden lg:block animate-float z-20">
         <div className="glass-card p-6 rounded-3xl border border-white/10 bg-white/10 backdrop-blur-2xl shadow-2xl max-w-[320px]">
           <div className="flex items-center gap-4 mb-4">
