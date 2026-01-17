@@ -1,6 +1,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import App from './App';
+import './index.css'; // <--- THIS LINE IS CRITICAL FOR STYLES
 import './firebaseConfig';
 
 const rootElement = document.getElementById('root');
