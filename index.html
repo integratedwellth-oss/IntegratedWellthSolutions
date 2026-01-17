@@ -4,10 +4,14 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     
+    <!-- 1. Defensive Polyfill: Prevents "process is undefined" crashes immediately -->
     <script>
-      if (typeof window.process === 'undefined') { window.process = { env: {} }; }
+      if (typeof window.process === 'undefined') {
+        window.process = { env: {} };
+      }
     </script>
 
+    <!-- Analytics -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-R6CYBXMR5C"></script>
     <script>
       window.dataLayer = window.dataLayer || [];
@@ -17,49 +21,98 @@
     </script>
 
     <title>Integrated Wellth Solutions | Financial & Psychological Well-being</title>
-    <meta name="description" content="Integrated Wellth Solutions (IWS) provides holistic consulting merging accounting and psychology." />
+    <meta name="description" content="Integrated Wellth Solutions (IWS) provides holistic consulting merging accounting and psychology. We optimize financial health and mental well-being for businesses." />
     <link rel="icon" type="image/png" href="https://res.cloudinary.com/dka0498ns/image/upload/v1765747786/favicon_ofkkb1.png" />
 
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-      tailwind.config = {
-        theme: {
-          extend: {
-            colors: {
-              brand: {
-                50: '#f0fdfa', 100: '#ccfbf1', 500: '#14b8a6', 600: '#0d9488',
-                700: '#0f766e', 800: '#115e59', 900: '#134e4a', gold: '#d4af37'
-              }
-            },
-            animation: {
-              'pulse-slow': 'pulse 6s cubic-bezier(0.4, 0, 0.6, 1) infinite',
-              'float': 'float 6s ease-in-out infinite',
-              'scan': 'scan 3s linear infinite',
-              'fadeIn': 'fadeIn 0.5s ease-out forwards'
-            }
-          }
-        }
-      }
-    </script>
-
+    <!-- Google Fonts -->
     <style>
       @import url('https://fonts.googleapis.com/css2?family=Sora:wght@300;400;600;800&family=Plus+Jakarta+Sans:wght@200;400;700&display=swap');
-      body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #ffffff; color: #134e4a; overflow-x: hidden; }
-      .mesh-gradient {
+      
+      body {
+        font-family: 'Plus Jakarta Sans', sans-serif;
         background-color: #ffffff;
-        background-image: 
-          radial-gradient(at 0% 0%, hsla(174, 84%, 93%, 1) 0, transparent 50%), 
-          radial-gradient(at 100% 100%, hsla(174, 84%, 95%, 1) 0, transparent 50%);
+        color: #134e4a;
+        overflow-x: hidden;
+        margin: 0;
       }
-      .glass-card { background: rgba(255, 255, 255, 0.7); backdrop-filter: blur(12px); border: 1px solid rgba(19, 78, 74, 0.1); }
+      
+      /* Pure CSS Loader to show BEFORE React loads */
+      #initial-loader {
+        position: fixed;
+        inset: 0;
+        background: #134e4a;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        z-index: 9999;
+        transition: opacity 0.5s ease-out;
+      }
+      .loader-logo {
+        width: 80px;
+        height: 80px;
+        background: white;
+        border-radius: 20px;
+        margin-bottom: 20px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        animation: pulse 2s infinite;
+      }
+      .loader-bar {
+        width: 200px;
+        height: 2px;
+        background: rgba(255,255,255,0.1);
+        border-radius: 10px;
+        overflow: hidden;
+      }
+      .loader-progress {
+        width: 50%;
+        height: 100%;
+        background: #d4af37; /* Brand Gold */
+        animation: loading 2s infinite ease-in-out;
+      }
+      @keyframes loading {
+        0% { transform: translateX(-100%); }
+        100% { transform: translateX(200%); }
+      }
+      @keyframes pulse {
+        0%, 100% { transform: scale(1); opacity: 1; }
+        50% { transform: scale(1.1); opacity: 0.8; }
+      }
     </style>
-
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
-    <link href="https://assets.calendly.com/assets/external/widget.css" rel="stylesheet">
-    <script src="https://assets.calendly.com/assets/external/widget.js" type="text/javascript" async></script>
   </head>
-  <body class="mesh-gradient">
+  <body>
+    <!-- The Loader: Visible immediately -->
+    <div id="initial-loader">
+      <div class="loader-logo">
+        <!-- Fallback image logic handled in React, simple div here -->
+        <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#134e4a" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+      </div>
+      <div class="loader-bar">
+        <div class="loader-progress"></div>
+      </div>
+      <p style="color: white; font-family: monospace; font-size: 10px; margin-top: 15px; font-weight: 800; letter-spacing: 4px; opacity: 0.5;">INITIALIZING PROTOCOL</p>
+    </div>
+
+    <!-- The React App Root -->
     <div id="root"></div>
+    
+    <!-- Entry Point -->
     <script type="module" src="/index.tsx"></script>
+
+    <!-- Script to remove loader when app is ready -->
+    <script>
+      window.addEventListener('load', () => {
+        // Give React a moment to render
+        setTimeout(() => {
+          const loader = document.getElementById('initial-loader');
+          if (loader) {
+            loader.style.opacity = '0';
+            setTimeout(() => loader.remove(), 500);
+          }
+        }, 800);
+      });
+    </script>
   </body>
 </html>
