@@ -17,7 +17,7 @@ import FloatingCTA from './components/FloatingCTA';
 import Home from './components/pages/Home';
 import ServicesPage from './components/pages/ServicesPage';
 import WhoWeHelpPage from './components/pages/WhoWeHelpPage';
-import Team from './Team'; // Root level component
+import Team from './Team'; 
 import WorkshopPage from './components/pages/WorkshopPage';
 import BlogPage from './components/pages/BlogPage';
 import ContactPage from './components/pages/ContactPage';
@@ -44,7 +44,6 @@ const App: React.FC = () => {
   const [showEventPopup, setShowEventPopup] = useState(false);
 
   useEffect(() => {
-    // Graceful Event Popup
     let popupTimer: number | undefined;
     const hasSeenEvent = sessionStorage.getItem('hasSeenIWS_Event_Immediate');
     const isWarRoom = window.location.hash === '#warroom';
@@ -53,33 +52,32 @@ const App: React.FC = () => {
       popupTimer = window.setTimeout(() => setShowEventPopup(true), 800);
     }
 
-    // Defensive Navigation Handler
     const handleHashChange = () => {
       try {
         const hash = window.location.hash.replace('#', '');
         
-        // Modal Triggers
         if (hash === 'assessment') {
           setShowAssessmentModal(true);
           return;
         }
 
-        // Valid Routes Registry
         const validViews = [
           'home', 'services', 'who-we-help', 'team', 'workshops', 'blog', 'contact', 
           'privacy', 'startups', 'existing-business', 'npos', 'individuals', 
           'wellness', 'accountability', 'tracker', 'warroom', 'protocol'
         ];
 
-        // Scroll vs View Logic
-        if (['protocol', 'services', 'warroom'].includes(hash)) {
-           // These are sections on Home, handled by Home.tsx scrolling
+        // FIXED: 'warroom' removed from scroll logic, now handled as a distinct page
+        if (['protocol', 'services'].includes(hash)) {
            setCurrentView('home');
+           setTimeout(() => {
+             const element = document.getElementById(hash);
+             if (element) element.scrollIntoView({ behavior: 'smooth' });
+           }, 100);
         } else if (validViews.includes(hash)) {
           setCurrentView(hash);
           window.scrollTo({ top: 0, behavior: 'smooth' });
         } else {
-          // Fallback for unknown routes
           setCurrentView('home');
         }
       } catch (e) {
@@ -118,7 +116,7 @@ const App: React.FC = () => {
         case 'wellness': return <WellnessSolutions />;
         case 'accountability': return <AccountabilityPartnership />;
         case 'tracker': return <ComplianceTracker />;
-        case 'warroom': return <WarRoom />;
+        case 'warroom': return <WarRoom />; // This is now a dedicated page
         case 'protocol': return <StrategicJourney />;
         default: return <Home onOpenAssessment={() => setShowAssessmentModal(true)} />;
       }
@@ -145,7 +143,6 @@ const App: React.FC = () => {
 
         {currentView !== 'warroom' && <Footer />}
         
-        {/* Sticky Workshop Footer Bar */}
         {currentView !== 'warroom' && (
           <div className="fixed bottom-0 left-0 w-full bg-brand-gold z-[40] px-6 py-4 flex items-center justify-between shadow-[0_-10px_40px_rgba(212,175,55,0.2)] animate-fadeIn">
             <div className="flex items-center gap-4">
@@ -163,7 +160,6 @@ const App: React.FC = () => {
           </div>
         )}
 
-        {/* Global Overlays */}
         <EventPopup isOpen={showEventPopup} onClose={handleCloseEventPopup} />
         <FinancialHealthScore isModal={true} isOpen={showAssessmentModal} onClose={() => setShowAssessmentModal(false)} />
         <FloatingCTA />
