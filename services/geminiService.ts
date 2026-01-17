@@ -2,7 +2,6 @@ import { GoogleGenAI, Chat } from "@google/genai";
 import { COMPANY_CONTEXT } from "../constants";
 
 export const createChatSession = (): Chat => {
-  // Use Vite's native env handling ONLY
   const apiKey = import.meta.env.VITE_GEMINI_API_KEY || '';
 
   if (!apiKey) {
@@ -12,7 +11,7 @@ export const createChatSession = (): Chat => {
   const ai = new GoogleGenAI({ apiKey });
 
   return ai.chats.create({
-    model: 'gemini-2.0-flash', 
+    model: 'gemini-1.5-flash', // Switched to stable model
     config: {
       systemInstruction: COMPANY_CONTEXT,
       temperature: 0.7,
