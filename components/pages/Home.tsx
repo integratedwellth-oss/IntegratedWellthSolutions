@@ -22,7 +22,6 @@ const Home: React.FC<HomeProps> = ({ onOpenAssessment }) => {
       <TrustedBy />
       <NewsTicker />
 
-      {/* Primary Solutions Ecosystem */}
       <div id="services-anchor">
         <Services />
       </div>
@@ -31,7 +30,6 @@ const Home: React.FC<HomeProps> = ({ onOpenAssessment }) => {
         <StrategicJourney />
       </div>
 
-      {/* Dramatic Transition */}
       <section className="py-40 bg-brand-900 relative overflow-hidden">
         <div className="absolute inset-0 opacity-[0.03] pointer-events-none" style={{ backgroundImage: 'radial-gradient(#ffffff 1px, transparent 1px)', backgroundSize: '40px 40px' }}></div>
         <div className="max-w-7xl mx-auto px-6 relative z-10">
@@ -62,12 +60,9 @@ const Home: React.FC<HomeProps> = ({ onOpenAssessment }) => {
         </div>
       </section>
 
-      {/* Removed embedded WarRoom to prevent duplication. It is now a standalone page. */}
-
       <Testimonials />
       <Gallery />
       
-      {/* Final Institutional Call */}
       <section className="py-40 bg-white relative flex flex-col items-center justify-center text-center px-6 overflow-hidden">
         <div className="absolute inset-0 opacity-[0.05] pointer-events-none" style={{ backgroundImage: 'radial-gradient(#134e4a 1px, transparent 1px)', backgroundSize: '80px 80px' }}></div>
         
