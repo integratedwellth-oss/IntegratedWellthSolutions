@@ -40,12 +40,19 @@ const Navbar: React.FC<NavbarProps> = ({ onNavigate }) => {
     setIsMobileMenuOpen(false);
   };
 
-  const navLinks = [
+ const navLinks = [
+    // These lead to SECTIONS on the Home Page
     { label: 'THE PROTOCOL', hash: '#protocol', icon: <Workflow size={14} /> },
     { label: 'ECOSYSTEM', hash: '#services', icon: <LayoutGrid size={14} /> },
+    
+    // These lead to SEPARATE PAGES
     { label: 'AUDIENCES', hash: '#who-we-help', icon: <Users size={14} /> },
     { label: 'IDENTITY', hash: '#team', icon: <Target size={14} /> },
+    
+    // War Room is a section on Home
     { label: 'WAR ROOM', hash: '#warroom', icon: <ShieldAlert size={14} />, isWarRoom: true },
+    
+    // Summit is a separate page
     { label: 'SUMMITS', hash: '#workshops', icon: <Calendar size={14} />, isSpecial: true },
   ];
 
