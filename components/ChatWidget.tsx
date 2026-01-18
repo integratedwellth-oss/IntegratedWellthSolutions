@@ -21,7 +21,7 @@ const ChatWidget: React.FC<ChatWidgetProps> = ({ currentView = 'home' }) => {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const chatSessionRef = useRef<any>(null); // Use 'any' to avoid strict type issues with the new SDK
+  const chatSessionRef = useRef<any>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -58,8 +58,9 @@ const ChatWidget: React.FC<ChatWidgetProps> = ({ currentView = 'home' }) => {
       
       setMessages(prev => [...prev, { role: 'model', text: '', timestamp: modelMsgId }]);
 
+      // Fix: Iterate over the async iterable returned by the service
       for await (const chunk of stream) {
-        const text = chunk.text; // Adjusted for the new service wrapper
+        const text = chunk.text;
         if (text) {
           fullResponse += text;
           setMessages(prev => 
@@ -71,7 +72,7 @@ const ChatWidget: React.FC<ChatWidgetProps> = ({ currentView = 'home' }) => {
       }
     } catch (error) {
       console.error("Chat error:", error);
-      setMessages(prev => [...prev, { role: 'model', text: "Protocol fault. Please attempt reconnection.", timestamp: Date.now() }]);
+      setMessages(prev => [...prev, { role: 'model', text: "Protocol fault. Please check your connection.", timestamp: Date.now() }]);
     } finally {
       setIsLoading(false);
     }
