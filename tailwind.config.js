@@ -8,8 +8,14 @@ export default {
     extend: {
       colors: {
         brand: {
-          50: '#f0fdfa', 100: '#ccfbf1', 500: '#14b8a6', 600: '#0d9488',
-          700: '#0f766e', 800: '#115e59', 900: '#134e4a', gold: '#d4af37'
+          50: '#f0fdfa',      // Mint / Seafoam (Lightest)
+          100: '#ccfbf1',
+          500: '#14b8a6',
+          600: '#0d9488',
+          900: '#134e4a',     // Teal / Forest Green (Primary Dark)
+          brown: '#3E2723',   // Dark Brown (Trunk/Roots)
+          gold: '#d4af37',    // Gold/Olive accent
+          slate: '#64748b'    // Slate Grey (Geometric shapes)
         }
       },
       fontFamily: {
