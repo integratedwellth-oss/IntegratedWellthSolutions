@@ -1,18 +1,19 @@
-
 import React, { useState, useRef, useEffect } from 'react';
 import { MessageSquare, X, Send, Loader2, Sparkles, Trash2 } from 'lucide-react';
 import { createChatSession, sendMessageStream } from '../services/geminiService';
 import { ChatMessage } from '../types';
-import { Chat, GenerateContentResponse } from '@google/genai';
 
 interface ChatWidgetProps {
   currentView?: string;
 }
 
 const SUGGESTIONS: Record<string, string[]> = {
-  'home': ["What services do you offer?", "Tell me about the upcoming workshop", "How do I book a consultation?"],
-  'who-we-help': ["Who is your typical client?", "Do you help Non-Profits?", "I'm just an individual, can you help?"],
-  'default': ["What services do you offer?", "Where are you located?", "Book a consultation"]
+  'home': ["What is the SARS Safety Net?", "How do I join the next workshop?", "Can you fix my messy books?"],
+  'startups': ["How do I get investor-ready?", "What paperwork do I need to start?", "How do I manage my first grant?"],
+  'existing-business': ["Is my business SARS compliant?", "Why am I not making enough profit?", "How do I win bigger contracts?"],
+  'npos': ["How do I register an NPO?", "Help with donor reports", "Tax-exempt status help"],
+  'wellness': ["I'm feeling burnt out", "Tips for leader stress", "Better money habits for my team"],
+  'default': ["Show me your services", "Where is your office?", "Book a free chat"]
 };
 
 const ChatWidget: React.FC<ChatWidgetProps> = ({ currentView = 'home' }) => {
@@ -20,7 +21,7 @@ const ChatWidget: React.FC<ChatWidgetProps> = ({ currentView = 'home' }) => {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const chatSessionRef = useRef<Chat | null>(null);
+  const chatSessionRef = useRef<any>(null); // Use 'any' to avoid strict type issues with the new SDK
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -51,35 +52,35 @@ const ChatWidget: React.FC<ChatWidgetProps> = ({ currentView = 'home' }) => {
     setIsLoading(true);
 
     try {
-      const result = await sendMessageStream(chatSessionRef.current, userMsg.text);
+      const stream = await sendMessageStream(chatSessionRef.current, userMsg.text);
       let fullResponse = '';
       const modelMsgId = Date.now();
       
       setMessages(prev => [...prev, { role: 'model', text: '', timestamp: modelMsgId }]);
 
-      for await (const chunk of result) {
-         const chunkText = (chunk as GenerateContentResponse).text;
-         if (chunkText) {
-             fullResponse += chunkText;
-             setMessages(prev => 
-                prev.map(msg => 
-                    msg.timestamp === modelMsgId ? { ...msg, text: fullResponse } : msg
-                )
-             );
-         }
+      for await (const chunk of stream) {
+        const text = chunk.text; // Adjusted for the new service wrapper
+        if (text) {
+          fullResponse += text;
+          setMessages(prev => 
+            prev.map(msg => 
+              msg.timestamp === modelMsgId ? { ...msg, text: fullResponse } : msg
+            )
+          );
+        }
       }
     } catch (error) {
       console.error("Chat error:", error);
-      setMessages(prev => [...prev, { role: 'model', text: "Protocol fault. Please attempt reconnection or contact support.", timestamp: Date.now() }]);
+      setMessages(prev => [...prev, { role: 'model', text: "Protocol fault. Please attempt reconnection.", timestamp: Date.now() }]);
     } finally {
       setIsLoading(false);
     }
   };
 
   const handleClear = () => {
-      setMessages([]);
-      localStorage.removeItem('wellth_chat_history');
-      chatSessionRef.current = null;
+    setMessages([]);
+    localStorage.removeItem('wellth_chat_history');
+    chatSessionRef.current = null;
   };
 
   const renderMessageText = (text: string) => {
@@ -102,31 +103,30 @@ const ChatWidget: React.FC<ChatWidgetProps> = ({ currentView = 'home' }) => {
           <div className="bg-brand-900 text-white p-4 flex justify-between items-center shadow-md z-10">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center">
-                 <Sparkles size={20} className="text-yellow-400" />
+                <Sparkles size={20} className="text-yellow-400" />
               </div>
               <div>
                 <h3 className="font-bold text-lg leading-tight tracking-tight uppercase">Advisor</h3>
               </div>
             </div>
             <div className="flex items-center gap-1">
-                <button onClick={handleClear} className="text-brand-200 hover:text-white p-2 rounded-full transition-colors"><Trash2 size={18} /></button>
-                <button onClick={() => setIsOpen(false)} className="text-white hover:text-brand-200 p-2 rounded-full transition-colors"><X size={22} /></button>
+              <button onClick={handleClear} className="text-brand-200 hover:text-white p-2 rounded-full transition-colors"><Trash2 size={18} /></button>
+              <button onClick={() => setIsOpen(false)} className="text-white hover:text-brand-200 p-2 rounded-full transition-colors"><X size={22} /></button>
             </div>
           </div>
-
           <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-gray-50 scroll-smooth">
             {messages.length === 0 && (
-                <div className="text-center mt-8 px-4 animate-fadeIn">
-                    <p className="text-gray-800 font-bold text-lg mb-2 uppercase tracking-tighter">Security Verification Complete</p>
-                    <p className="text-gray-500 text-xs mb-6 uppercase tracking-widest opacity-50">Select Intelligence Module</p>
-                    <div className="flex flex-col gap-2">
-                        {currentSuggestions.map((q, idx) => (
-                            <button key={idx} onClick={() => handleSend(q)} className="text-xs bg-white border border-gray-200 text-brand-700 hover:bg-brand-900 hover:text-white py-4 px-4 rounded-xl text-left transition-all shadow-sm flex items-center justify-between group">
-                                {q} <Send size={14} className="opacity-0 group-hover:opacity-100 transition-opacity" />
-                            </button>
-                        ))}
-                    </div>
+              <div className="text-center mt-8 px-4 animate-fadeIn">
+                <p className="text-gray-800 font-bold text-lg mb-2 uppercase tracking-tighter">Security Verification Complete</p>
+                <p className="text-gray-500 text-xs mb-6 uppercase tracking-widest opacity-50">Select Intelligence Module</p>
+                <div className="flex flex-col gap-2">
+                  {currentSuggestions.map((q, idx) => (
+                    <button key={idx} onClick={() => handleSend(q)} className="text-xs bg-white border border-gray-200 text-brand-700 hover:bg-brand-900 hover:text-white py-4 px-4 rounded-xl text-left transition-all shadow-sm flex items-center justify-between group">
+                      {q} <Send size={14} className="opacity-0 group-hover:opacity-100 transition-opacity" />
+                    </button>
+                  ))}
                 </div>
+              </div>
             )}
             {messages.map((msg, idx) => (
               <div key={idx} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'} animate-fadeIn`}>
@@ -138,7 +138,6 @@ const ChatWidget: React.FC<ChatWidgetProps> = ({ currentView = 'home' }) => {
             {isLoading && <Loader2 className="animate-spin text-brand-600 w-4 h-4 mx-auto" />}
             <div ref={messagesEndRef} />
           </div>
-
           <div className="p-3 bg-white border-t border-gray-100 flex gap-2 items-center">
             <input
               type="text"
@@ -156,12 +155,11 @@ const ChatWidget: React.FC<ChatWidgetProps> = ({ currentView = 'home' }) => {
       )}
       {!isOpen && (
         <button onClick={() => setIsOpen(true)} className="bg-brand-900 text-white p-4 rounded-full shadow-xl hover:scale-110 transition-all flex items-center gap-3 group">
-            <MessageSquare size={26} />
-            <span className="max-w-0 overflow-hidden group-hover:max-w-xs transition-all duration-300 whitespace-nowrap font-black uppercase tracking-widest text-xs pr-0 group-hover:pr-2">Intel Portal</span>
+          <MessageSquare size={26} />
+          <span className="max-w-0 overflow-hidden group-hover:max-w-xs transition-all duration-300 whitespace-nowrap font-black uppercase tracking-widest text-xs pr-0 group-hover:pr-2">Intel Portal</span>
         </button>
       )}
     </div>
   );
 };
-
 export default ChatWidget;
