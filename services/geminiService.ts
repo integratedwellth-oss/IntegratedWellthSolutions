@@ -35,16 +35,14 @@ export const createChatSession = (): any => {
 
 export const sendMessageStream = async (chat: any, message: string) => {
   try {
-    // Send message and get stream
     const result = await chat.sendMessageStream(message);
     
-    // We need to return an async iterable for the UI to consume
     return {
       [Symbol.asyncIterator]: async function* () {
         for await (const chunk of result.stream) {
           const chunkText = chunk.text();
           if (chunkText) {
-            yield { text: chunkText }; // Match the format expected by UI
+            yield { text: chunkText }; 
           }
         }
       }
