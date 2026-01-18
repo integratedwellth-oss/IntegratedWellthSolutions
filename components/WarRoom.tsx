@@ -51,6 +51,7 @@ const WarRoom: React.FC = () => {
     return { label: "TOTAL FREEDOM", time: "FOREVER", color: "text-emerald-400", desc: "Perfect structure. The business makes money while you sleep.", risk: "NEUTRALIZED" };
   };
 
+  // ... (Deadlines and AI code remains the same, omitted for brevity but include in file) ...
   const deadlines = [
     { title: "Trust Tax Returns (ITR12T)", date: "Jan 19, 2026", targetDate: new Date('2026-01-19') },
     { title: "VAT Submission", date: "Feb 25, 2026", targetDate: new Date('2026-02-25') },
@@ -70,21 +71,16 @@ const WarRoom: React.FC = () => {
     setIsAnalyzing(true);
     setAiAnalysis('');
     if (!chatRef.current) chatRef.current = createChatSession();
-
-    const prompt = `Business Diagnostic Request. Founder says business dies in ${sov.time} without them. Risk: ${sov.risk}. Provide a 3-sentence reality check in SIMPLE English. Tell them why they are stuck and how to fix it. Start with '### AUDIT RESULTS RECEIVED'`;
-
+    const prompt = `Business Diagnostic Request. Founder says business dies in ${sov.time} without them. Risk: ${sov.risk}. Provide a 3-sentence reality check.`;
     try {
       const stream = await sendMessageStream(chatRef.current, prompt);
       let fullText = '';
       for await (const chunk of stream) {
         const text = chunk.text;
-        if (text) {
-          fullText += text;
-          setAiAnalysis(fullText);
-        }
+        if (text) { fullText += text; setAiAnalysis(fullText); }
       }
     } catch (e) {
-      setAiAnalysis("### CONNECTION ERROR\nCould not reach the advisor. Your business risk remains **CRITICAL**.");
+      setAiAnalysis("### CONNECTION ERROR\nCould not reach the advisor.");
     } finally {
       setIsAnalyzing(false);
     }
@@ -94,9 +90,8 @@ const WarRoom: React.FC = () => {
     e.preventDefault();
     setIsTransmitting(true);
     setTransmissionLogs([]);
-    const logs = ["PREPARING DATA PACKETS...", "ENCRYPTING IDENTITY...", "OPENING ARCHITECT TUNNEL...", "SENDING DATA...", "UPLINK FINISHED."];
+    const logs = ["PREPARING DATA PACKETS...", "ENCRYPTING IDENTITY...", "CALCULATING RISK SEGMENT...", "GENERATING STRATEGIC BRIEF...", "UPLINK FINISHED."];
     
-    // Simulate log typing
     const addLog = (msg: string) => setTransmissionLogs(prev => [...prev, msg]);
     for (const log of logs) {
       addLog(log);
@@ -105,18 +100,67 @@ const WarRoom: React.FC = () => {
     
     try {
       const sov = getSovereigntyLabel(sovereignty);
+      
+      // 1. SAVE TO ANALYTICS DB
       const leadPayload = {
         name: formData.identifier,
         company: formData.enterprise,
         email: formData.email,
         whatsapp: formData.whatsapp,
-        results: { survival: sov.time, risk: sov.risk, ai: aiAnalysis },
+        segment: sov.risk, // Segmentation Key
+        metrics: { 
+          survival_time: sov.time, 
+          founder_dependency: dependency 
+        },
         timestamp: serverTimestamp(),
       };
-      if (db) await addDoc(collection(db, 'war_room_leads'), leadPayload);
+      
+      if (db) {
+        // A. Store for Dashboard
+        await addDoc(collection(db, 'war_room_leads'), leadPayload);
+
+        // B. Trigger Email (Via Firebase Extensions)
+        await addDoc(collection(db, 'mail'), {
+          to: formData.email,
+          message: {
+            subject: `⚠️ STRATEGIC ALERT: ${formData.enterprise} Risk Assessment`,
+            html: `
+              <div style="font-family: Arial, sans-serif; color: #134e4a; padding: 20px;">
+                <h1 style="color: #d4af37;">STRATEGIC ASSESSMENT COMPLETE</h1>
+                <p>Hello ${formData.identifier},</p>
+                <p>Our War Room algorithms have analyzed your inputs. Here is the reality:</p>
+                
+                <div style="background: #f0fdfa; padding: 15px; border-left: 4px solid #d4af37; margin: 20px 0;">
+                  <h3>⚠️ CURRENT STATUS: ${sov.risk}</h3>
+                  <p><strong>Survival Time:</strong> ${sov.time}</p>
+                  <p><strong>Founder Dependency:</strong> ${dependency}%</p>
+                  <p style="color: #b91c1c; font-weight: bold;">PAIN POINT DETECTED:</p>
+                  <p>${sov.desc}</p>
+                </div>
+
+                <h2>THE SOLUTION: Structural Intervention</h2>
+                <p>You are currently operating in "Reactive Mode." To shift to "Sovereign Mode," we need to decouple your time from your revenue.</p>
+
+                <p style="text-align: center; margin: 30px 0;">
+                  <a href="https://calendly.com/enquiries-integratedwellth/30min" style="background-color: #134e4a; color: white; padding: 15px 30px; text-decoration: none; font-weight: bold; border-radius: 5px;">BOOK YOUR STRATEGIC RESET CALL</a>
+                </p>
+
+                <hr style="border: 0; border-top: 1px solid #eee; margin: 30px 0;" />
+
+                <h3>🎟️ EXCLUSIVE SUMMIT INVITATION</h3>
+                <p>Join Marcia Kgaphola at the <strong>Financial Clarity Summit</strong> on Feb 28, 2026.</p>
+                <p>We will be dissecting these exact compliance and structural issues live.</p>
+                <p><a href="https://www.quicket.co.za/events/352598-financial-clarity-for-non-financial-business-owners/#/" style="color: #d4af37; font-weight: bold;">Secure Your Seat Here</a></p>
+              </div>
+            `
+          }
+        });
+      }
+
       setIsTransmitting(false);
       setIsSuccess(true);
     } catch (error) {
+      console.error(error);
       setIsTransmitting(false);
       alert("Transmission failed. Re-try uplink.");
     }
@@ -153,7 +197,6 @@ const WarRoom: React.FC = () => {
              <h1 className="text-7xl font-sora font-extrabold tracking-tighter leading-[0.8] mt-8">
                 THE WAR <br/> <span className="text-brand-gold italic">ROOM.</span>
               </h1>
-             {/* ... (Rest of UI kept similar but colors updated to brand-gold/900) ... */}
              <div className="grid grid-cols-2 gap-6">
               {[
                 { label: 'SURVIVAL TIME', value: getSovereigntyLabel(sovereignty).time, icon: <Skull size={16} className={getSovereigntyLabel(sovereignty).color} /> },
@@ -171,9 +214,7 @@ const WarRoom: React.FC = () => {
           </div>
 
           <div className="lg:col-span-7">
-            {/* Main Interactive Panel */}
             <div className="bg-slate-900/60 border border-white/20 rounded-[4rem] p-8 md:p-12 backdrop-blur-3xl shadow-2xl relative overflow-hidden group min-h-[850px] flex flex-col">
-                 {/* Navigation */}
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-2 mb-12 bg-black/60 p-2 rounded-[2.5rem] border border-white/10">
                   {Object.keys(STREAM_LABELS).map((id) => (
                     <button
@@ -188,9 +229,27 @@ const WarRoom: React.FC = () => {
                   ))}
                 </div>
 
-                {/* Content Area */}
                 <div className="flex-1">
-                   {activeStream === 'stress' && (
+                   {/* SUCCESS STATE */}
+                   {isSuccess ? (
+                    <div className="space-y-12 animate-fadeIn py-10 text-center">
+                      <CheckCircle size={80} className="text-brand-gold mx-auto animate-bounce" />
+                      <h2 className="text-4xl md:text-5xl font-sora font-black text-white uppercase tracking-tighter">DATA SENT TO ARCHITECTS.</h2>
+                      <p className="text-xl text-white/60 font-medium leading-relaxed">Check your secure email within 5 minutes for your Risk Profile.</p>
+                      <button onClick={handleDownloadIntel} className="w-full flex items-center justify-center gap-4 py-8 rounded-[2.5rem] bg-brand-gold text-brand-900 font-black uppercase tracking-[0.4em] text-sm transition-all hover:scale-105 shadow-2xl">
+                        <FileText size={18} /> DOWNLOAD YOUR FREEDOM PLAN
+                      </button>
+                    </div>
+                  ) : isTransmitting ? (
+                    <div className="flex flex-col items-center justify-center h-full space-y-10 py-20 animate-fadeIn">
+                       <div className="w-24 h-24 rounded-full border-4 border-brand-gold/10 border-t-brand-gold animate-spin"></div>
+                       <div className="w-full max-w-sm bg-black/40 rounded-3xl p-6 font-mono border border-white/10">
+                          {transmissionLogs.map((log, i) => (
+                            <p key={i} className="text-[11px] text-brand-gold mb-2">&gt;&gt; {log}</p>
+                          ))}
+                       </div>
+                    </div>
+                  ) : activeStream === 'stress' ? (
                       <div className="space-y-10">
                          <div className="flex justify-between items-center bg-black/60 p-8 rounded-[2rem] border border-white/10">
                              <span className="text-[12px] font-black uppercase text-white/40 tracking-widest">Survival Time</span>
@@ -202,6 +261,9 @@ const WarRoom: React.FC = () => {
                             <button onClick={handleAiAppraisal} disabled={isAnalyzing} className="flex items-center justify-center gap-4 bg-white/10 border border-white/20 text-white rounded-[2rem] py-8 font-black uppercase tracking-[0.2em] text-xs transition-all hover:bg-white/20">
                               {isAnalyzing ? <Loader2 className="animate-spin" size={20} /> : <Cpu size={20} />} RUN AI ADVISOR
                             </button>
+                            <button onClick={() => setActiveStream('alpha')} className="bg-brand-gold text-brand-900 rounded-[2rem] py-8 font-black uppercase tracking-[0.3em] text-xs transition-all hover:scale-105 shadow-xl">
+                              GET FREEDOM PLAN <ArrowRight size={20} className="inline ml-2" />
+                            </button>
                           </div>
                           {aiAnalysis && (
                              <div className="p-8 bg-brand-gold/10 border-l-4 border-brand-gold text-white/90 rounded-r-2xl">
@@ -209,10 +271,48 @@ const WarRoom: React.FC = () => {
                              </div>
                           )}
                       </div>
+                   ) : activeStream === 'alpha' ? (
+                    <form onSubmit={handleSubmit} className="space-y-10 animate-fadeIn pt-10">
+                      <div className="space-y-8">
+                        <div className="grid md:grid-cols-2 gap-8">
+                          <div className="space-y-3">
+                            <label className="text-[11px] font-black uppercase tracking-widest text-brand-gold/60 ml-2">Your Identity</label>
+                            <input required type="text" value={formData.identifier} onChange={(e) => setFormData({...formData, identifier: e.target.value})} className="w-full bg-black/60 border-2 border-white/10 rounded-[1.5rem] px-8 py-6 focus:border-brand-gold outline-none font-bold text-white text-base transition-all" placeholder="FOUNDER NAME" />
+                          </div>
+                          <div className="space-y-3">
+                            <label className="text-[11px] font-black uppercase tracking-widest text-brand-gold/60 ml-2">Enterprise Name</label>
+                            <input required type="text" value={formData.enterprise} onChange={(e) => setFormData({...formData, enterprise: e.target.value})} className="w-full bg-black/60 border-2 border-white/10 rounded-[1.5rem] px-8 py-6 focus:border-brand-gold outline-none font-bold text-white text-base transition-all" placeholder="BUSINESS LEGAL IDENTITY" />
+                          </div>
+                        </div>
+                        <div className="grid md:grid-cols-2 gap-8">
+                          <div className="space-y-3">
+                            <label className="text-[11px] font-black uppercase tracking-widest text-brand-gold/60 ml-2">Secure Email</label>
+                            <input required type="email" value={formData.email} onChange={(e) => setFormData({...formData, email: e.target.value})} className="w-full bg-black/60 border-2 border-white/10 rounded-[1.5rem] px-8 py-6 focus:border-brand-gold outline-none font-bold text-white text-base transition-all" placeholder="INTEL DESTINATION" />
+                          </div>
+                          <div className="space-y-3">
+                            <label className="text-[11px] font-black uppercase tracking-widest text-brand-gold/60 ml-2">WhatsApp Feed</label>
+                            <input type="tel" value={formData.whatsapp} onChange={(e) => setFormData({...formData, whatsapp: e.target.value})} className="w-full bg-black/60 border-2 border-white/10 rounded-[1.5rem] px-8 py-6 focus:border-brand-gold outline-none font-bold text-white text-base transition-all" placeholder="+27..." />
+                          </div>
+                        </div>
+                      </div>
+                      <button type="submit" className="w-full bg-brand-gold text-brand-900 rounded-[2.5rem] py-10 font-black uppercase tracking-[0.5em] text-base transition-all hover:scale-105 shadow-2xl mt-12">
+                        UPLINK TO ARCHITECTS <ArrowRight size={24} className="inline ml-6" />
+                      </button>
+                    </form>
+                   ) : (
+                     <div className="flex items-center justify-center h-full">
+                        <p className="text-white/40">Select a stream to begin.</p>
+                     </div>
                    )}
-                   {/* Add other streams here as needed, simplified for this fix */}
                 </div>
-            </div>
+
+                <div className="pt-12 mt-auto border-t border-white/10 flex items-center justify-between opacity-50">
+                  <div className="flex items-center gap-3">
+                    <Lock size={14} className="text-brand-gold" />
+                    <span className="text-[9px] font-black uppercase tracking-[0.3em]">SECURE CHANNEL 256-BIT ENCRYPTED</span>
+                  </div>
+                </div>
+              </div>
           </div>
         </div>
       </div>
