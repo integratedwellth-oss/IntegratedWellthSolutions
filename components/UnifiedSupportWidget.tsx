@@ -74,7 +74,7 @@ const UnifiedSupportWidget: React.FC = () => {
       setHasError(true);
       setMessages(prev => [...prev, { 
         role: 'model', 
-        text: "### PROTOCOL INTERRUPTED\n\nI am having trouble maintaining the connection to the Sovereignty Core. Please try again or contact Marcia directly.", 
+        text: "### PROTOCOL INTERRUPTED\n\nConnection failed. Please try again later.", 
         timestamp: Date.now() 
       }]);
     } finally {
