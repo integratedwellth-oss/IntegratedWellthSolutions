@@ -306,7 +306,8 @@ const WarRoom: React.FC = () => {
                        <div className="w-24 h-24 rounded-full border-4 border-brand-gold/10 border-t-brand-gold animate-spin"></div>
                        <div className="w-full max-w-sm bg-black/40 rounded-3xl p-6 font-mono border border-white/10">
                           {transmissionLogs.map((log, i) => (
-                            <p key={i} className="text-[11px] text-brand-gold mb-2">&gt;&gt; {log}</p>
+                            // FIXED LINE: Using string literal for the arrows to prevent TS parsing errors
+                            <p key={i} className="text-[11px] text-brand-gold mb-2">{'>>'} {log}</p>
                           ))}
                        </div>
                     </div>
