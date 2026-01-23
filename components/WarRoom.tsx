@@ -149,7 +149,7 @@ const WarRoom: React.FC = () => {
         data: {
             risk_level: analysis.risk,
             pain_point: analysis.consequence,
-            recommended_solution: analysis.solution // <--- Capturing the Solution
+            recommended_solution: analysis.solution 
         },
         timestamp: serverTimestamp(),
       };
@@ -158,7 +158,8 @@ const WarRoom: React.FC = () => {
         // A. Store for Dashboard
         await addDoc(collection(db, 'war_room_leads'), leadPayload);
 
-        // B. Trigger Email (Highlighting Problem + Solution + CTA)
+        // B. Trigger Email (Via Firebase Extensions)
+        // This writes to the 'mail' collection, which your extension listens to.
         await addDoc(collection(db, 'mail'), {
           to: formData.email,
           message: {
