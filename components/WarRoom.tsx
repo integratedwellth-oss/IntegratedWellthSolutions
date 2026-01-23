@@ -130,6 +130,7 @@ const WarRoom: React.FC = () => {
     setTransmissionLogs([]);
     const logs = ["ANALYZING COMPLIANCE GAP...", "MATCHING SOLUTION PROTOCOL...", "GENERATING RECOVERY PLAN...", "UPLINKING TO HQ...", "SECURE."];
     
+    // Simulate log typing
     const addLog = (msg: string) => setTransmissionLogs(prev => [...prev, msg]);
     for (const log of logs) {
       addLog(log);
@@ -159,6 +160,7 @@ const WarRoom: React.FC = () => {
         await addDoc(collection(db, 'war_room_leads'), leadPayload);
 
         // B. Trigger Email (Via Firebase Extensions)
+        // This writes to the 'mail' collection, which your extension listens to.
         await addDoc(collection(db, 'mail'), {
           to: formData.email,
           message: {
@@ -306,8 +308,10 @@ const WarRoom: React.FC = () => {
                        <div className="w-24 h-24 rounded-full border-4 border-brand-gold/10 border-t-brand-gold animate-spin"></div>
                        <div className="w-full max-w-sm bg-black/40 rounded-3xl p-6 font-mono border border-white/10">
                           {transmissionLogs.map((log, i) => (
-                            // FIXED LINE: Using string literal for the arrows to prevent TS parsing errors
-                            <p key={i} className="text-[11px] text-brand-gold mb-2">{'>>'} {log}</p>
+                            <p key={i} className="text-[11px] text-brand-gold mb-2">
+                              {/* SAFE CHARACTER: Using HTML entity for double arrow to prevent JSX parsing error */}
+                              &raquo; {log}
+                            </p>
                           ))}
                        </div>
                     </div>
