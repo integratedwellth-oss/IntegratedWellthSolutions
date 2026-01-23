@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Terminal, Radio, Activity, Skull, AlertTriangle, Timer, Clock, CheckCircle, FileText, Sparkles, Loader2, Cpu, ArrowRight, Lock, MessageSquare, Mail } from 'lucide-react';
+import { Terminal, Radio, Activity, Skull, AlertTriangle, Timer, Clock, CheckCircle, FileText, Sparkles, Loader2, Cpu, ArrowRight, Lock, MessageSquare, Mail, Scale } from 'lucide-react';
 import RevealOnScroll from './RevealOnScroll';
 import { generatePDFReport } from '../services/exportService';
 import { db } from '../firebaseConfig';
@@ -9,7 +9,7 @@ import { createChatSession, sendMessageStream } from '../services/geminiService'
 type StreamType = 'stress' | 'protocol' | 'calendar' | 'alpha';
 
 const STREAM_LABELS: Record<StreamType, string> = {
-  stress: 'BUSINESS STRESS TEST',
+  stress: 'COMPLIANCE AUDIT',
   protocol: 'THE ESCAPE PLAN',
   calendar: 'URGENT DEADLINES',
   alpha: 'SEND TO ARCHITECTS'
@@ -35,20 +35,50 @@ const WarRoom: React.FC = () => {
     parameters: '' 
   });
   
-  const [dependency, setDependency] = useState(85); 
-  const [sovereignty, setSovereignty] = useState(1); 
+  // New Metric: Compliance Health (0 = Years Behind, 4 = Perfect)
+  const [complianceScore, setComplianceScore] = useState(1); 
 
   useEffect(() => {
     const timer = setTimeout(() => setBootSequence(false), 1000);
     return () => clearTimeout(timer);
   }, []);
 
-  const getSovereigntyLabel = (val: number) => {
-    if (val === 0) return { label: "TOTAL BUSINESS COLLAPSE", time: "24 HOURS", color: "text-rose-500", desc: "Immediate failure. Your business stops the moment you stop working.", risk: "CATASTROPHIC" };
-    if (val === 1) return { label: "RAPID DECLINE", time: "30 DAYS", color: "text-rose-400", desc: "The business will die quickly. You have built a job, not an asset.", risk: "DANGEROUS" };
-    if (val === 2) return { label: "GRADUAL EROSION", time: "90 DAYS", color: "text-brand-gold", desc: "The business survives but loses money every day you are gone.", risk: "MODERATE" };
-    if (val === 3) return { label: "STABLE ASSET", time: "1 YEAR", color: "text-brand-gold", desc: "Your business has some systems, but it still needs you eventually.", risk: "CONTROLLED" };
-    return { label: "TOTAL FREEDOM", time: "FOREVER", color: "text-emerald-400", desc: "Perfect structure. The business makes money while you sleep.", risk: "NEUTRALIZED" };
+  const getComplianceAnalysis = (val: number) => {
+    if (val === 0) return { 
+      label: "CRITICAL NON-COMPLIANCE", 
+      color: "text-rose-600", 
+      consequence: "IMMINENT DEREGISTRATION & ASSET FREEZE.",
+      solution: "Emergency CIPC Restoration & Tax Amnesty Application",
+      risk: "CATASTROPHIC"
+    };
+    if (val === 1) return { 
+      label: "SERIOUS ARREARS", 
+      color: "text-rose-500", 
+      consequence: "200% SARS PENALTIES & INTEREST ACCUMULATION.",
+      solution: "Forensic Accounting Catch-Up & Payment Arrangement",
+      risk: "DANGEROUS"
+    };
+    if (val === 2) return { 
+      label: "PROCEDURAL LAG", 
+      color: "text-brand-gold", 
+      consequence: "CASH FLOW LEAKS VIA FINES & MISSED DEDUCTIONS.",
+      solution: "Operational Compliance Overhaul",
+      risk: "MODERATE"
+    };
+    if (val === 3) return { 
+      label: "REACTIVE COMPLIANCE", 
+      color: "text-brand-gold", 
+      consequence: "FOUNDER BURNOUT & STRATEGIC BLINDNESS.",
+      solution: "Automation & Retainer Partnership",
+      risk: "STRESSFUL"
+    };
+    return { 
+      label: "SOVEREIGN STATUS", 
+      color: "text-emerald-400", 
+      consequence: "NONE. SYSTEM IS AUDIT-PROOF.",
+      solution: "Wealth Preservation & Legacy Structuring",
+      risk: "SECURE"
+    };
   };
 
   const deadlines = [
@@ -66,12 +96,16 @@ const WarRoom: React.FC = () => {
   };
 
   const handleAiAppraisal = async () => {
-    const sov = getSovereigntyLabel(sovereignty);
+    const analysis = getComplianceAnalysis(complianceScore);
     setIsAnalyzing(true);
     setAiAnalysis('');
     if (!chatRef.current) chatRef.current = createChatSession();
 
-    const prompt = `Business Diagnostic Request. Founder says business dies in ${sov.time} without them. Risk: ${sov.risk}. Provide a 3-sentence reality check in SIMPLE English. Tell them why they are stuck and how to fix it. Start with '### AUDIT RESULTS RECEIVED'`;
+    const prompt = `Business Risk Diagnostic. 
+    Current Status: ${analysis.label}. 
+    Consequence: ${analysis.consequence}.
+    Recommended Solution: ${analysis.solution}.
+    Provide a brutal 3-sentence reality check on why they need to book a consultation immediately. Don't be polite, be factual.`;
 
     try {
       const stream = await sendMessageStream(chatRef.current, prompt);
@@ -84,7 +118,7 @@ const WarRoom: React.FC = () => {
         }
       }
     } catch (e) {
-      setAiAnalysis("### CONNECTION ERROR\nCould not reach the advisor. Your business risk remains **CRITICAL**.");
+      setAiAnalysis("### CONNECTION ERROR\nCould not reach the advisor. Your compliance risk remains **CRITICAL**.");
     } finally {
       setIsAnalyzing(false);
     }
@@ -94,9 +128,8 @@ const WarRoom: React.FC = () => {
     e.preventDefault();
     setIsTransmitting(true);
     setTransmissionLogs([]);
-    const logs = ["PREPARING DATA PACKETS...", "ENCRYPTING IDENTITY...", "OPENING ARCHITECT TUNNEL...", "SENDING DATA...", "UPLINK FINISHED."];
+    const logs = ["ANALYZING COMPLIANCE GAP...", "MATCHING SOLUTION PROTOCOL...", "GENERATING RECOVERY PLAN...", "UPLINKING TO HQ...", "SECURE."];
     
-    // Simulate log typing
     const addLog = (msg: string) => setTransmissionLogs(prev => [...prev, msg]);
     for (const log of logs) {
       addLog(log);
@@ -104,36 +137,59 @@ const WarRoom: React.FC = () => {
     }
     
     try {
-      const sov = getSovereigntyLabel(sovereignty);
+      const analysis = getComplianceAnalysis(complianceScore);
       
-      // 1. Prepare Data
+      // 1. DATA CAPTURE (With Solution & Pain Points)
       const leadPayload = {
         name: formData.identifier,
         company: formData.enterprise,
         email: formData.email,
         whatsapp: formData.whatsapp,
-        segment: sov.risk,
-        metrics: { 
-          survival_time: sov.time, 
-          founder_dependency: dependency 
+        segment: analysis.label, // Segmentation Key
+        data: {
+            risk_level: analysis.risk,
+            pain_point: analysis.consequence,
+            recommended_solution: analysis.solution // <--- Capturing the Solution
         },
         timestamp: serverTimestamp(),
       };
       
-      // 2. Save to Firebase
       if (db) {
+        // A. Store for Dashboard
         await addDoc(collection(db, 'war_room_leads'), leadPayload);
-        
-        // Trigger Email Extension (If installed)
+
+        // B. Trigger Email (Highlighting Problem + Solution + CTA)
         await addDoc(collection(db, 'mail'), {
           to: formData.email,
           message: {
-            subject: `⚠️ STRATEGIC ALERT: ${formData.enterprise} Risk Assessment`,
+            subject: `⚠️ ACTION REQUIRED: ${formData.enterprise} Compliance Report`,
             html: `
-              <h1>Strategic Assessment Complete</h1>
-              <p>Risk Level: ${sov.risk}</p>
-              <p>Survival Time: ${sov.time}</p>
-              <p>We need to intervene immediately. Please book a call.</p>
+              <div style="font-family: Arial, sans-serif; color: #134e4a; padding: 20px;">
+                <h1 style="color: #d4af37;">COMPLIANCE AUDIT RESULTS</h1>
+                <p>Hello ${formData.identifier},</p>
+                <p>Our War Room has analyzed your compliance standing against the current SARS/CIPC calendar.</p>
+                
+                <div style="background: #fef2f2; padding: 15px; border-left: 4px solid #e11d48; margin: 20px 0;">
+                  <h3 style="color: #be123c; margin-top: 0;">⚠️ DIAGNOSIS: ${analysis.label}</h3>
+                  <p><strong>Immediate Threat:</strong> ${analysis.consequence}</p>
+                </div>
+
+                <div style="background: #f0fdfa; padding: 15px; border-left: 4px solid #0d9488; margin: 20px 0;">
+                   <h3 style="color: #0f766e; margin-top: 0;">✅ REQUIRED SOLUTION</h3>
+                   <p><strong>Protocol:</strong> ${analysis.solution}</p>
+                   <p>We need to execute this immediately to stop further liability.</p>
+                </div>
+
+                <p style="text-align: center; margin: 40px 0;">
+                  <a href="https://calendly.com/enquiries-integratedwellth/30min" style="background-color: #d4af37; color: #000; padding: 15px 30px; text-decoration: none; font-weight: 900; border-radius: 50px; font-size: 16px;">BOOK YOUR FREE CONSULTATION</a>
+                </p>
+
+                <hr style="border: 0; border-top: 1px solid #eee; margin: 30px 0;" />
+
+                <h3>🎟️ EXCLUSIVE SUMMIT INVITATION</h3>
+                <p>Join Marcia Kgaphola at the <strong>Financial Clarity Summit</strong> on Feb 28, 2026.</p>
+                <p><a href="https://www.quicket.co.za/events/352598-financial-clarity-for-non-financial-business-owners/#/" style="color: #134e4a; font-weight: bold;">Secure Your Seat Here</a></p>
+              </div>
             `
           }
         });
@@ -148,17 +204,25 @@ const WarRoom: React.FC = () => {
   };
 
   const handleDownloadIntel = () => {
-    const sov = getSovereigntyLabel(sovereignty);
+    const analysis = getComplianceAnalysis(complianceScore);
     generatePDFReport({
-      title: "YOUR FREEDOM PLAN",
-      subtitle: `${formData.enterprise} | Strategic Brief`,
+      title: "COMPLIANCE RECOVERY PLAN",
+      subtitle: `${formData.enterprise} | ${analysis.label}`,
       sections: [
         {
-          heading: "Current Stats",
-          content: `Survival: ${sov.time} | Risk: ${sov.risk} | Diagnostic: ${sov.desc}`
+            heading: "Executive Summary",
+            content: `Current Status: ${analysis.risk}. Immediate action required to prevent ${analysis.consequence}`
+        },
+        {
+            heading: "Required Intervention",
+            content: analysis.solution
+        },
+        {
+          heading: "Next Steps",
+          content: "1. Book Discovery Call with IWS.\n2. Hand over e-filing credentials for forensic review.\n3. Establish payment plan or dispute resolution."
         }
       ]
-    }, `IWS_Freedom_Plan_${formData.enterprise}.pdf`);
+    }, `IWS_Recovery_Plan_${formData.enterprise}.pdf`);
   };
 
   if (bootSequence) {
@@ -170,25 +234,37 @@ const WarRoom: React.FC = () => {
     );
   }
 
+  const analysis = getComplianceAnalysis(complianceScore);
+
   return (
     <div className="min-h-screen bg-brand-900 text-white selection:bg-brand-gold/20 relative overflow-hidden font-sans">
       <div className="max-w-7xl mx-auto px-6 pt-48 pb-32 relative z-10">
         <div className="grid lg:grid-cols-12 gap-16">
           <div className="lg:col-span-5 space-y-12">
-             <h1 className="text-7xl font-sora font-extrabold tracking-tighter leading-[0.8] mt-8">
+            <RevealOnScroll>
+              <div className="inline-flex items-center gap-3 px-6 py-2 rounded-full border border-brand-gold/40 bg-brand-gold/10 backdrop-blur-md">
+                <Radio size={14} className="text-brand-gold animate-pulse" />
+                <span className="text-[10px] font-black uppercase tracking-[0.5em] text-brand-gold">IWS COMMAND CENTER ACTIVE</span>
+              </div>
+              <h1 className="text-7xl md:text-9xl font-sora font-extrabold tracking-tighter leading-[0.8] mt-8">
                 THE WAR <br/> <span className="text-brand-gold italic">ROOM.</span>
               </h1>
-             <div className="grid grid-cols-2 gap-6">
+              <p className="text-2xl text-white font-medium leading-relaxed mt-10 border-l-4 border-brand-gold/40 pl-10">
+                Compliance is binary. You are either <span className="text-emerald-400 font-bold">Safe</span> or you are <span className="text-rose-500 font-bold">Exposed</span>. Find out where you stand.
+              </p>
+            </RevealOnScroll>
+
+            <div className="grid grid-cols-2 gap-6">
               {[
-                { label: 'SURVIVAL TIME', value: getSovereigntyLabel(sovereignty).time, icon: <Skull size={16} className={getSovereigntyLabel(sovereignty).color} /> },
-                { label: 'RISK LEVEL', value: getSovereigntyLabel(sovereignty).risk, icon: <AlertTriangle size={16} className={getSovereigntyLabel(sovereignty).color} /> },
+                { label: 'THREAT LEVEL', value: analysis.risk, icon: <AlertTriangle size={16} className={analysis.color} /> },
+                { label: 'SYSTEM STATUS', value: 'LIVE MONITOR', icon: <Activity size={16} className="text-emerald-400 animate-pulse" /> },
               ].map((stat, i) => (
                 <div key={i} className="bg-black/30 border border-white/10 p-8 rounded-[2.5rem] backdrop-blur-xl group hover:border-brand-gold/40 transition-all">
                   <div className="flex items-center gap-3 mb-3">
                     {stat.icon}
                     <span className="text-[10px] font-black uppercase tracking-widest text-white/60">{stat.label}</span>
                   </div>
-                  <p className="text-2xl font-black tracking-tighter uppercase text-white">{stat.value}</p>
+                  <p className={`text-2xl font-black tracking-tighter uppercase ${stat.label === 'THREAT LEVEL' ? analysis.color : 'text-white'}`}>{stat.value}</p>
                 </div>
               ))}
             </div>
@@ -197,7 +273,7 @@ const WarRoom: React.FC = () => {
           <div className="lg:col-span-7">
             <div className="bg-slate-900/60 border border-white/20 rounded-[4rem] p-8 md:p-12 backdrop-blur-3xl shadow-2xl relative overflow-hidden group min-h-[850px] flex flex-col">
                 
-                {/* Navigation - Fixed Spacing (tracking-widest) */}
+                {/* Navigation */}
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-2 mb-12 bg-black/60 p-2 rounded-[2.5rem] border border-white/10">
                   {Object.keys(STREAM_LABELS).map((id) => (
                     <button
@@ -216,10 +292,13 @@ const WarRoom: React.FC = () => {
                    {isSuccess ? (
                     <div className="space-y-12 animate-fadeIn py-10 text-center">
                       <CheckCircle size={80} className="text-brand-gold mx-auto animate-bounce" />
-                      <h2 className="text-4xl md:text-5xl font-sora font-black text-white uppercase tracking-tighter">DATA SENT TO ARCHITECTS.</h2>
-                      <p className="text-xl text-white/60 font-medium leading-relaxed">Check your secure email within 5 minutes for your Risk Profile.</p>
+                      <h2 className="text-4xl md:text-5xl font-sora font-black text-white uppercase tracking-tighter">PLAN DEPLOYED.</h2>
+                      <p className="text-xl text-white/60 font-medium leading-relaxed">Your recovery strategy has been emailed to you.</p>
                       <button onClick={handleDownloadIntel} className="w-full flex items-center justify-center gap-4 py-8 rounded-[2.5rem] bg-brand-gold text-brand-900 font-black uppercase tracking-[0.4em] text-sm transition-all hover:scale-105 shadow-2xl">
-                        <FileText size={18} /> DOWNLOAD YOUR FREEDOM PLAN
+                        <FileText size={18} /> DOWNLOAD RECOVERY PDF
+                      </button>
+                      <button onClick={() => window.open('https://calendly.com/enquiries-integratedwellth/30min', '_blank')} className="text-brand-gold font-bold text-sm hover:underline uppercase tracking-widest mt-4">
+                        Book Your Free Consultation Now ->
                       </button>
                     </div>
                   ) : isTransmitting ? (
@@ -232,30 +311,58 @@ const WarRoom: React.FC = () => {
                        </div>
                     </div>
                   ) : activeStream === 'stress' ? (
-                      // BUSINESS STRESS TEST UI
+                      // COMPLIANCE AUDIT UI
                       <div className="space-y-10 animate-fadeIn">
+                         <div className="space-y-4">
+                             <h3 className="text-2xl font-black text-brand-gold uppercase tracking-tighter">Where is your Compliance At?</h3>
+                             <p className="text-white/60 text-sm">Drag the slider to match your current situation.</p>
+                         </div>
+                         
                          <div className="flex justify-between items-center bg-black/60 p-8 rounded-[2rem] border border-white/10">
-                             <span className="text-[12px] font-black uppercase text-white/40 tracking-widest">Survival Time</span>
-                             <span className={`text-5xl font-black ${getSovereigntyLabel(sovereignty).color}`}>{getSovereigntyLabel(sovereignty).time}</span>
+                             <div className="flex flex-col">
+                                <span className="text-[10px] font-black uppercase text-white/40 tracking-widest mb-1">Current Status</span>
+                                <span className={`text-2xl md:text-3xl font-black ${analysis.color}`}>{analysis.label}</span>
+                             </div>
                           </div>
-                          <input type="range" min="0" max="4" step="1" value={sovereignty} onChange={(e) => setSovereignty(parseInt(e.target.value))} className="w-full h-4 bg-white/20 rounded-full appearance-none cursor-pointer accent-brand-gold" />
+                          
+                          <input type="range" min="0" max="4" step="1" value={complianceScore} onChange={(e) => setComplianceScore(parseInt(e.target.value))} className="w-full h-6 bg-white/10 rounded-full appearance-none cursor-pointer accent-brand-gold" />
+                          <div className="flex justify-between text-[10px] font-black text-white/30 uppercase tracking-widest px-2">
+                             <span>Critical</span>
+                             <span>Sovereign</span>
+                          </div>
+
+                          {/* DYNAMIC RISK & SOLUTION BOX */}
+                          <div className={`p-8 rounded-[2.5rem] border-2 ${complianceScore < 3 ? 'border-rose-500/50 bg-rose-950/20' : 'border-emerald-500/50 bg-emerald-950/20'} transition-all`}>
+                             <div className="mb-6">
+                                <p className="text-[10px] font-black uppercase text-white/50 tracking-widest mb-2">Likely Consequence</p>
+                                <p className="text-lg md:text-xl font-bold text-white leading-tight">{analysis.consequence}</p>
+                             </div>
+                             <div>
+                                <p className="text-[10px] font-black uppercase text-brand-gold tracking-widest mb-2">Required Solution</p>
+                                <div className="flex items-center gap-3">
+                                   <Scale className="text-brand-gold" size={20} />
+                                   <p className="text-lg font-bold text-brand-gold">{analysis.solution}</p>
+                                </div>
+                             </div>
+                          </div>
                           
                           <div className="grid md:grid-cols-2 gap-6">
-                            <button onClick={handleAiAppraisal} disabled={isAnalyzing} className="flex items-center justify-center gap-4 bg-white/10 border border-white/20 text-white rounded-[2rem] py-8 font-black uppercase tracking-[0.2em] text-xs transition-all hover:bg-white/20">
-                              {isAnalyzing ? <Loader2 className="animate-spin" size={20} /> : <Cpu size={20} />} RUN AI ADVISOR
+                            <button onClick={handleAiAppraisal} disabled={isAnalyzing} className="flex items-center justify-center gap-4 bg-white/10 border border-white/20 text-white rounded-[2rem] py-6 font-black uppercase tracking-[0.2em] text-[10px] transition-all hover:bg-white/20">
+                              {isAnalyzing ? <Loader2 className="animate-spin" size={16} /> : <Cpu size={16} />} ANALYZE RISK
                             </button>
-                            <button onClick={() => setActiveStream('alpha')} className="bg-brand-gold text-brand-900 rounded-[2rem] py-8 font-black uppercase tracking-[0.3em] text-xs transition-all hover:scale-105 shadow-xl">
-                              GET FREEDOM PLAN <ArrowRight size={20} className="inline ml-2" />
-                            </button>
+                            {complianceScore < 3 && (
+                                <button onClick={() => window.open('https://calendly.com/enquiries-integratedwellth/30min', '_blank')} className="bg-rose-600 text-white rounded-[2rem] py-6 font-black uppercase tracking-[0.2em] text-[10px] transition-all hover:scale-105 shadow-xl flex items-center justify-center gap-2">
+                                  STOP THE BLEED <ArrowRight size={16} />
+                                </button>
+                            )}
                           </div>
                           {aiAnalysis && (
-                             <div className="p-8 bg-brand-gold/10 border-l-4 border-brand-gold text-white/90 rounded-r-2xl">
+                             <div className="p-8 bg-brand-gold/10 border-l-4 border-brand-gold text-white/90 rounded-r-2xl text-sm leading-relaxed">
                                 {aiAnalysis}
                              </div>
                           )}
                       </div>
                    ) : activeStream === 'protocol' ? (
-                     // THE ESCAPE PLAN UI (RESTORED)
                      <div className="space-y-8 animate-fadeIn">
                         <h3 className="text-2xl font-black text-brand-gold uppercase tracking-tighter">THE 4-PHASE PROTOCOL</h3>
                         <div className="grid gap-4">
@@ -283,7 +390,6 @@ const WarRoom: React.FC = () => {
                         </button>
                      </div>
                    ) : activeStream === 'calendar' ? (
-                     // COMPLIANCE CALENDAR UI (RESTORED)
                      <div className="space-y-8 animate-fadeIn">
                         <h3 className="text-2xl font-black text-brand-gold uppercase tracking-tighter">CRITICAL DATES</h3>
                         <div className="grid gap-4">
@@ -305,8 +411,11 @@ const WarRoom: React.FC = () => {
                         </div>
                      </div>
                    ) : (
-                    // SEND TO ARCHITECTS FORM (Data Capture)
                     <form onSubmit={handleSubmit} className="space-y-10 animate-fadeIn pt-10">
+                      <div className="text-center mb-8">
+                         <h3 className="text-2xl font-black text-white uppercase tracking-tighter">DEPLOY RECOVERY TEAM</h3>
+                         <p className="text-white/60 text-sm mt-2">Submit your details to receive your customized <span className="text-brand-gold font-bold">Recovery Plan</span> & <span className="text-brand-gold font-bold">Compliance Calendar</span>.</p>
+                      </div>
                       <div className="space-y-8">
                         <div className="grid md:grid-cols-2 gap-8">
                           <div className="space-y-3">
@@ -330,7 +439,7 @@ const WarRoom: React.FC = () => {
                         </div>
                       </div>
                       <button type="submit" className="w-full bg-brand-gold text-brand-900 rounded-[2.5rem] py-10 font-black uppercase tracking-[0.5em] text-base transition-all hover:scale-105 shadow-2xl mt-12">
-                        UPLINK TO ARCHITECTS <ArrowRight size={24} className="inline ml-6" />
+                        CONFIRM UPLINK <ArrowRight size={24} className="inline ml-6" />
                       </button>
                     </form>
                    )}
@@ -341,7 +450,6 @@ const WarRoom: React.FC = () => {
                     <Lock size={14} className="text-brand-gold" />
                     <span className="text-[9px] font-black uppercase tracking-[0.3em]">SECURE CHANNEL 256-BIT ENCRYPTED</span>
                   </div>
-                  <span className="text-[10px] font-mono text-brand-gold tracking-widest">SIG: {new Date().getTime().toString(16).toUpperCase()}</span>
                 </div>
               </div>
           </div>
