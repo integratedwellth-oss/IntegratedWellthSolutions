@@ -160,6 +160,7 @@ const WarRoom: React.FC = () => {
         await addDoc(collection(db, 'war_room_leads'), leadPayload);
 
         // B. Trigger Email (Via Firebase Extensions)
+        // This writes to the 'mail' collection, which your extension listens to.
         await addDoc(collection(db, 'mail'), {
           to: formData.email,
           message: {
@@ -308,7 +309,6 @@ const WarRoom: React.FC = () => {
                        <div className="w-full max-w-sm bg-black/40 rounded-3xl p-6 font-mono border border-white/10">
                           {transmissionLogs.map((log, i) => (
                             <div key={i} className="flex items-center gap-2 text-[11px] text-brand-gold mb-2">
-                               {/* REPLACED UNSAFE TEXT WITH ICON */}
                                <ChevronRight size={12} /> {log}
                             </div>
                           ))}
