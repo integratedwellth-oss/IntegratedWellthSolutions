@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Terminal, Radio, Activity, Skull, AlertTriangle, Timer, Clock, CheckCircle, FileText, Sparkles, Loader2, Cpu, ArrowRight, Lock, MessageSquare, Mail, Scale } from 'lucide-react';
+import { Terminal, Radio, Activity, Skull, AlertTriangle, Timer, Clock, CheckCircle, FileText, Sparkles, Loader2, Cpu, ArrowRight, Lock, MessageSquare, Mail, Scale, ChevronRight } from 'lucide-react';
 import RevealOnScroll from './RevealOnScroll';
 import { generatePDFReport } from '../services/exportService';
 import { db } from '../firebaseConfig';
@@ -160,7 +160,6 @@ const WarRoom: React.FC = () => {
         await addDoc(collection(db, 'war_room_leads'), leadPayload);
 
         // B. Trigger Email (Via Firebase Extensions)
-        // This writes to the 'mail' collection, which your extension listens to.
         await addDoc(collection(db, 'mail'), {
           to: formData.email,
           message: {
@@ -308,10 +307,10 @@ const WarRoom: React.FC = () => {
                        <div className="w-24 h-24 rounded-full border-4 border-brand-gold/10 border-t-brand-gold animate-spin"></div>
                        <div className="w-full max-w-sm bg-black/40 rounded-3xl p-6 font-mono border border-white/10">
                           {transmissionLogs.map((log, i) => (
-                            <p key={i} className="text-[11px] text-brand-gold mb-2">
-                              {/* SAFE CHARACTER: Using HTML entity for double arrow to prevent JSX parsing error */}
-                              &raquo; {log}
-                            </p>
+                            <div key={i} className="flex items-center gap-2 text-[11px] text-brand-gold mb-2">
+                               {/* REPLACED UNSAFE TEXT WITH ICON */}
+                               <ChevronRight size={12} /> {log}
+                            </div>
                           ))}
                        </div>
                     </div>
