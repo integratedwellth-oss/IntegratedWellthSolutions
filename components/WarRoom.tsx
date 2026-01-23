@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Terminal, Radio, Activity, Skull, AlertTriangle, Timer, Clock, CheckCircle, FileText, Sparkles, Loader2, Cpu, ArrowRight, Lock, MessageSquare, Mail, Scale } from 'lucide-react';
+import { Terminal, Radio, Activity, Skull, AlertTriangle, Timer, Clock, CheckCircle, FileText, Sparkles, Loader2, Cpu, ArrowRight, Lock, MessageSquare, Mail, Scale, ChevronRight } from 'lucide-react';
 import RevealOnScroll from './RevealOnScroll';
 import { generatePDFReport } from '../services/exportService';
 import { db } from '../firebaseConfig';
@@ -307,8 +307,8 @@ const WarRoom: React.FC = () => {
                        <div className="w-24 h-24 rounded-full border-4 border-brand-gold/10 border-t-brand-gold animate-spin"></div>
                        <div className="w-full max-w-sm bg-black/40 rounded-3xl p-6 font-mono border border-white/10">
                           {transmissionLogs.map((log, i) => (
-                            <p key={i} className="text-[11px] text-brand-gold mb-2 font-mono">
-                              [SYSTEM] {log}
+                            <p key={i} className="text-[11px] text-brand-gold mb-2">
+                               {">" + ">"} {log}
                             </p>
                           ))}
                        </div>
