@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Terminal, Radio, Activity, Skull, AlertTriangle, Timer, Clock, CheckCircle, FileText, Sparkles, Loader2, Cpu, ArrowRight, Lock, MessageSquare, Mail, Scale, List } from 'lucide-react';
+import { Terminal, Radio, Activity, Skull, AlertTriangle, Timer, Clock, CheckCircle, FileText, Sparkles, Loader2, Cpu, ArrowRight, Lock, MessageSquare, Mail, Scale } from 'lucide-react';
 import RevealOnScroll from './RevealOnScroll';
 import { generatePDFReport } from '../services/exportService';
 import { db } from '../firebaseConfig';
@@ -22,7 +22,6 @@ const WarRoom: React.FC = () => {
   const [isSuccess, setIsSuccess] = useState(false);
   const [transmissionLogs, setTransmissionLogs] = useState<string[]>([]);
   const [selectedPhase, setSelectedPhase] = useState<number | null>(null);
-  
   const [aiAnalysis, setAiAnalysis] = useState<string>('');
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const chatRef = useRef<any>(null);
@@ -43,11 +42,46 @@ const WarRoom: React.FC = () => {
   }, []);
 
   const getComplianceAnalysis = (val: number) => {
-    if (val === 0) return { label: "CRITICAL NON-COMPLIANCE", color: "text-rose-600", consequence: "IMMINENT DEREGISTRATION & ASSET FREEZE.", solution: "Emergency CIPC Restoration & Tax Amnesty Application", risk: "CATASTROPHIC" };
-    if (val === 1) return { label: "SERIOUS ARREARS", color: "text-rose-500", consequence: "200% SARS PENALTIES & INTEREST ACCUMULATION.", solution: "Forensic Accounting Catch-Up & Payment Arrangement", risk: "DANGEROUS" };
-    if (val === 2) return { label: "PROCEDURAL LAG", color: "text-brand-gold", consequence: "CASH FLOW LEAKS VIA FINES & MISSED DEDUCTIONS.", solution: "Operational Compliance Overhaul", risk: "MODERATE" };
-    if (val === 3) return { label: "REACTIVE COMPLIANCE", color: "text-brand-gold", consequence: "FOUNDER BURNOUT & STRATEGIC BLINDNESS.", solution: "Automation & Retainer Partnership", risk: "STRESSFUL" };
-    return { label: "SOVEREIGN STATUS", color: "text-emerald-400", consequence: "NONE. SYSTEM IS AUDIT-PROOF.", solution: "Wealth Preservation & Legacy Structuring", risk: "SECURE" };
+    if (val === 0) return { 
+      label: "CRITICAL NON-COMPLIANCE", 
+      color: "text-rose-600", 
+      definition: "You have missed multiple submissions. SARS/CIPC likely views your entity as dormant or delinquent.",
+      consequence: "IMMINENT DEREGISTRATION & ASSET FREEZE.",
+      solution: "Emergency CIPC Restoration & Tax Amnesty Application",
+      risk: "CATASTROPHIC"
+    };
+    if (val === 1) return { 
+      label: "SERIOUS ARREARS", 
+      color: "text-rose-500", 
+      definition: "You are filing late or incorrectly. Penalties are compounding daily.",
+      consequence: "200% SARS PENALTIES & INTEREST ACCUMULATION.",
+      solution: "Forensic Accounting Catch-Up & Payment Arrangement",
+      risk: "DANGEROUS"
+    };
+    if (val === 2) return { 
+      label: "PROCEDURAL LAG", 
+      color: "text-brand-gold", 
+      definition: "You file, but it's chaotic. You are missing deductions and overpaying tax.",
+      consequence: "CASH FLOW LEAKS VIA FINES & MISSED DEDUCTIONS.",
+      solution: "Operational Compliance Overhaul",
+      risk: "MODERATE"
+    };
+    if (val === 3) return { 
+      label: "REACTIVE COMPLIANCE", 
+      color: "text-brand-gold", 
+      definition: "You are compliant, but it consumes all your time. You work for the auditors.",
+      consequence: "FOUNDER BURNOUT & STRATEGIC BLINDNESS.",
+      solution: "Automation & Retainer Partnership",
+      risk: "STRESSFUL"
+    };
+    return { 
+      label: "SOVEREIGN STATUS", 
+      color: "text-emerald-400", 
+      definition: "Automated, predictive, and error-free. Your compliance is an asset, not a chore.",
+      consequence: "NONE. SYSTEM IS AUDIT-PROOF.",
+      solution: "Wealth Preservation & Legacy Structuring",
+      risk: "SECURE"
+    };
   };
 
   const deadlines = [
@@ -69,18 +103,11 @@ const WarRoom: React.FC = () => {
     setIsAnalyzing(true);
     setAiAnalysis('');
     if (!chatRef.current) chatRef.current = createChatSession();
-
-    const prompt = `Business Risk Diagnostic. Current Status: ${analysis.label}. Consequence: ${analysis.consequence}. Recommended Solution: ${analysis.solution}. Provide a brutal 3-sentence reality check.`;
-
+    const prompt = `Business Risk Diagnostic. Current Status: ${analysis.label}. Definition: ${analysis.definition}. Consequence: ${analysis.consequence}. Provide a brutal 3-sentence reality check.`;
     try {
       const stream = await sendMessageStream(chatRef.current, prompt);
-      let fullText = '';
       for await (const chunk of stream) {
-        const text = chunk.text;
-        if (text) {
-          fullText += text;
-          setAiAnalysis(fullText);
-        }
+        if (chunk.text) setAiAnalysis(prev => prev + chunk.text);
       }
     } catch (e) {
       setAiAnalysis("### CONNECTION ERROR\nCould not reach the advisor.");
@@ -95,21 +122,26 @@ const WarRoom: React.FC = () => {
     setTransmissionLogs([]);
     const logs = ["ANALYZING COMPLIANCE GAP...", "MATCHING SOLUTION PROTOCOL...", "GENERATING RECOVERY PLAN...", "UPLINKING TO HQ...", "SECURE."];
     
-    const addLog = (msg: string) => setTransmissionLogs(prev => [...prev, msg]);
     for (const log of logs) {
-      addLog(log);
+      setTransmissionLogs(prev => [...prev, log]);
       await new Promise(r => setTimeout(r, 600));
     }
     
     try {
       const analysis = getComplianceAnalysis(complianceScore);
+      
       const leadPayload = {
         name: formData.identifier,
         company: formData.enterprise,
         email: formData.email,
         whatsapp: formData.whatsapp,
         segment: analysis.label,
-        data: { risk_level: analysis.risk, pain_point: analysis.consequence, recommended_solution: analysis.solution },
+        data: { 
+            risk_level: analysis.risk, 
+            status_definition: analysis.definition,
+            pain_point: analysis.consequence, 
+            recommended_solution: analysis.solution 
+        },
         timestamp: serverTimestamp(),
       };
       
@@ -120,16 +152,27 @@ const WarRoom: React.FC = () => {
           message: {
             subject: `⚠️ ACTION REQUIRED: ${formData.enterprise} Compliance Report`,
             html: `
-              <h1>Strategic Assessment Complete</h1>
-              <p><strong>Risk Level:</strong> ${analysis.risk}</p>
-              <p><strong>Immediate Threat:</strong> ${analysis.consequence}</p>
-              <p><strong>Required Protocol:</strong> ${analysis.solution}</p>
-              <p><a href="https://calendly.com/enquiries-integratedwellth/30min">Book Your Strategic Reset Call Now</a></p>
+              <div style="font-family: sans-serif; color: #134e4a; padding: 20px;">
+                <h1 style="color: #d4af37;">STRATEGIC ASSESSMENT COMPLETE</h1>
+                <p>Hello ${formData.identifier},</p>
+                <div style="background: #fef2f2; padding: 15px; border-left: 4px solid #e11d48; margin: 20px 0;">
+                  <h3 style="color: #be123c; margin-top: 0;">⚠️ DIAGNOSIS: ${analysis.label}</h3>
+                  <p><strong>Definition:</strong> ${analysis.definition}</p>
+                  <p><strong>Immediate Threat:</strong> ${analysis.consequence}</p>
+                </div>
+                <p><strong>This requires professional intervention.</strong> Do not attempt to fix this alone, or you risk triggering an audit.</p>
+                <p style="text-align: center; margin: 30px 0;">
+                  <a href="https://calendly.com/enquiries-integratedwellth/30min" style="background-color: #d4af37; color: #000; padding: 15px 30px; text-decoration: none; font-weight: bold; border-radius: 5px;">BOOK YOUR FREE CONSULTATION</a>
+                </p>
+                <hr style="border: 0; border-top: 1px solid #eee; margin: 30px 0;" />
+                <h3>🎟️ EXCLUSIVE SUMMIT INVITATION</h3>
+                <p>Join Marcia Kgaphola at the <strong>Financial Clarity Summit</strong> on Feb 28, 2026.</p>
+                <p><a href="https://www.quicket.co.za/events/352598-financial-clarity-for-non-financial-business-owners/#/" style="color: #134e4a; font-weight: bold;">Secure Your Seat Here</a></p>
+              </div>
             `
           }
         });
       }
-
       setIsTransmitting(false);
       setIsSuccess(true);
     } catch (error) {
@@ -140,14 +183,41 @@ const WarRoom: React.FC = () => {
 
   const handleDownloadIntel = () => {
     const analysis = getComplianceAnalysis(complianceScore);
+    // Build Calendar String for PDF
+    const calendarData = deadlines.map(d => {
+        const days = getDaysLeft(d.targetDate);
+        const status = days <= 30 ? "CRITICAL (Action Required)" : "Pending";
+        return [d.title, d.date, status];
+    });
+
     generatePDFReport({
       title: "COMPLIANCE RECOVERY PLAN",
       subtitle: `${formData.enterprise} | ${analysis.label}`,
-      sections: [{ heading: "Executive Summary", content: `Current Status: ${analysis.risk}. Immediate action required to prevent ${analysis.consequence}` }]
+      sections: [
+        {
+            heading: "1. Diagnostic Status",
+            content: `Status: ${analysis.label}\nDefinition: ${analysis.definition}\n\nRISK WARNING: ${analysis.consequence}`
+        },
+        {
+            heading: "2. Required Protocol",
+            content: analysis.solution
+        },
+        {
+            heading: "3. Compliance Calendar Audit",
+            content: "Your personalized upcoming deadlines. Items marked CRITICAL are within 30 days.",
+            table: {
+                headers: ["Obligation", "Deadline", "Status"],
+                rows: calendarData
+            }
+        },
+        {
+          heading: "4. Immediate Next Steps",
+          content: "1. Book Free Consultation with IWS (Link in email).\n2. Prepare e-filing credentials for forensic review.\n3. Do not submit new returns until strategy is approved."
+        }
+      ]
     }, `IWS_Recovery_Plan_${formData.enterprise}.pdf`);
   };
 
-  // --- REFACTORED RENDER LOGIC TO PREVENT NESTING ERRORS ---
   const renderContent = () => {
     if (isSuccess) {
       return (
@@ -164,107 +234,107 @@ const WarRoom: React.FC = () => {
         </div>
       );
     }
-
+    // ... (Transmitting & Protocol & Calendar blocks same as before) ...
     if (isTransmitting) {
       return (
         <div className="flex flex-col items-center justify-center h-full space-y-10 py-20 animate-fadeIn">
           <div className="w-24 h-24 rounded-full border-4 border-brand-gold/10 border-t-brand-gold animate-spin"></div>
           <div className="w-full max-w-sm bg-black/40 rounded-3xl p-6 font-mono border border-white/10">
             {transmissionLogs.map((log, i) => (
-              <div key={i} className="flex items-center gap-3 text-[11px] text-brand-gold mb-2 font-mono">
-                 <List size={12} className="shrink-0" />
-                 <span>{log}</span>
-              </div>
+              <p key={i} className="text-[11px] text-brand-gold mb-2 font-mono">- {log}</p>
             ))}
           </div>
-        </div>
-      );
-    }
-
-    if (activeStream === 'stress') {
-      const analysis = getComplianceAnalysis(complianceScore);
-      return (
-        <div className="space-y-10 animate-fadeIn">
-          <div className="space-y-4">
-            <h3 className="text-2xl font-black text-brand-gold uppercase tracking-tighter">Where is your Compliance At?</h3>
-            <p className="text-white/60 text-sm">Drag the slider to match your current situation.</p>
-          </div>
-          
-          <div className="flex justify-between items-center bg-black/60 p-8 rounded-[2rem] border border-white/10">
-            <div className="flex flex-col">
-              <span className="text-[10px] font-black uppercase text-white/40 tracking-widest mb-1">Current Status</span>
-              <span className={`text-2xl md:text-3xl font-black ${analysis.color}`}>{analysis.label}</span>
-            </div>
-          </div>
-          
-          <input type="range" min="0" max="4" step="1" value={complianceScore} onChange={(e) => setComplianceScore(parseInt(e.target.value))} className="w-full h-6 bg-white/10 rounded-full appearance-none cursor-pointer accent-brand-gold" />
-          <div className="flex justify-between text-[10px] font-black text-white/30 uppercase tracking-widest px-2">
-             <span>Critical</span>
-             <span>Sovereign</span>
-          </div>
-
-          <div className={`p-8 rounded-[2.5rem] border-2 ${complianceScore < 3 ? 'border-rose-500/50 bg-rose-950/20' : 'border-emerald-500/50 bg-emerald-950/20'} transition-all`}>
-             <div className="mb-6"><p className="text-lg md:text-xl font-bold text-white leading-tight">{analysis.consequence}</p></div>
-             <div><p className="text-lg font-bold text-brand-gold">{analysis.solution}</p></div>
-          </div>
-          
-          <div className="grid md:grid-cols-2 gap-6">
-            <button onClick={handleAiAppraisal} disabled={isAnalyzing} className="flex items-center justify-center gap-4 bg-white/10 border border-white/20 text-white rounded-[2rem] py-6 font-black uppercase tracking-[0.2em] text-[10px] transition-all hover:bg-white/20">
-              {isAnalyzing ? <Loader2 className="animate-spin" size={16} /> : <Cpu size={16} />} ANALYZE RISK
-            </button>
-            {complianceScore < 3 && (
-                <button onClick={() => window.open('https://calendly.com/enquiries-integratedwellth/30min', '_blank')} className="bg-rose-600 text-white rounded-[2rem] py-6 font-black uppercase tracking-[0.2em] text-[10px] transition-all hover:scale-105 shadow-xl flex items-center justify-center gap-2">
-                  STOP THE BLEED <ArrowRight size={16} />
-                </button>
-            )}
-          </div>
-          {aiAnalysis && (
-             <div className="p-8 bg-brand-gold/10 border-l-4 border-brand-gold text-white/90 rounded-r-2xl text-sm leading-relaxed">
-                {aiAnalysis}
-             </div>
-          )}
         </div>
       );
     }
 
     if (activeStream === 'protocol') {
-      return (
-        <div className="space-y-8 animate-fadeIn">
-          <h3 className="text-2xl font-black text-brand-gold uppercase tracking-tighter">THE 4-PHASE PROTOCOL</h3>
-          <div className="grid gap-4">
-            {[{ step: "01", title: "THE AUDIT", desc: "We find the leaks." }, { step: "02", title: "THE ARCHITECTURE", desc: "We design your fortress." }, { step: "03", title: "IMPLEMENTATION", desc: "We install systems." }, { step: "04", title: "FREEDOM", desc: "You exit operations." }].map((p, idx) => (
-              <button key={idx} onClick={() => setSelectedPhase(idx)} className={`flex gap-6 p-6 rounded-[2rem] border-2 transition-all text-left ${selectedPhase === idx ? 'bg-brand-gold border-white' : 'bg-black/40 border-white/10'}`}>
-                 <div className={`text-3xl font-black ${selectedPhase === idx ? 'text-brand-900' : 'text-brand-gold/30'}`}>{p.step}</div>
-                 <div>
-                    <p className={`font-black uppercase text-xs mb-1 tracking-widest ${selectedPhase === idx ? 'text-brand-900' : 'text-white'}`}>{p.title}</p>
-                    <p className={`text-xs font-medium ${selectedPhase === idx ? 'text-brand-900/70' : 'text-white/50'}`}>{p.desc}</p>
-                 </div>
-              </button>
-            ))}
+        return (
+          <div className="space-y-8 animate-fadeIn">
+             <h3 className="text-2xl font-black text-brand-gold uppercase tracking-tighter">THE 4-PHASE PROTOCOL</h3>
+             <div className="grid gap-4">
+               {[{ step: "01", title: "THE AUDIT", desc: "We find the leaks in your capital." }, { step: "02", title: "THE ARCHITECTURE", desc: "We design your legal fortress." }, { step: "03", title: "IMPLEMENTATION", desc: "We install the systems." }, { step: "04", title: "FREEDOM", desc: "You exit operations." }].map((p, idx) => (
+                 <button key={idx} onClick={() => setSelectedPhase(idx)} className={`flex gap-6 p-6 rounded-[2rem] border-2 transition-all text-left ${selectedPhase === idx ? 'bg-brand-gold border-white' : 'bg-black/40 border-white/10'}`}>
+                    <div className={`text-3xl font-black ${selectedPhase === idx ? 'text-brand-900' : 'text-brand-gold/30'}`}>{p.step}</div>
+                    <div><p className={`font-black uppercase text-xs mb-1 tracking-widest ${selectedPhase === idx ? 'text-brand-900' : 'text-white'}`}>{p.title}</p></div>
+                 </button>
+               ))}
+             </div>
+             <button onClick={() => setActiveStream('alpha')} className="w-full bg-brand-gold text-brand-900 rounded-[2rem] py-6 font-black uppercase tracking-[0.4em] text-xs transition-all hover:scale-105">INITIATE PROTOCOL</button>
           </div>
-          <button onClick={() => setActiveStream('alpha')} className="w-full bg-brand-gold text-brand-900 rounded-[2rem] py-6 font-black uppercase tracking-[0.4em] text-xs transition-all hover:scale-105">INITIATE PROTOCOL</button>
-        </div>
-      );
+        );
     }
 
     if (activeStream === 'calendar') {
-      return (
-        <div className="space-y-8 animate-fadeIn">
-          <h3 className="text-2xl font-black text-brand-gold uppercase tracking-tighter">CRITICAL DATES</h3>
-          <div className="grid gap-4">
-            {deadlines.map((d, i) => {
-              const days = getDaysLeft(d.targetDate);
-              const isCritical = days <= 30;
-              return (
-                <div key={i} className={`flex justify-between items-center p-6 bg-black/60 border-2 rounded-[2rem] ${isCritical ? 'border-rose-500 bg-rose-950/20' : 'border-white/10'}`}>
-                   <div><h4 className="text-sm font-black uppercase text-white">{d.title}</h4><p className="text-[10px] text-white/50 uppercase tracking-widest">{d.date}</p></div>
-                   <div className={`text-right font-black ${isCritical ? 'text-rose-500' : 'text-brand-gold'}`}>{days} DAYS</div>
-                </div>
-              );
-            })}
+        return (
+          <div className="space-y-8 animate-fadeIn">
+             <h3 className="text-2xl font-black text-brand-gold uppercase tracking-tighter">CRITICAL DATES</h3>
+             <div className="grid gap-4">
+               {deadlines.map((d, i) => {
+                 const days = getDaysLeft(d.targetDate);
+                 const isCritical = days <= 30;
+                 return (
+                   <div key={i} className={`flex justify-between items-center p-6 bg-black/60 border-2 rounded-[2rem] ${isCritical ? 'border-rose-500 bg-rose-950/20' : 'border-white/10'}`}>
+                      <div><h4 className="text-sm font-black uppercase text-white">{d.title}</h4><p className="text-[10px] text-white/50 uppercase tracking-widest">{d.date}</p></div>
+                      <div className={`text-right font-black ${isCritical ? 'text-rose-500' : 'text-brand-gold'}`}>{days} DAYS</div>
+                   </div>
+                 );
+               })}
+             </div>
           </div>
-        </div>
-      );
+        );
+    }
+
+    if (activeStream === 'stress') {
+        const analysis = getComplianceAnalysis(complianceScore);
+        return (
+          <div className="space-y-10 animate-fadeIn">
+            <div className="space-y-4">
+              <h3 className="text-2xl font-black text-brand-gold uppercase tracking-tighter">Compliance Audit</h3>
+              <p className="text-white/60 text-sm">Drag the slider to reflect your current reality.</p>
+            </div>
+            
+            <div className="flex justify-between items-center bg-black/60 p-8 rounded-[2rem] border border-white/10">
+              <div className="flex flex-col">
+                <span className="text-[10px] font-black uppercase text-white/40 tracking-widest mb-1">Status</span>
+                <span className={`text-2xl md:text-3xl font-black ${analysis.color}`}>{analysis.label}</span>
+              </div>
+            </div>
+            
+            <input type="range" min="0" max="4" step="1" value={complianceScore} onChange={(e) => setComplianceScore(parseInt(e.target.value))} className="w-full h-6 bg-white/10 rounded-full appearance-none cursor-pointer accent-brand-gold" />
+            
+            {/* EDUCATIONAL DIAGNOSIS BOX */}
+            <div className={`p-8 rounded-[2.5rem] border-2 ${complianceScore < 3 ? 'border-rose-500/50 bg-rose-950/20' : 'border-emerald-500/50 bg-emerald-950/20'} transition-all`}>
+               <div className="mb-6">
+                 <p className="text-[10px] font-black uppercase text-white/50 tracking-widest mb-2">What this means:</p>
+                 <p className="text-base text-white/90 leading-relaxed font-medium">"{analysis.definition}"</p>
+               </div>
+               <div>
+                 <p className="text-[10px] font-black uppercase text-brand-gold tracking-widest mb-2">The Risk:</p>
+                 <div className="flex items-center gap-3">
+                    <Scale className="text-brand-gold" size={20} />
+                    <p className="text-lg font-bold text-white">{analysis.consequence}</p>
+                 </div>
+               </div>
+            </div>
+            
+            <div className="grid md:grid-cols-2 gap-6">
+              <button onClick={handleAiAppraisal} disabled={isAnalyzing} className="flex items-center justify-center gap-4 bg-white/10 border border-white/20 text-white rounded-[2rem] py-6 font-black uppercase tracking-[0.2em] text-[10px] transition-all hover:bg-white/20">
+                {isAnalyzing ? <Loader2 className="animate-spin" size={16} /> : <Cpu size={16} />} ANALYZE RISK
+              </button>
+              {complianceScore < 3 && (
+                  <button onClick={() => window.open('https://calendly.com/enquiries-integratedwellth/30min', '_blank')} className="bg-rose-600 text-white rounded-[2rem] py-6 font-black uppercase tracking-[0.2em] text-[10px] transition-all hover:scale-105 shadow-xl flex items-center justify-center gap-2">
+                    FIX THIS NOW <ArrowRight size={16} />
+                  </button>
+              )}
+            </div>
+            {aiAnalysis && (
+               <div className="p-8 bg-brand-gold/10 border-l-4 border-brand-gold text-white/90 rounded-r-2xl text-sm leading-relaxed">
+                  {aiAnalysis}
+               </div>
+            )}
+          </div>
+        );
     }
 
     // Default: Alpha / Data Capture
@@ -346,7 +416,6 @@ const WarRoom: React.FC = () => {
                   ))}
                 </div>
                 
-                {/* RENDER THE CONTENT FROM THE FUNCTION */}
                 <div className="flex-1">
                     {renderContent()}
                 </div>
