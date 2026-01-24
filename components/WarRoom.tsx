@@ -35,7 +35,6 @@ const WarRoom: React.FC = () => {
     parameters: '' 
   });
   
-  // New Metric: Compliance Health (0 = Years Behind, 4 = Perfect)
   const [complianceScore, setComplianceScore] = useState(1); 
 
   useEffect(() => {
@@ -44,41 +43,11 @@ const WarRoom: React.FC = () => {
   }, []);
 
   const getComplianceAnalysis = (val: number) => {
-    if (val === 0) return { 
-      label: "CRITICAL NON-COMPLIANCE", 
-      color: "text-rose-600", 
-      consequence: "IMMINENT DEREGISTRATION & ASSET FREEZE.",
-      solution: "Emergency CIPC Restoration & Tax Amnesty Application",
-      risk: "CATASTROPHIC"
-    };
-    if (val === 1) return { 
-      label: "SERIOUS ARREARS", 
-      color: "text-rose-500", 
-      consequence: "200% SARS PENALTIES & INTEREST ACCUMULATION.",
-      solution: "Forensic Accounting Catch-Up & Payment Arrangement",
-      risk: "DANGEROUS"
-    };
-    if (val === 2) return { 
-      label: "PROCEDURAL LAG", 
-      color: "text-brand-gold", 
-      consequence: "CASH FLOW LEAKS VIA FINES & MISSED DEDUCTIONS.",
-      solution: "Operational Compliance Overhaul",
-      risk: "MODERATE"
-    };
-    if (val === 3) return { 
-      label: "REACTIVE COMPLIANCE", 
-      color: "text-brand-gold", 
-      consequence: "FOUNDER BURNOUT & STRATEGIC BLINDNESS.",
-      solution: "Automation & Retainer Partnership",
-      risk: "STRESSFUL"
-    };
-    return { 
-      label: "SOVEREIGN STATUS", 
-      color: "text-emerald-400", 
-      consequence: "NONE. SYSTEM IS AUDIT-PROOF.",
-      solution: "Wealth Preservation & Legacy Structuring",
-      risk: "SECURE"
-    };
+    if (val === 0) return { label: "CRITICAL NON-COMPLIANCE", color: "text-rose-600", consequence: "IMMINENT DEREGISTRATION & ASSET FREEZE.", solution: "Emergency CIPC Restoration & Tax Amnesty Application", risk: "CATASTROPHIC" };
+    if (val === 1) return { label: "SERIOUS ARREARS", color: "text-rose-500", consequence: "200% SARS PENALTIES & INTEREST ACCUMULATION.", solution: "Forensic Accounting Catch-Up & Payment Arrangement", risk: "DANGEROUS" };
+    if (val === 2) return { label: "PROCEDURAL LAG", color: "text-brand-gold", consequence: "CASH FLOW LEAKS VIA FINES & MISSED DEDUCTIONS.", solution: "Operational Compliance Overhaul", risk: "MODERATE" };
+    if (val === 3) return { label: "REACTIVE COMPLIANCE", color: "text-brand-gold", consequence: "FOUNDER BURNOUT & STRATEGIC BLINDNESS.", solution: "Automation & Retainer Partnership", risk: "STRESSFUL" };
+    return { label: "SOVEREIGN STATUS", color: "text-emerald-400", consequence: "NONE. SYSTEM IS AUDIT-PROOF.", solution: "Wealth Preservation & Legacy Structuring", risk: "SECURE" };
   };
 
   const deadlines = [
@@ -101,11 +70,7 @@ const WarRoom: React.FC = () => {
     setAiAnalysis('');
     if (!chatRef.current) chatRef.current = createChatSession();
 
-    const prompt = `Business Risk Diagnostic. 
-    Current Status: ${analysis.label}. 
-    Consequence: ${analysis.consequence}.
-    Recommended Solution: ${analysis.solution}.
-    Provide a brutal 3-sentence reality check on why they need to book a consultation immediately. Don't be polite, be factual.`;
+    const prompt = `Business Risk Diagnostic. Current Status: ${analysis.label}. Consequence: ${analysis.consequence}. Recommended Solution: ${analysis.solution}. Provide a brutal 3-sentence reality check.`;
 
     try {
       const stream = await sendMessageStream(chatRef.current, prompt);
@@ -140,13 +105,13 @@ const WarRoom: React.FC = () => {
     try {
       const analysis = getComplianceAnalysis(complianceScore);
       
-      // 1. DATA CAPTURE (With Solution & Pain Points)
+      // 1. DATA CAPTURE
       const leadPayload = {
         name: formData.identifier,
         company: formData.enterprise,
         email: formData.email,
         whatsapp: formData.whatsapp,
-        segment: analysis.label, // Segmentation Key
+        segment: analysis.label,
         data: {
             risk_level: analysis.risk,
             pain_point: analysis.consequence,
@@ -156,10 +121,10 @@ const WarRoom: React.FC = () => {
       };
       
       if (db) {
-        // A. Store for Dashboard
+        // A. Store
         await addDoc(collection(db, 'war_room_leads'), leadPayload);
 
-        // B. Trigger Email (Via Firebase Extensions)
+        // B. Email
         await addDoc(collection(db, 'mail'), {
           to: formData.email,
           message: {
@@ -168,28 +133,17 @@ const WarRoom: React.FC = () => {
               <div style="font-family: Arial, sans-serif; color: #134e4a; padding: 20px;">
                 <h1 style="color: #d4af37;">COMPLIANCE AUDIT RESULTS</h1>
                 <p>Hello ${formData.identifier},</p>
-                <p>Our War Room has analyzed your compliance standing against the current SARS/CIPC calendar.</p>
-                
                 <div style="background: #fef2f2; padding: 15px; border-left: 4px solid #e11d48; margin: 20px 0;">
                   <h3 style="color: #be123c; margin-top: 0;">⚠️ DIAGNOSIS: ${analysis.label}</h3>
                   <p><strong>Immediate Threat:</strong> ${analysis.consequence}</p>
                 </div>
-
                 <div style="background: #f0fdfa; padding: 15px; border-left: 4px solid #0d9488; margin: 20px 0;">
                    <h3 style="color: #0f766e; margin-top: 0;">✅ REQUIRED SOLUTION</h3>
                    <p><strong>Protocol:</strong> ${analysis.solution}</p>
-                   <p>We need to execute this immediately to stop further liability.</p>
                 </div>
-
                 <p style="text-align: center; margin: 40px 0;">
                   <a href="https://calendly.com/enquiries-integratedwellth/30min" style="background-color: #d4af37; color: #000; padding: 15px 30px; text-decoration: none; font-weight: 900; border-radius: 50px; font-size: 16px;">BOOK YOUR FREE CONSULTATION</a>
                 </p>
-
-                <hr style="border: 0; border-top: 1px solid #eee; margin: 30px 0;" />
-
-                <h3>🎟️ EXCLUSIVE SUMMIT INVITATION</h3>
-                <p>Join Marcia Kgaphola at the <strong>Financial Clarity Summit</strong> on Feb 28, 2026.</p>
-                <p><a href="https://www.quicket.co.za/events/352598-financial-clarity-for-non-financial-business-owners/#/" style="color: #134e4a; font-weight: bold;">Secure Your Seat Here</a></p>
               </div>
             `
           }
@@ -217,10 +171,6 @@ const WarRoom: React.FC = () => {
         {
             heading: "Required Intervention",
             content: analysis.solution
-        },
-        {
-          heading: "Next Steps",
-          content: "1. Book Discovery Call with IWS.\n2. Hand over e-filing credentials for forensic review.\n3. Establish payment plan or dispute resolution."
         }
       ]
     }, `IWS_Recovery_Plan_${formData.enterprise}.pdf`);
@@ -307,10 +257,9 @@ const WarRoom: React.FC = () => {
                        <div className="w-24 h-24 rounded-full border-4 border-brand-gold/10 border-t-brand-gold animate-spin"></div>
                        <div className="w-full max-w-sm bg-black/40 rounded-3xl p-6 font-mono border border-white/10">
                           {transmissionLogs.map((log, i) => (
-                            // THE FIX IS HERE: Simple dash. No entities. No icons. Just text.
-                            <p key={i} className="text-[11px] text-brand-gold mb-2 font-mono">
-                               - {log}
-                            </p>
+                            <div key={i} className="flex items-center gap-2 text-[11px] text-brand-gold mb-2">
+                               <span className="opacity-50">::</span> {log}
+                            </div>
                           ))}
                        </div>
                     </div>
