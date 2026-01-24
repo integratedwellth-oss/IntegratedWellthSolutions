@@ -1,9 +1,7 @@
 import React from 'react';
-import { Swiper, SwiperSlide } from 'swiper/react';
-import { Pagination, Navigation, Autoplay } from 'swiper/modules';
-import { ArrowLeft, ArrowRight } from 'lucide-react';
+import { ArrowUpRight } from 'lucide-react';
+import RevealOnScroll from './RevealOnScroll';
 
-// Using reliable Unsplash images to ensure gallery is never blank
 const IMAGES = [
   {
     url: "https://images.unsplash.com/photo-1556761175-5973dc0f32e7?auto=format&fit=crop&q=80&w=1600",
@@ -29,68 +27,36 @@ const IMAGES = [
 
 const Gallery: React.FC = () => {
   return (
-    <section id="gallery" className="py-20 bg-gray-50 overflow-hidden">
-      <div className="max-w-[1600px] mx-auto px-4">
-        <div className="text-center mb-12">
-          <h2 className="text-3xl font-bold text-brand-900 font-sora">Wellth In Action</h2>
-          <p className="text-gray-600">Workshops, strategy sessions, and community impact.</p>
-        </div>
+    // CHANGED TO BROWN BACKGROUND
+    <section id="gallery" className="py-24" style={{ backgroundColor: "#3E2723" }}>
+      <div className="max-w-[1600px] mx-auto px-6">
+        <RevealOnScroll>
+          <div className="text-center mb-16">
+            <h2 className="text-4xl md:text-5xl font-black text-white font-sora tracking-tighter">WELLTH IN ACTION</h2>
+            <p className="text-brand-gold/80 mt-4 text-lg font-medium">Workshops, strategy sessions, and community impact.</p>
+          </div>
+        </RevealOnScroll>
         
-        <div className="relative group">
-          <Swiper
-            modules={[Pagination, Navigation, Autoplay]}
-            slidesPerView={1.2}
-            centeredSlides={true}
-            spaceBetween={20}
-            loop={true}
-            autoplay={{
-              delay: 3500,
-              disableOnInteraction: false,
-            }}
-            pagination={{ clickable: true }}
-            navigation={{
-              nextEl: '.custom-next',
-              prevEl: '.custom-prev',
-            }}
-            breakpoints={{
-              640: { slidesPerView: 1.5, spaceBetween: 30 },
-              1024: { slidesPerView: 2.2, spaceBetween: 40 },
-            }}
-            className="!pb-12 h-[500px]" // Fixed height to prevent collapse
-          >
-            {IMAGES.map((img, idx) => (
-              <SwiperSlide key={idx} className="transition-transform duration-300 transform h-full">
-                {({ isActive }) => (
-                  <div className={`
-                    relative rounded-[2rem] overflow-hidden shadow-2xl transition-all duration-500 h-full w-full
-                    ${isActive ? 'scale-100 opacity-100' : 'scale-90 opacity-60'}
-                  `}>
-                    <img
-                      src={img.url}
-                      alt={img.title}
-                      className="w-full h-full object-cover"
-                    />
-                    <div className={`
-                      absolute inset-0 bg-gradient-to-t from-brand-900/90 via-brand-900/20 to-transparent
-                      flex flex-col justify-end p-8
-                      transition-opacity duration-300
-                      ${isActive ? 'opacity-100' : 'opacity-0'}
-                    `}>
-                      <h3 className="text-3xl font-black text-white mb-2 font-sora uppercase">{img.title}</h3>
-                      <p className="text-brand-gold font-bold tracking-widest text-sm">{img.description}</p>
-                    </div>
+        {/* CHANGED TO GRID FOR RELIABILITY */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          {IMAGES.map((img, idx) => (
+            <RevealOnScroll key={idx} delay={idx * 0.1}>
+              <div className="group relative h-[400px] rounded-[2rem] overflow-hidden border-2 border-white/5 cursor-pointer">
+                <img
+                  src={img.url}
+                  alt={img.title}
+                  className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-brand-900/90 via-brand-900/20 to-transparent flex flex-col justify-end p-8 translate-y-4 group-hover:translate-y-0 transition-transform duration-500">
+                  <h3 className="text-xl font-black text-white mb-1 font-sora uppercase leading-none">{img.title}</h3>
+                  <p className="text-brand-gold text-xs font-bold tracking-widest mb-4 opacity-0 group-hover:opacity-100 transition-opacity duration-500 delay-100">{img.description}</p>
+                  <div className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center text-white backdrop-blur-md border border-white/20">
+                     <ArrowUpRight size={18} />
                   </div>
-                )}
-              </SwiperSlide>
-            ))}
-          </Swiper>
-          
-          <button className="custom-prev absolute left-4 top-1/2 -translate-y-1/2 z-20 bg-white/90 p-4 rounded-full shadow-lg text-brand-900 hover:bg-brand-900 hover:text-white transition-all">
-            <ArrowLeft size={24} />
-          </button>
-          <button className="custom-next absolute right-4 top-1/2 -translate-y-1/2 z-20 bg-white/90 p-4 rounded-full shadow-lg text-brand-900 hover:bg-brand-900 hover:text-white transition-all">
-            <ArrowRight size={24} />
-          </button>
+                </div>
+              </div>
+            </RevealOnScroll>
+          ))}
         </div>
       </div>
     </section>
