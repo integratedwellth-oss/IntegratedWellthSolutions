@@ -16,9 +16,9 @@ const PHASES = [
       { label: "Psychology", desc: "Quantifying founder bottlenecks and decision fatigue." }
     ],
     deliverable: "Strategic Intelligence Brief",
-    bgColor: "bg-white",
+    hexBg: "#ffffff",
     textColor: "text-brand-900",
-    forceColor: "#134e4a", // Dark Teal
+    forceColor: "#134e4a",
     numberColor: "text-brand-900/10",
     accentColor: "text-brand-gold"
   },
@@ -35,9 +35,9 @@ const PHASES = [
       { label: "Automation Engine", desc: "Designing the digital connective tissue." }
     ],
     deliverable: "The Master Sovereignty Blueprint",
-    bgColor: "bg-brand-50",
+    hexBg: "#f0fdfa",
     textColor: "text-brand-900",
-    forceColor: "#134e4a", // Dark Teal (FORCE VISIBILITY)
+    forceColor: "#134e4a",
     numberColor: "text-brand-900/10",
     accentColor: "text-brand-600"
   },
@@ -54,7 +54,8 @@ const PHASES = [
       { label: "Clean Sweep", desc: "Automating self-defending statutory guardrails." }
     ],
     deliverable: "Self-Sustaining Operation",
-    bgColor: "bg-brand-800",
+    // CHANGED TO BROWN
+    hexBg: "#3E2723", 
     textColor: "text-white",
     forceColor: "#ffffff",
     numberColor: "text-white/10",
@@ -73,7 +74,7 @@ const PHASES = [
       { label: "Legacy Protection", desc: "Hardening structures for multi-generational wealth." }
     ],
     deliverable: "Permanent Legacy Protection",
-    bgColor: "bg-brand-900",
+    hexBg: "#134e4a", 
     textColor: "text-white",
     forceColor: "#ffffff",
     numberColor: "text-white/10",
@@ -99,7 +100,7 @@ const StrategicJourney: React.FC = () => {
       </div>
 
       {PHASES.map((phase, i) => (
-        <div key={i} className={`${phase.bgColor} py-40 md:py-60 px-6 relative z-10`}>
+        <div key={i} style={{ backgroundColor: phase.hexBg }} className={`${phase.textColor} py-40 md:py-60 px-6 relative z-10`}>
           <div className="max-w-7xl mx-auto">
             <div className={`grid lg:grid-cols-2 gap-24 items-center ${i % 2 !== 0 ? 'lg:flex-row-reverse' : ''}`}>
               
@@ -113,10 +114,8 @@ const StrategicJourney: React.FC = () => {
                     </div>
                     <div className="space-y-2">
                       <p className={`${phase.accentColor} font-black uppercase tracking-widest text-xs`}>{phase.tagline}</p>
-                      {/* FORCED COLOR STYLE */}
                       <h3 className="text-5xl md:text-7xl font-sora font-black tracking-tighter leading-none" style={{ color: phase.forceColor }}>{phase.title}</h3>
                     </div>
-                    {/* FORCED COLOR STYLE */}
                     <p className="text-2xl font-medium leading-relaxed italic border-l-4 border-current pl-8" style={{ color: phase.forceColor, opacity: 0.8 }}>
                       "{phase.description}"
                     </p>
@@ -131,7 +130,6 @@ const StrategicJourney: React.FC = () => {
                           {idx === 0 ? <TrendingUp size={24} /> : idx === 1 ? <Cpu size={24} /> : <Zap size={24} />}
                         </div>
                         <div>
-                          {/* FORCED COLOR STYLE */}
                           <p className="font-black uppercase text-sm tracking-tight mb-1" style={{ color: phase.forceColor }}>{lens.label}</p>
                           <p className="text-sm font-medium" style={{ color: phase.forceColor, opacity: 0.6 }}>{lens.desc}</p>
                         </div>
