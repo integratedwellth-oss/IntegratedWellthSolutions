@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Terminal, Radio, Activity, Skull, AlertTriangle, Timer, Clock, CheckCircle, FileText, Sparkles, Loader2, Cpu, ArrowRight, Lock, MessageSquare, Mail, Scale } from 'lucide-react';
+import { Terminal, Radio, Activity, Skull, AlertTriangle, Timer, Clock, CheckCircle, FileText, Sparkles, Loader2, Cpu, ArrowRight, Lock, MessageSquare, Mail, Scale, List } from 'lucide-react';
 import RevealOnScroll from './RevealOnScroll';
 import { generatePDFReport } from '../services/exportService';
 import { db } from '../firebaseConfig';
@@ -83,7 +83,7 @@ const WarRoom: React.FC = () => {
         }
       }
     } catch (e) {
-      setAiAnalysis("### CONNECTION ERROR\nCould not reach the advisor. Your compliance risk remains **CRITICAL**.");
+      setAiAnalysis("### CONNECTION ERROR\nCould not reach the advisor.");
     } finally {
       setIsAnalyzing(false);
     }
@@ -95,7 +95,6 @@ const WarRoom: React.FC = () => {
     setTransmissionLogs([]);
     const logs = ["ANALYZING COMPLIANCE GAP...", "MATCHING SOLUTION PROTOCOL...", "GENERATING RECOVERY PLAN...", "UPLINKING TO HQ...", "SECURE."];
     
-    // Simulate log typing
     const addLog = (msg: string) => setTransmissionLogs(prev => [...prev, msg]);
     for (const log of logs) {
       addLog(log);
@@ -104,47 +103,28 @@ const WarRoom: React.FC = () => {
     
     try {
       const analysis = getComplianceAnalysis(complianceScore);
-      
-      // 1. DATA CAPTURE
       const leadPayload = {
         name: formData.identifier,
         company: formData.enterprise,
         email: formData.email,
         whatsapp: formData.whatsapp,
         segment: analysis.label,
-        data: {
-            risk_level: analysis.risk,
-            pain_point: analysis.consequence,
-            recommended_solution: analysis.solution 
-        },
+        data: { risk_level: analysis.risk, pain_point: analysis.consequence, recommended_solution: analysis.solution },
         timestamp: serverTimestamp(),
       };
       
       if (db) {
-        // A. Store
         await addDoc(collection(db, 'war_room_leads'), leadPayload);
-
-        // B. Email
         await addDoc(collection(db, 'mail'), {
           to: formData.email,
           message: {
             subject: `⚠️ ACTION REQUIRED: ${formData.enterprise} Compliance Report`,
             html: `
-              <div style="font-family: Arial, sans-serif; color: #134e4a; padding: 20px;">
-                <h1 style="color: #d4af37;">COMPLIANCE AUDIT RESULTS</h1>
-                <p>Hello ${formData.identifier},</p>
-                <div style="background: #fef2f2; padding: 15px; border-left: 4px solid #e11d48; margin: 20px 0;">
-                  <h3 style="color: #be123c; margin-top: 0;">⚠️ DIAGNOSIS: ${analysis.label}</h3>
-                  <p><strong>Immediate Threat:</strong> ${analysis.consequence}</p>
-                </div>
-                <div style="background: #f0fdfa; padding: 15px; border-left: 4px solid #0d9488; margin: 20px 0;">
-                   <h3 style="color: #0f766e; margin-top: 0;">✅ REQUIRED SOLUTION</h3>
-                   <p><strong>Protocol:</strong> ${analysis.solution}</p>
-                </div>
-                <p style="text-align: center; margin: 40px 0;">
-                  <a href="https://calendly.com/enquiries-integratedwellth/30min" style="background-color: #d4af37; color: #000; padding: 15px 30px; text-decoration: none; font-weight: 900; border-radius: 50px; font-size: 16px;">BOOK YOUR FREE CONSULTATION</a>
-                </p>
-              </div>
+              <h1>Strategic Assessment Complete</h1>
+              <p><strong>Risk Level:</strong> ${analysis.risk}</p>
+              <p><strong>Immediate Threat:</strong> ${analysis.consequence}</p>
+              <p><strong>Required Protocol:</strong> ${analysis.solution}</p>
+              <p><a href="https://calendly.com/enquiries-integratedwellth/30min">Book Your Strategic Reset Call Now</a></p>
             `
           }
         });
@@ -163,17 +143,152 @@ const WarRoom: React.FC = () => {
     generatePDFReport({
       title: "COMPLIANCE RECOVERY PLAN",
       subtitle: `${formData.enterprise} | ${analysis.label}`,
-      sections: [
-        {
-            heading: "Executive Summary",
-            content: `Current Status: ${analysis.risk}. Immediate action required to prevent ${analysis.consequence}`
-        },
-        {
-            heading: "Required Intervention",
-            content: analysis.solution
-        }
-      ]
+      sections: [{ heading: "Executive Summary", content: `Current Status: ${analysis.risk}. Immediate action required to prevent ${analysis.consequence}` }]
     }, `IWS_Recovery_Plan_${formData.enterprise}.pdf`);
+  };
+
+  // --- REFACTORED RENDER LOGIC TO PREVENT NESTING ERRORS ---
+  const renderContent = () => {
+    if (isSuccess) {
+      return (
+        <div className="space-y-12 animate-fadeIn py-10 text-center">
+          <CheckCircle size={80} className="text-brand-gold mx-auto animate-bounce" />
+          <h2 className="text-4xl md:text-5xl font-sora font-black text-white uppercase tracking-tighter">PLAN DEPLOYED.</h2>
+          <p className="text-xl text-white/60 font-medium leading-relaxed">Your recovery strategy has been emailed to you.</p>
+          <button onClick={handleDownloadIntel} className="w-full flex items-center justify-center gap-4 py-8 rounded-[2.5rem] bg-brand-gold text-brand-900 font-black uppercase tracking-[0.4em] text-sm transition-all hover:scale-105 shadow-2xl">
+            <FileText size={18} /> DOWNLOAD RECOVERY PDF
+          </button>
+          <button onClick={() => window.open('https://calendly.com/enquiries-integratedwellth/30min', '_blank')} className="text-brand-gold font-bold text-sm hover:underline uppercase tracking-widest mt-4">
+            Book Your Free Consultation Now -&gt;
+          </button>
+        </div>
+      );
+    }
+
+    if (isTransmitting) {
+      return (
+        <div className="flex flex-col items-center justify-center h-full space-y-10 py-20 animate-fadeIn">
+          <div className="w-24 h-24 rounded-full border-4 border-brand-gold/10 border-t-brand-gold animate-spin"></div>
+          <div className="w-full max-w-sm bg-black/40 rounded-3xl p-6 font-mono border border-white/10">
+            {transmissionLogs.map((log, i) => (
+              <div key={i} className="flex items-center gap-3 text-[11px] text-brand-gold mb-2 font-mono">
+                 <List size={12} className="shrink-0" />
+                 <span>{log}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      );
+    }
+
+    if (activeStream === 'stress') {
+      const analysis = getComplianceAnalysis(complianceScore);
+      return (
+        <div className="space-y-10 animate-fadeIn">
+          <div className="space-y-4">
+            <h3 className="text-2xl font-black text-brand-gold uppercase tracking-tighter">Where is your Compliance At?</h3>
+            <p className="text-white/60 text-sm">Drag the slider to match your current situation.</p>
+          </div>
+          
+          <div className="flex justify-between items-center bg-black/60 p-8 rounded-[2rem] border border-white/10">
+            <div className="flex flex-col">
+              <span className="text-[10px] font-black uppercase text-white/40 tracking-widest mb-1">Current Status</span>
+              <span className={`text-2xl md:text-3xl font-black ${analysis.color}`}>{analysis.label}</span>
+            </div>
+          </div>
+          
+          <input type="range" min="0" max="4" step="1" value={complianceScore} onChange={(e) => setComplianceScore(parseInt(e.target.value))} className="w-full h-6 bg-white/10 rounded-full appearance-none cursor-pointer accent-brand-gold" />
+          <div className="flex justify-between text-[10px] font-black text-white/30 uppercase tracking-widest px-2">
+             <span>Critical</span>
+             <span>Sovereign</span>
+          </div>
+
+          <div className={`p-8 rounded-[2.5rem] border-2 ${complianceScore < 3 ? 'border-rose-500/50 bg-rose-950/20' : 'border-emerald-500/50 bg-emerald-950/20'} transition-all`}>
+             <div className="mb-6"><p className="text-lg md:text-xl font-bold text-white leading-tight">{analysis.consequence}</p></div>
+             <div><p className="text-lg font-bold text-brand-gold">{analysis.solution}</p></div>
+          </div>
+          
+          <div className="grid md:grid-cols-2 gap-6">
+            <button onClick={handleAiAppraisal} disabled={isAnalyzing} className="flex items-center justify-center gap-4 bg-white/10 border border-white/20 text-white rounded-[2rem] py-6 font-black uppercase tracking-[0.2em] text-[10px] transition-all hover:bg-white/20">
+              {isAnalyzing ? <Loader2 className="animate-spin" size={16} /> : <Cpu size={16} />} ANALYZE RISK
+            </button>
+            {complianceScore < 3 && (
+                <button onClick={() => window.open('https://calendly.com/enquiries-integratedwellth/30min', '_blank')} className="bg-rose-600 text-white rounded-[2rem] py-6 font-black uppercase tracking-[0.2em] text-[10px] transition-all hover:scale-105 shadow-xl flex items-center justify-center gap-2">
+                  STOP THE BLEED <ArrowRight size={16} />
+                </button>
+            )}
+          </div>
+          {aiAnalysis && (
+             <div className="p-8 bg-brand-gold/10 border-l-4 border-brand-gold text-white/90 rounded-r-2xl text-sm leading-relaxed">
+                {aiAnalysis}
+             </div>
+          )}
+        </div>
+      );
+    }
+
+    if (activeStream === 'protocol') {
+      return (
+        <div className="space-y-8 animate-fadeIn">
+          <h3 className="text-2xl font-black text-brand-gold uppercase tracking-tighter">THE 4-PHASE PROTOCOL</h3>
+          <div className="grid gap-4">
+            {[{ step: "01", title: "THE AUDIT", desc: "We find the leaks." }, { step: "02", title: "THE ARCHITECTURE", desc: "We design your fortress." }, { step: "03", title: "IMPLEMENTATION", desc: "We install systems." }, { step: "04", title: "FREEDOM", desc: "You exit operations." }].map((p, idx) => (
+              <button key={idx} onClick={() => setSelectedPhase(idx)} className={`flex gap-6 p-6 rounded-[2rem] border-2 transition-all text-left ${selectedPhase === idx ? 'bg-brand-gold border-white' : 'bg-black/40 border-white/10'}`}>
+                 <div className={`text-3xl font-black ${selectedPhase === idx ? 'text-brand-900' : 'text-brand-gold/30'}`}>{p.step}</div>
+                 <div>
+                    <p className={`font-black uppercase text-xs mb-1 tracking-widest ${selectedPhase === idx ? 'text-brand-900' : 'text-white'}`}>{p.title}</p>
+                    <p className={`text-xs font-medium ${selectedPhase === idx ? 'text-brand-900/70' : 'text-white/50'}`}>{p.desc}</p>
+                 </div>
+              </button>
+            ))}
+          </div>
+          <button onClick={() => setActiveStream('alpha')} className="w-full bg-brand-gold text-brand-900 rounded-[2rem] py-6 font-black uppercase tracking-[0.4em] text-xs transition-all hover:scale-105">INITIATE PROTOCOL</button>
+        </div>
+      );
+    }
+
+    if (activeStream === 'calendar') {
+      return (
+        <div className="space-y-8 animate-fadeIn">
+          <h3 className="text-2xl font-black text-brand-gold uppercase tracking-tighter">CRITICAL DATES</h3>
+          <div className="grid gap-4">
+            {deadlines.map((d, i) => {
+              const days = getDaysLeft(d.targetDate);
+              const isCritical = days <= 30;
+              return (
+                <div key={i} className={`flex justify-between items-center p-6 bg-black/60 border-2 rounded-[2rem] ${isCritical ? 'border-rose-500 bg-rose-950/20' : 'border-white/10'}`}>
+                   <div><h4 className="text-sm font-black uppercase text-white">{d.title}</h4><p className="text-[10px] text-white/50 uppercase tracking-widest">{d.date}</p></div>
+                   <div className={`text-right font-black ${isCritical ? 'text-rose-500' : 'text-brand-gold'}`}>{days} DAYS</div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      );
+    }
+
+    // Default: Alpha / Data Capture
+    return (
+      <form onSubmit={handleSubmit} className="space-y-10 animate-fadeIn pt-10">
+        <div className="text-center mb-8">
+           <h3 className="text-2xl font-black text-white uppercase tracking-tighter">DEPLOY RECOVERY TEAM</h3>
+           <p className="text-white/60 text-sm mt-2">Submit your details to receive your customized <span className="text-brand-gold font-bold">Recovery Plan</span>.</p>
+        </div>
+        <div className="space-y-8">
+          <div className="grid md:grid-cols-2 gap-8">
+            <input required type="text" value={formData.identifier} onChange={(e) => setFormData({...formData, identifier: e.target.value})} className="w-full bg-black/60 border-2 border-white/10 rounded-[1.5rem] px-8 py-6 focus:border-brand-gold outline-none font-bold text-white text-base" placeholder="FOUNDER NAME" />
+            <input required type="text" value={formData.enterprise} onChange={(e) => setFormData({...formData, enterprise: e.target.value})} className="w-full bg-black/60 border-2 border-white/10 rounded-[1.5rem] px-8 py-6 focus:border-brand-gold outline-none font-bold text-white text-base" placeholder="BUSINESS NAME" />
+          </div>
+          <div className="grid md:grid-cols-2 gap-8">
+            <input required type="email" value={formData.email} onChange={(e) => setFormData({...formData, email: e.target.value})} className="w-full bg-black/60 border-2 border-white/10 rounded-[1.5rem] px-8 py-6 focus:border-brand-gold outline-none font-bold text-white text-base" placeholder="EMAIL" />
+            <input type="tel" value={formData.whatsapp} onChange={(e) => setFormData({...formData, whatsapp: e.target.value})} className="w-full bg-black/60 border-2 border-white/10 rounded-[1.5rem] px-8 py-6 focus:border-brand-gold outline-none font-bold text-white text-base" placeholder="WHATSAPP" />
+          </div>
+        </div>
+        <button type="submit" className="w-full bg-brand-gold text-brand-900 rounded-[2.5rem] py-10 font-black uppercase tracking-[0.5em] text-base transition-all hover:scale-105 shadow-2xl mt-12">
+          GET A DETAILED REPORT <ArrowRight size={24} className="inline ml-6" />
+        </button>
+      </form>
+    );
   };
 
   if (bootSequence) {
@@ -223,181 +338,17 @@ const WarRoom: React.FC = () => {
 
           <div className="lg:col-span-7">
             <div className="bg-slate-900/60 border border-white/20 rounded-[4rem] p-8 md:p-12 backdrop-blur-3xl shadow-2xl relative overflow-hidden group min-h-[850px] flex flex-col">
-                
-                {/* Navigation */}
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-2 mb-12 bg-black/60 p-2 rounded-[2.5rem] border border-white/10">
                   {Object.keys(STREAM_LABELS).map((id) => (
-                    <button
-                      key={id}
-                      onClick={() => setActiveStream(id as StreamType)}
-                      className={`flex flex-col items-center justify-center p-4 rounded-[1.8rem] transition-all duration-300 relative border-2 ${activeStream === id ? 'bg-brand-gold text-brand-900 border-white shadow-[0_0_30px_rgba(212,175,55,0.3)] scale-105 z-10' : 'text-white border-transparent hover:bg-white/10'}`}
-                    >
-                      <span className={`text-[9px] font-black uppercase tracking-widest text-center leading-tight ${activeStream === id ? 'text-brand-900' : 'text-white'}`}>
-                        {STREAM_LABELS[id as StreamType]}
-                      </span>
+                    <button key={id} onClick={() => setActiveStream(id as StreamType)} className={`flex flex-col items-center justify-center p-4 rounded-[1.8rem] transition-all duration-300 relative border-2 ${activeStream === id ? 'bg-brand-gold text-brand-900 border-white shadow-[0_0_30px_rgba(212,175,55,0.3)] scale-105 z-10' : 'text-white border-transparent hover:bg-white/10'}`}>
+                      <span className={`text-[9px] font-black uppercase tracking-widest text-center leading-tight ${activeStream === id ? 'text-brand-900' : 'text-white'}`}>{STREAM_LABELS[id as StreamType]}</span>
                     </button>
                   ))}
                 </div>
-
+                
+                {/* RENDER THE CONTENT FROM THE FUNCTION */}
                 <div className="flex-1">
-                   {isSuccess ? (
-                    <div className="space-y-12 animate-fadeIn py-10 text-center">
-                      <CheckCircle size={80} className="text-brand-gold mx-auto animate-bounce" />
-                      <h2 className="text-4xl md:text-5xl font-sora font-black text-white uppercase tracking-tighter">PLAN DEPLOYED.</h2>
-                      <p className="text-xl text-white/60 font-medium leading-relaxed">Your recovery strategy has been emailed to you.</p>
-                      <button onClick={handleDownloadIntel} className="w-full flex items-center justify-center gap-4 py-8 rounded-[2.5rem] bg-brand-gold text-brand-900 font-black uppercase tracking-[0.4em] text-sm transition-all hover:scale-105 shadow-2xl">
-                        <FileText size={18} /> DOWNLOAD RECOVERY PDF
-                      </button>
-                      <button onClick={() => window.open('https://calendly.com/enquiries-integratedwellth/30min', '_blank')} className="text-brand-gold font-bold text-sm hover:underline uppercase tracking-widest mt-4">
-                        Book Your Free Consultation Now ->
-                      </button>
-                    </div>
-                  ) : isTransmitting ? (
-                    <div className="flex flex-col items-center justify-center h-full space-y-10 py-20 animate-fadeIn">
-                       <div className="w-24 h-24 rounded-full border-4 border-brand-gold/10 border-t-brand-gold animate-spin"></div>
-                       <div className="w-full max-w-sm bg-black/40 rounded-3xl p-6 font-mono border border-white/10">
-                          {transmissionLogs.map((log, i) => (
-                            <div key={i} className="flex items-center gap-2 text-[11px] text-brand-gold mb-2">
-                               <span className="opacity-50">::</span> {log}
-                            </div>
-                          ))}
-                       </div>
-                    </div>
-                  ) : activeStream === 'stress' ? (
-                      // COMPLIANCE AUDIT UI
-                      <div className="space-y-10 animate-fadeIn">
-                         <div className="space-y-4">
-                             <h3 className="text-2xl font-black text-brand-gold uppercase tracking-tighter">Where is your Compliance At?</h3>
-                             <p className="text-white/60 text-sm">Drag the slider to match your current situation.</p>
-                         </div>
-                         
-                         <div className="flex justify-between items-center bg-black/60 p-8 rounded-[2rem] border border-white/10">
-                             <div className="flex flex-col">
-                                <span className="text-[10px] font-black uppercase text-white/40 tracking-widest mb-1">Current Status</span>
-                                <span className={`text-2xl md:text-3xl font-black ${analysis.color}`}>{analysis.label}</span>
-                             </div>
-                          </div>
-                          
-                          <input type="range" min="0" max="4" step="1" value={complianceScore} onChange={(e) => setComplianceScore(parseInt(e.target.value))} className="w-full h-6 bg-white/10 rounded-full appearance-none cursor-pointer accent-brand-gold" />
-                          <div className="flex justify-between text-[10px] font-black text-white/30 uppercase tracking-widest px-2">
-                             <span>Critical</span>
-                             <span>Sovereign</span>
-                          </div>
-
-                          {/* DYNAMIC RISK & SOLUTION BOX */}
-                          <div className={`p-8 rounded-[2.5rem] border-2 ${complianceScore < 3 ? 'border-rose-500/50 bg-rose-950/20' : 'border-emerald-500/50 bg-emerald-950/20'} transition-all`}>
-                             <div className="mb-6">
-                                <p className="text-[10px] font-black uppercase text-white/50 tracking-widest mb-2">Likely Consequence</p>
-                                <p className="text-lg md:text-xl font-bold text-white leading-tight">{analysis.consequence}</p>
-                             </div>
-                             <div>
-                                <p className="text-[10px] font-black uppercase text-brand-gold tracking-widest mb-2">Required Solution</p>
-                                <div className="flex items-center gap-3">
-                                   <Scale className="text-brand-gold" size={20} />
-                                   <p className="text-lg font-bold text-brand-gold">{analysis.solution}</p>
-                                </div>
-                             </div>
-                          </div>
-                          
-                          <div className="grid md:grid-cols-2 gap-6">
-                            <button onClick={handleAiAppraisal} disabled={isAnalyzing} className="flex items-center justify-center gap-4 bg-white/10 border border-white/20 text-white rounded-[2rem] py-6 font-black uppercase tracking-[0.2em] text-[10px] transition-all hover:bg-white/20">
-                              {isAnalyzing ? <Loader2 className="animate-spin" size={16} /> : <Cpu size={16} />} ANALYZE RISK
-                            </button>
-                            {complianceScore < 3 && (
-                                <button onClick={() => window.open('https://calendly.com/enquiries-integratedwellth/30min', '_blank')} className="bg-rose-600 text-white rounded-[2rem] py-6 font-black uppercase tracking-[0.2em] text-[10px] transition-all hover:scale-105 shadow-xl flex items-center justify-center gap-2">
-                                  STOP THE BLEED <ArrowRight size={16} />
-                                </button>
-                            )}
-                          </div>
-                          {aiAnalysis && (
-                             <div className="p-8 bg-brand-gold/10 border-l-4 border-brand-gold text-white/90 rounded-r-2xl text-sm leading-relaxed">
-                                {aiAnalysis}
-                             </div>
-                          )}
-                      </div>
-                   ) : activeStream === 'protocol' ? (
-                     <div className="space-y-8 animate-fadeIn">
-                        <h3 className="text-2xl font-black text-brand-gold uppercase tracking-tighter">THE 4-PHASE PROTOCOL</h3>
-                        <div className="grid gap-4">
-                          {[
-                            { step: "01", title: "THE AUDIT", desc: "We find the leaks in your capital." },
-                            { step: "02", title: "THE ARCHITECTURE", desc: "We design your legal fortress." },
-                            { step: "03", title: "IMPLEMENTATION", desc: "We install the systems." },
-                            { step: "04", title: "FREEDOM", desc: "You exit operations." }
-                          ].map((p, idx) => (
-                            <button 
-                              key={idx} 
-                              onClick={() => setSelectedPhase(idx)}
-                              className={`flex gap-6 p-6 rounded-[2rem] border-2 transition-all text-left ${selectedPhase === idx ? 'bg-brand-gold border-white' : 'bg-black/40 border-white/10'}`}
-                            >
-                               <div className={`text-3xl font-black ${selectedPhase === idx ? 'text-brand-900' : 'text-brand-gold/30'}`}>{p.step}</div>
-                               <div>
-                                  <p className={`font-black uppercase text-xs mb-1 tracking-widest ${selectedPhase === idx ? 'text-brand-900' : 'text-white'}`}>{p.title}</p>
-                                  <p className={`text-xs font-medium ${selectedPhase === idx ? 'text-brand-900/70' : 'text-white/50'}`}>{p.desc}</p>
-                               </div>
-                            </button>
-                          ))}
-                        </div>
-                        <button onClick={() => setActiveStream('alpha')} className="w-full bg-brand-gold text-brand-900 rounded-[2rem] py-6 font-black uppercase tracking-[0.4em] text-xs transition-all hover:scale-105">
-                            INITIATE PROTOCOL
-                        </button>
-                     </div>
-                   ) : activeStream === 'calendar' ? (
-                     <div className="space-y-8 animate-fadeIn">
-                        <h3 className="text-2xl font-black text-brand-gold uppercase tracking-tighter">CRITICAL DATES</h3>
-                        <div className="grid gap-4">
-                          {deadlines.map((d, i) => {
-                            const days = getDaysLeft(d.targetDate);
-                            // CHANGED: Critical is now 30 days or less
-                            const isCritical = days <= 30;
-                            return (
-                              <div key={i} className={`flex justify-between items-center p-6 bg-black/60 border-2 rounded-[2rem] ${isCritical ? 'border-rose-500 bg-rose-950/20' : 'border-white/10'}`}>
-                                 <div>
-                                    <h4 className="text-sm font-black uppercase text-white">{d.title}</h4>
-                                    <p className="text-[10px] text-white/50 uppercase tracking-widest">{d.date}</p>
-                                 </div>
-                                 <div className={`text-right font-black ${isCritical ? 'text-rose-500' : 'text-brand-gold'}`}>
-                                    {days} DAYS
-                                 </div>
-                              </div>
-                            );
-                          })}
-                        </div>
-                     </div>
-                   ) : (
-                    <form onSubmit={handleSubmit} className="space-y-10 animate-fadeIn pt-10">
-                      <div className="text-center mb-8">
-                         <h3 className="text-2xl font-black text-white uppercase tracking-tighter">DEPLOY RECOVERY TEAM</h3>
-                         <p className="text-white/60 text-sm mt-2">Submit your details to receive your customized <span className="text-brand-gold font-bold">Recovery Plan</span> & <span className="text-brand-gold font-bold">Compliance Calendar</span>.</p>
-                      </div>
-                      <div className="space-y-8">
-                        <div className="grid md:grid-cols-2 gap-8">
-                          <div className="space-y-3">
-                            <label className="text-[11px] font-black uppercase tracking-widest text-brand-gold/60 ml-2">Your Identity</label>
-                            <input required type="text" value={formData.identifier} onChange={(e) => setFormData({...formData, identifier: e.target.value})} className="w-full bg-black/60 border-2 border-white/10 rounded-[1.5rem] px-8 py-6 focus:border-brand-gold outline-none font-bold text-white text-base transition-all" placeholder="FOUNDER NAME" />
-                          </div>
-                          <div className="space-y-3">
-                            <label className="text-[11px] font-black uppercase tracking-widest text-brand-gold/60 ml-2">Enterprise Name</label>
-                            <input required type="text" value={formData.enterprise} onChange={(e) => setFormData({...formData, enterprise: e.target.value})} className="w-full bg-black/60 border-2 border-white/10 rounded-[1.5rem] px-8 py-6 focus:border-brand-gold outline-none font-bold text-white text-base transition-all" placeholder="BUSINESS LEGAL IDENTITY" />
-                          </div>
-                        </div>
-                        <div className="grid md:grid-cols-2 gap-8">
-                          <div className="space-y-3">
-                            <label className="text-[11px] font-black uppercase tracking-widest text-brand-gold/60 ml-2">Secure Email</label>
-                            <input required type="email" value={formData.email} onChange={(e) => setFormData({...formData, email: e.target.value})} className="w-full bg-black/60 border-2 border-white/10 rounded-[1.5rem] px-8 py-6 focus:border-brand-gold outline-none font-bold text-white text-base transition-all" placeholder="INTEL DESTINATION" />
-                          </div>
-                          <div className="space-y-3">
-                            <label className="text-[11px] font-black uppercase tracking-widest text-brand-gold/60 ml-2">WhatsApp Feed</label>
-                            <input type="tel" value={formData.whatsapp} onChange={(e) => setFormData({...formData, whatsapp: e.target.value})} className="w-full bg-black/60 border-2 border-white/10 rounded-[1.5rem] px-8 py-6 focus:border-brand-gold outline-none font-bold text-white text-base transition-all" placeholder="+27..." />
-                          </div>
-                        </div>
-                      </div>
-                      <button type="submit" className="w-full bg-brand-gold text-brand-900 rounded-[2.5rem] py-10 font-black uppercase tracking-[0.5em] text-base transition-all hover:scale-105 shadow-2xl mt-12">
-                        {/* CHANGED TEXT HERE */}
-                        GET A DETAILED REPORT <ArrowRight size={24} className="inline ml-6" />
-                      </button>
-                    </form>
-                   )}
+                    {renderContent()}
                 </div>
 
                 <div className="pt-12 mt-auto border-t border-white/10 flex items-center justify-between opacity-50">
@@ -406,7 +357,7 @@ const WarRoom: React.FC = () => {
                     <span className="text-[9px] font-black uppercase tracking-[0.3em]">SECURE CHANNEL 256-BIT ENCRYPTED</span>
                   </div>
                 </div>
-              </div>
+            </div>
           </div>
         </div>
       </div>
