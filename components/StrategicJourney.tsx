@@ -16,9 +16,9 @@ const PHASES = [
       { label: "Psychology", desc: "Quantifying founder bottlenecks and decision fatigue." }
     ],
     deliverable: "Strategic Intelligence Brief",
-    // HIGH CONTRAST CONFIG
     bgColor: "bg-white",
-    textColor: "text-brand-900", // Dark Teal
+    textColor: "text-brand-900",
+    forceColor: "#134e4a", // Dark Teal
     numberColor: "text-brand-900/10",
     accentColor: "text-brand-gold"
   },
@@ -35,9 +35,9 @@ const PHASES = [
       { label: "Automation Engine", desc: "Designing the digital connective tissue." }
     ],
     deliverable: "The Master Sovereignty Blueprint",
-    // HIGH CONTRAST CONFIG
-    bgColor: "bg-brand-50", // Light Mint
-    textColor: "text-brand-900", // Dark Teal (Fixes visibility)
+    bgColor: "bg-brand-50",
+    textColor: "text-brand-900",
+    forceColor: "#134e4a", // Dark Teal (FORCE VISIBILITY)
     numberColor: "text-brand-900/10",
     accentColor: "text-brand-600"
   },
@@ -54,9 +54,9 @@ const PHASES = [
       { label: "Clean Sweep", desc: "Automating self-defending statutory guardrails." }
     ],
     deliverable: "Self-Sustaining Operation",
-    // HIGH CONTRAST CONFIG
-    bgColor: "bg-brand-800", // Deep Teal
-    textColor: "text-white", // White Text
+    bgColor: "bg-brand-800",
+    textColor: "text-white",
+    forceColor: "#ffffff",
     numberColor: "text-white/10",
     accentColor: "text-brand-gold"
   },
@@ -73,9 +73,9 @@ const PHASES = [
       { label: "Legacy Protection", desc: "Hardening structures for multi-generational wealth." }
     ],
     deliverable: "Permanent Legacy Protection",
-    // HIGH CONTRAST CONFIG
-    bgColor: "bg-brand-900", // Darkest Teal
-    textColor: "text-white", // White Text
+    bgColor: "bg-brand-900",
+    textColor: "text-white",
+    forceColor: "#ffffff",
     numberColor: "text-white/10",
     accentColor: "text-brand-gold"
   }
@@ -84,7 +84,6 @@ const PHASES = [
 const StrategicJourney: React.FC = () => {
   return (
     <section id="protocol" className="relative overflow-hidden font-sans">
-      {/* Intro Section */}
       <div className="bg-white py-32 md:py-48 px-6 relative z-10 text-center">
         <RevealOnScroll>
           <div className="max-w-4xl mx-auto space-y-8">
@@ -95,20 +94,15 @@ const StrategicJourney: React.FC = () => {
             <h2 className="text-6xl md:text-8xl font-sora font-extrabold text-brand-900 tracking-tighter leading-[0.8]">
               THE MAP TO <br/> <span className="text-brand-gold italic">FREEDOM.</span>
             </h2>
-            <p className="text-xl md:text-3xl text-brand-900/40 font-medium leading-relaxed">
-              A comprehensive engineering methodology designed to transform your business from a "Founder's Job" into a "Sovereign Asset."
-            </p>
           </div>
         </RevealOnScroll>
       </div>
 
-      {/* The Phases */}
       {PHASES.map((phase, i) => (
-        <div key={i} className={`${phase.bgColor} ${phase.textColor} py-40 md:py-60 px-6 relative z-10`}>
+        <div key={i} className={`${phase.bgColor} py-40 md:py-60 px-6 relative z-10`}>
           <div className="max-w-7xl mx-auto">
             <div className={`grid lg:grid-cols-2 gap-24 items-center ${i % 2 !== 0 ? 'lg:flex-row-reverse' : ''}`}>
               
-              {/* Content Block */}
               <div className={`space-y-12 ${i % 2 !== 0 ? 'lg:order-2' : ''}`}>
                 <RevealOnScroll>
                   <div className="space-y-6">
@@ -119,9 +113,11 @@ const StrategicJourney: React.FC = () => {
                     </div>
                     <div className="space-y-2">
                       <p className={`${phase.accentColor} font-black uppercase tracking-widest text-xs`}>{phase.tagline}</p>
-                      <h3 className="text-5xl md:text-7xl font-sora font-black tracking-tighter leading-none">{phase.title}</h3>
+                      {/* FORCED COLOR STYLE */}
+                      <h3 className="text-5xl md:text-7xl font-sora font-black tracking-tighter leading-none" style={{ color: phase.forceColor }}>{phase.title}</h3>
                     </div>
-                    <p className="text-2xl opacity-80 font-medium leading-relaxed italic border-l-4 border-current pl-8">
+                    {/* FORCED COLOR STYLE */}
+                    <p className="text-2xl font-medium leading-relaxed italic border-l-4 border-current pl-8" style={{ color: phase.forceColor, opacity: 0.8 }}>
                       "{phase.description}"
                     </p>
                   </div>
@@ -135,8 +131,9 @@ const StrategicJourney: React.FC = () => {
                           {idx === 0 ? <TrendingUp size={24} /> : idx === 1 ? <Cpu size={24} /> : <Zap size={24} />}
                         </div>
                         <div>
-                          <p className={`font-black uppercase text-sm tracking-tight mb-1 ${i < 2 ? 'text-brand-900' : 'text-white'}`}>{lens.label}</p>
-                          <p className={`text-sm font-medium ${i < 2 ? 'text-brand-900/60' : 'text-white/60'}`}>{lens.desc}</p>
+                          {/* FORCED COLOR STYLE */}
+                          <p className="font-black uppercase text-sm tracking-tight mb-1" style={{ color: phase.forceColor }}>{lens.label}</p>
+                          <p className="text-sm font-medium" style={{ color: phase.forceColor, opacity: 0.6 }}>{lens.desc}</p>
                         </div>
                       </div>
                     </RevealOnScroll>
@@ -144,7 +141,6 @@ const StrategicJourney: React.FC = () => {
                 </div>
               </div>
 
-              {/* Visual Block - Fixed Colors */}
               <div className={`relative ${i % 2 !== 0 ? 'lg:order-1' : ''}`}>
                 <RevealOnScroll delay={0.3}>
                   <div className={`aspect-square rounded-[4rem] flex flex-col items-center justify-center relative overflow-hidden group shadow-2xl ${i < 2 ? 'bg-brand-900 text-white' : 'bg-white text-brand-900'}`}>
