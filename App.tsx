@@ -1,6 +1,11 @@
 import React, { useState, useEffect, Suspense } from 'react';
 import { ArrowRight, Loader2 } from 'lucide-react';
 
+// CRITICAL FIX: Import Swiper styles globally so carousel works
+import 'swiper/css';
+import 'swiper/css/pagination';
+import 'swiper/css/navigation';
+
 // Defensive Utilities
 import ErrorBoundary from './components/ErrorBoundary';
 
@@ -22,6 +27,7 @@ import WorkshopPage from './components/pages/WorkshopPage';
 import BlogPage from './components/pages/BlogPage';
 import ContactPage from './components/pages/ContactPage';
 import PrivacyPolicy from './components/PrivacyPolicy';
+import Dashboard from './components/Dashboard';
 
 // Solution Detail Pages
 import StartupSolutions from './components/audiences/StartupSolutions';
@@ -35,7 +41,6 @@ import WarRoom from './components/WarRoom';
 import StrategicJourney from './components/StrategicJourney';
 import FinancialHealthScore from './components/FinancialHealthScore';
 
-// Constants
 import { CONTACT_INFO } from './constants';
 
 const App: React.FC = () => {
@@ -46,9 +51,11 @@ const App: React.FC = () => {
   useEffect(() => {
     let popupTimer: number | undefined;
     const hasSeenEvent = sessionStorage.getItem('hasSeenIWS_Event_Immediate');
-    const isWarRoom = window.location.hash === '#warroom';
     
-    if (!hasSeenEvent && !isWarRoom) {
+    // Don't show popup on dashboard or warroom
+    const isSpecialPage = ['#warroom', '#intel'].includes(window.location.hash);
+    
+    if (!hasSeenEvent && !isSpecialPage) {
       popupTimer = window.setTimeout(() => setShowEventPopup(true), 800);
     }
 
@@ -64,10 +71,9 @@ const App: React.FC = () => {
         const validViews = [
           'home', 'services', 'who-we-help', 'team', 'workshops', 'blog', 'contact', 
           'privacy', 'startups', 'existing-business', 'npos', 'individuals', 
-          'wellness', 'accountability', 'tracker', 'warroom', 'protocol'
+          'wellness', 'accountability', 'tracker', 'warroom', 'protocol', 'intel'
         ];
 
-        // FIXED: 'warroom' removed from scroll logic, now handled as a distinct page
         if (['protocol', 'services'].includes(hash)) {
            setCurrentView('home');
            setTimeout(() => {
@@ -102,6 +108,7 @@ const App: React.FC = () => {
   const renderCurrentView = () => {
     try {
       switch (currentView) {
+        case 'intel': return <Dashboard />;
         case 'services': return <ServicesPage />;
         case 'who-we-help': return <WhoWeHelpPage />;
         case 'team': return <Team />;
@@ -116,12 +123,11 @@ const App: React.FC = () => {
         case 'wellness': return <WellnessSolutions />;
         case 'accountability': return <AccountabilityPartnership />;
         case 'tracker': return <ComplianceTracker />;
-        case 'warroom': return <WarRoom />; // This is now a dedicated page
+        case 'warroom': return <WarRoom />;
         case 'protocol': return <StrategicJourney />;
         default: return <Home onOpenAssessment={() => setShowAssessmentModal(true)} />;
       }
     } catch (err) {
-      console.error("View Render Error:", err);
       return <Home onOpenAssessment={() => setShowAssessmentModal(true)} />;
     }
   };
@@ -129,7 +135,8 @@ const App: React.FC = () => {
   return (
     <ErrorBoundary>
       <div className={`font-sans text-brand-900 bg-white min-h-screen flex flex-col selection:bg-brand-gold/20 ${(showAssessmentModal || showEventPopup) ? 'h-screen overflow-hidden' : ''}`}>
-        <Navbar onNavigate={(view) => { window.location.hash = `#${view}`; }} />
+        
+        {currentView !== 'intel' && <Navbar onNavigate={(view) => { window.location.hash = `#${view}`; }} />}
         
         <main className="flex-grow">
           <Suspense fallback={
@@ -141,9 +148,9 @@ const App: React.FC = () => {
           </Suspense>
         </main>
 
-        {currentView !== 'warroom' && <Footer />}
+        {!['warroom', 'intel'].includes(currentView) && <Footer />}
         
-        {currentView !== 'warroom' && (
+        {!['warroom', 'intel'].includes(currentView) && (
           <div className="fixed bottom-0 left-0 w-full bg-brand-gold z-[40] px-6 py-4 flex items-center justify-between shadow-[0_-10px_40px_rgba(212,175,55,0.2)] animate-fadeIn">
             <div className="flex items-center gap-4">
               <div className="bg-brand-900 text-white px-3 py-1 rounded text-[10px] font-black uppercase tracking-widest hidden md:block">Upcoming</div>
@@ -160,11 +167,15 @@ const App: React.FC = () => {
           </div>
         )}
 
-        <EventPopup isOpen={showEventPopup} onClose={handleCloseEventPopup} />
-        <FinancialHealthScore isModal={true} isOpen={showAssessmentModal} onClose={() => setShowAssessmentModal(false)} />
-        <FloatingCTA />
-        <WhatsAppButton />
-        <UnifiedSupportWidget />
+        {currentView !== 'intel' && (
+          <>
+            <EventPopup isOpen={showEventPopup} onClose={handleCloseEventPopup} />
+            <FinancialHealthScore isModal={true} isOpen={showAssessmentModal} onClose={() => setShowAssessmentModal(false)} />
+            <FloatingCTA />
+            <WhatsAppButton />
+            <UnifiedSupportWidget />
+          </>
+        )}
         <CookieConsent />
       </div>
     </ErrorBoundary>
