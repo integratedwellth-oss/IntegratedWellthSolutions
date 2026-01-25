@@ -158,25 +158,44 @@ const FinancialHealthScore: React.FC<FinancialHealthScoreProps> = ({ isModal = f
 
     try {
       if (db) {
-        // 1. Save Lead
+        // 1. Save Lead to 'assessments' collection
         await addDoc(collection(db, 'assessments'), {
           ...formData,
           score: score,
+          maxScore: QUESTIONS.length * 4,
           persona: result.persona,
+          diagnosis: result.msg,
           timestamp: serverTimestamp()
         });
 
-        // 2. Send Email
+        // 2. Trigger Email via 'mail' collection
         await addDoc(collection(db, 'mail'), {
           to: formData.email,
           message: {
             subject: `Your Financial Health Score: ${result.persona}`,
             html: `
-              <h1>Assessment Results for ${formData.enterprise}</h1>
-              <p><strong>Score:</strong> ${score} / ${QUESTIONS.length * 4}</p>
-              <p><strong>Persona:</strong> ${result.persona}</p>
-              <p><strong>Diagnosis:</strong> ${result.msg}</p>
-              <p><a href="https://calendly.com/enquiries-integratedwellth/30min">Book a Review Call</a></p>
+              <div style="font-family: Arial, sans-serif; color: #134e4a; padding: 20px;">
+                <h1 style="color: #d4af37;">ASSESSMENT COMPLETE</h1>
+                <p>Hello ${formData.name},</p>
+                
+                <div style="background: #f0fdfa; padding: 20px; border-left: 5px solid #d4af37; margin: 20px 0;">
+                  <h3 style="margin-top:0;">ARCHETYPE: ${result.persona}</h3>
+                  <p><strong>Score:</strong> ${score} / ${QUESTIONS.length * 4}</p>
+                  <p><strong>Diagnosis:</strong> ${result.msg}</p>
+                </div>
+                
+                <p>To fix this score and move to Sovereign status, we need to implement the Protocol.</p>
+                
+                <p style="text-align: center; margin: 30px 0;">
+                  <a href="https://calendly.com/enquiries-integratedwellth/30min" style="background-color: #134e4a; color: white; padding: 15px 30px; text-decoration: none; font-weight: bold; border-radius: 5px; font-size: 16px;">BOOK YOUR RESULTS REVIEW</a>
+                </p>
+
+                <hr style="border: 0; border-top: 1px solid #eee; margin: 30px 0;" />
+
+                <h3>🎟️ EXCLUSIVE SUMMIT INVITATION</h3>
+                <p>This diagnosis is just the start. Join Marcia Kgaphola at the <strong>Financial Clarity Summit</strong> on Feb 28, 2026.</p>
+                <p><a href="https://www.quicket.co.za/events/352598-financial-clarity-for-non-financial-business-owners/#/" style="color: #d4af37; font-weight: bold;">Secure Your Seat Here</a></p>
+              </div>
             `
           }
         });
