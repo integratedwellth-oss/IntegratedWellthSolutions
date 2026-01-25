@@ -1,6 +1,7 @@
 import { initializeApp } from "firebase/app";
 import { getFirestore, serverTimestamp } from "firebase/firestore";
 import { getAnalytics } from "firebase/analytics";
+import { getAuth } from "firebase/auth"; // IMPORT AUTH
 
 // Explicitly cast env vars to strings to satisfy TypeScript strict mode
 const firebaseConfig = {
@@ -15,6 +16,7 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig);
 export const db = getFirestore(app);
+export const auth = getAuth(app); // EXPORT AUTH HERE
 export const analytics = typeof window !== "undefined" ? getAnalytics(app) : undefined;
 export { serverTimestamp };
 export default app;
