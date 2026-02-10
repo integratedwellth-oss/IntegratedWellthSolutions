@@ -176,4 +176,64 @@ export default function SummitPage() {
       <section className="py-32 max-w-4xl mx-auto border-b border-[#134e4a]/20 text-center">
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-[#d4af37]/30 bg-[#d4af37]/10 mb-6">
             <Target size={16} color="#d4af37" />
-            <span className="text-[#3E2723] font-black u
+            <span className="text-[#3E2723] font-black uppercase text-[10px] tracking-[0.3em]">Command Briefing</span>
+          </div>
+          <h3 className="text-4xl md:text-6xl font-black uppercase tracking-tighter leading-none mb-12 font-sora text-[#3E2723]">Strategic <span className="text-[#134e4a]">Leadership</span></h3>
+          <div className="relative rounded-[4rem] overflow-hidden border-2 border-[#d4af37]/20 bg-white/60 backdrop-blur-md shadow-xl p-10 flex flex-col md:flex-row items-center gap-10 text-left">
+              <img src="https://res.cloudinary.com/dka0498ns/image/upload/v1770754623/Business_Coach_and_Mentor_Tukisang_Senne_cgtyyw.jpg" className="w-48 h-48 rounded-full object-cover border-4 border-[#d4af37]/30 shadow-xl" alt="Tukisang" />
+              <div className="space-y-4">
+                 <h4 className="text-4xl font-black uppercase text-[#3E2723] font-sora">Tukisang Senne</h4>
+                 <p className="text-[#134e4a] font-black uppercase tracking-widest text-[10px]">Executive Coach & Mentor</p>
+                 <p className="text-[#64748b] text-sm italic">"Bridging the gap between technical excellence and strategic command."</p>
+              </div>
+          </div>
+      </section>
+
+      {/* 5. LOGISTICS */}
+      <section className="py-32 max-w-4xl mx-auto text-center">
+         <div className="grid md:grid-cols-3 gap-8">
+            <div className="p-8 border border-[#134e4a]/20 rounded-[2.5rem] bg-white/60 backdrop-blur-sm shadow-sm">
+               <Calendar className="mx-auto mb-4 text-[#134e4a]" size={32} />
+               <p className="text-xs font-black uppercase text-[#64748b] tracking-widest mb-2">Date</p>
+               <p className="text-xl font-black text-[#3E2723]">Feb 28, 2026</p>
+            </div>
+            <div className="p-8 border border-[#134e4a]/20 rounded-[2.5rem] bg-white/60 backdrop-blur-sm shadow-sm">
+               <Clock className="mx-auto mb-4 text-[#134e4a]" size={32} />
+               <p className="text-xs font-black uppercase text-[#64748b] tracking-widest mb-2">Time</p>
+               <p className="text-xl font-black text-[#3E2723]">09:00 - 16:00</p>
+            </div>
+            <div className="p-8 border border-[#134e4a]/20 rounded-[2.5rem] bg-white/60 backdrop-blur-sm shadow-sm">
+               <MapPin className="mx-auto mb-4 text-[#134e4a]" size={32} />
+               <p className="text-xs font-black uppercase text-[#64748b] tracking-widest mb-2">Location</p>
+               <p className="text-xl font-black text-[#3E2723]">Munyaka, Waterfall</p>
+            </div>
+         </div>
+
+         {/* Countdown */}
+         <div className="mt-20 p-12 border border-[#134e4a]/20 rounded-[3rem] bg-[#3E2723] text-white text-center shadow-2xl relative overflow-hidden">
+            <p className="text-xs font-black uppercase text-[#d4af37] tracking-[0.3em] mb-8 relative z-10">Operation Commences In</p>
+            <div className="grid grid-cols-4 gap-4 max-w-2xl mx-auto relative z-10">
+               {[{ val: timeLeft.days, label: "Days" }, { val: timeLeft.hours, label: "Hours" }, { val: timeLeft.mins, label: "Mins" }, { val: timeLeft.secs, label: "Secs" }].map((t, i) => (
+                 <div key={i} className="p-4 bg-white/5 rounded-2xl border border-white/10 backdrop-blur-md">
+                   <div className="text-3xl md:text-5xl font-black text-[#d4af37] mb-1 font-sora">{t.val}</div>
+                   <div className="text-[10px] font-bold uppercase text-white/40 tracking-widest">{t.label}</div>
+                 </div>
+               ))}
+            </div>
+            <Lock className="absolute -bottom-10 -right-10 text-[#d4af37] opacity-5" size={250} />
+         </div>
+      </section>
+
+      {/* FOOTER CTA */}
+      <section className="py-20 text-center">
+        <button 
+          onClick={() => window.open('https://calendly.com/enquiries-integratedwellth/30min', '_blank')}
+          className="inline-flex items-center gap-3 bg-[#134e4a] text-[#f0fdfa] px-12 py-6 rounded-2xl font-black text-xl hover:scale-105 transition-all shadow-2xl uppercase tracking-tighter border-2 border-[#134e4a]"
+        >
+          Secure Clearance <ArrowRight size={24} color="#d4af37" />
+        </button>
+        <p className="mt-6 text-[#64748b] text-xs font-bold uppercase tracking-widest">Access Limited: 50 Units • R 849.99</p>
+      </section>
+    </div>
+  );
+}
