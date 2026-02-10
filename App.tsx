@@ -1,7 +1,7 @@
 import React, { useState, useEffect, Suspense } from 'react';
 import { ArrowRight, Loader2 } from 'lucide-react';
 
-// CRITICAL FIX: Import Swiper styles globally so carousel works
+// Swiper CSS for Testimonials
 import 'swiper/css';
 import 'swiper/css/pagination';
 import 'swiper/css/navigation';
@@ -28,6 +28,7 @@ import BlogPage from './components/pages/BlogPage';
 import ContactPage from './components/pages/ContactPage';
 import PrivacyPolicy from './components/PrivacyPolicy';
 import Dashboard from './components/Dashboard';
+import SummitPage from './components/pages/SummitPage'; // NEW PAGE
 
 // Solution Detail Pages
 import StartupSolutions from './components/audiences/StartupSolutions';
@@ -41,8 +42,6 @@ import WarRoom from './components/WarRoom';
 import StrategicJourney from './components/StrategicJourney';
 import FinancialHealthScore from './components/FinancialHealthScore';
 
-import { CONTACT_INFO } from './constants';
-
 const App: React.FC = () => {
   const [currentView, setCurrentView] = useState('home');
   const [showAssessmentModal, setShowAssessmentModal] = useState(false);
@@ -51,9 +50,7 @@ const App: React.FC = () => {
   useEffect(() => {
     let popupTimer: number | undefined;
     const hasSeenEvent = sessionStorage.getItem('hasSeenIWS_Event_Immediate');
-    
-    // Don't show popup on dashboard or warroom
-    const isSpecialPage = ['#warroom', '#intel'].includes(window.location.hash);
+    const isSpecialPage = ['#warroom', '#intel', '#summit'].includes(window.location.hash);
     
     if (!hasSeenEvent && !isSpecialPage) {
       popupTimer = window.setTimeout(() => setShowEventPopup(true), 800);
@@ -71,7 +68,7 @@ const App: React.FC = () => {
         const validViews = [
           'home', 'services', 'who-we-help', 'team', 'workshops', 'blog', 'contact', 
           'privacy', 'startups', 'existing-business', 'npos', 'individuals', 
-          'wellness', 'accountability', 'tracker', 'warroom', 'protocol', 'intel'
+          'wellness', 'accountability', 'tracker', 'warroom', 'protocol', 'intel', 'summit'
         ];
 
         if (['protocol', 'services'].includes(hash)) {
@@ -100,14 +97,10 @@ const App: React.FC = () => {
     };
   }, []);
 
-  const handleCloseEventPopup = () => {
-    setShowEventPopup(false);
-    sessionStorage.setItem('hasSeenIWS_Event_Immediate', 'true');
-  };
-
   const renderCurrentView = () => {
     try {
       switch (currentView) {
+        case 'summit': return <SummitPage />;
         case 'intel': return <Dashboard />;
         case 'services': return <ServicesPage />;
         case 'who-we-help': return <WhoWeHelpPage />;
@@ -132,6 +125,8 @@ const App: React.FC = () => {
     }
   };
 
+  const isFullPageMode = ['warroom', 'intel', 'summit'].includes(currentView);
+
   return (
     <ErrorBoundary>
       <div className={`font-sans text-brand-900 bg-white min-h-screen flex flex-col selection:bg-brand-gold/20 ${(showAssessmentModal || showEventPopup) ? 'h-screen overflow-hidden' : ''}`}>
@@ -148,10 +143,10 @@ const App: React.FC = () => {
           </Suspense>
         </main>
 
-        {!['warroom', 'intel'].includes(currentView) && <Footer />}
+        {!isFullPageMode && <Footer />}
         
-        {!['warroom', 'intel'].includes(currentView) && (
-          <div className="fixed bottom-0 left-0 w-full bg-brand-gold z-[40] px-6 py-4 flex items-center justify-between shadow-[0_-10px_40px_rgba(212,175,55,0.2)] animate-fadeIn">
+        {!isFullPageMode && (
+          <div className="fixed bottom-0 left-0 w-full bg-brand-gold z-[40] px-6 py-4 flex items-center justify-between shadow-[0_-10px_40px_rgba(212,175,55,0.2)]">
             <div className="flex items-center gap-4">
               <div className="bg-brand-900 text-white px-3 py-1 rounded text-[10px] font-black uppercase tracking-widest hidden md:block">Upcoming</div>
               <p className="text-brand-900 font-bold text-sm md:text-base tracking-tight">
@@ -159,17 +154,17 @@ const App: React.FC = () => {
               </p>
             </div>
             <button 
-              onClick={() => window.open('https://www.quicket.co.za/events/352598-financial-clarity-for-non-financial-business-owners/#/', '_blank')}
+              onClick={() => window.location.hash = '#summit'}
               className="flex items-center gap-2 text-brand-900 font-black uppercase tracking-widest text-[10px] md:text-xs hover:translate-x-1 transition-transform"
             >
-              Register Now <ArrowRight size={16} />
+              Learn More <ArrowRight size={16} />
             </button>
           </div>
         )}
 
         {currentView !== 'intel' && (
           <>
-            <EventPopup isOpen={showEventPopup} onClose={handleCloseEventPopup} />
+            <EventPopup isOpen={showEventPopup} onClose={() => {setShowEventPopup(false); sessionStorage.setItem('hasSeenIWS_Event_Immediate', 'true');}} />
             <FinancialHealthScore isModal={true} isOpen={showAssessmentModal} onClose={() => setShowAssessmentModal(false)} />
             <FloatingCTA />
             <WhatsAppButton />
