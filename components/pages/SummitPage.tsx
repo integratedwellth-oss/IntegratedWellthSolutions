@@ -1,13 +1,10 @@
-import React, { useEffect, useState } from 'react';
-import { ShieldCheck, Zap, ArrowRight, MapPin, Calendar, Clock, CheckCircle2, AlertTriangle, TrendingUp, HelpCircle, TrendingDown, Mic2, Lock, Target, Cpu, ChevronRight, Star } from 'lucide-react';
-import RevealOnScroll from '../RevealOnScroll';
+// src/pages/SummitPage.tsx
+import { useEffect, useState } from 'react';
+import { Shield, Lock, FileText, Target, Radio, AlertTriangle, CheckCircle, ArrowRight, MapPin, Calendar, Clock, User, Eye, Database, Zap } from 'lucide-react';
 
 export default function SummitPage() {
   const [timeLeft, setTimeLeft] = useState({ days: 0, hours: 0, mins: 0, secs: 0 });
-
-  const TICKET_LINK = "https://www.quicket.co.za/events/352598-financial-clarity-for-non-financial-business-owners/#/";
-  const CTA_TEXT = "BOOK YOUR SEAT";
-  const KEYNOTE_IMAGE = "https://res.cloudinary.com/dka0498ns/image/upload/v1770754623/Business_Coach_and_Mentor_Tukisang_Senne_cgtyyw.jpg";
+  const [securityClearance, setSecurityClearance] = useState(false);
 
   useEffect(() => {
     const target = new Date("February 28, 2026 09:00:00").getTime();
@@ -23,201 +20,301 @@ export default function SummitPage() {
         });
       }
     }, 1000);
+
+    // Simulate security clearance animation
+    setTimeout(() => setSecurityClearance(true), 800);
+
     return () => clearInterval(interval);
   }, []);
 
+  const assets = [
+    {
+      id: "ASSET-01",
+      title: "STRATEGIC FINANCIAL & AI MASTERY",
+      value: "R8,500.00",
+      icon: <Database size={24} />,
+      deliverables: [
+        "LEDGER ARCHITECTURE: Direct guidance on building a custom Chart of Accounts live, ensuring your business is 'Funding Ready' for banks and investors.",
+        "AI-DRIVEN ORCHESTRATION: Implementation strategies for AI marketing ecosystems that automate customer engagement and lead nurturing.",
+        "AEO PROTOCOL: Training on Answer Engine Optimization—restructuring your business data into semantic clusters so AI models (ChatGPT/Gemini) cite you as the authority.",
+        "TRANSITION FIX: Moving from 'Bank Balance Watching' to predictive, strategic profit forecasting."
+      ]
+    },
+    {
+      id: "ASSET-02",
+      title: "DIGITAL ENTITY AUDIT & GMB DOMINATION",
+      value: "R3,800.00",
+      icon: <Target size={24} />,
+      deliverables: [
+        "MIRROR RULE COMPLIANCE: A character-perfect audit of your digital footprint across Google Maps and local directories to reveal 'Signal Mismatches.'",
+        "CONVERSION ENGINE SETUP: Direct support in turning a standard Google Business Profile into an active revenue engine using Q&A seeding and geotagged imagery.",
+        "GHOST REMOVAL: Identifying exactly why your business exists in physical reality but remains invisible to the 2026 Smart Filter.",
+        "TRANSITION FIX: Eliminating 'Digital Invisibility' by forcing the Knowledge Graph to verify your entity."
+      ]
+    },
+    {
+      id: "ASSET-03",
+      title: "2 MONTHS PROFESSIONAL BOOKKEEPING SUPPORT",
+      value: "R4,000.00",
+      icon: <Shield size={24} />,
+      deliverables: [
+        "DATA INTEGRITY: Professional management of your financial nodes to ensure your ledger is 100% compliant.",
+        "OPERATIONAL CONSISTENCY: Building the habit of automated bookkeeping using software frameworks (Zoho/Wave) configured during the session.",
+        "COMPLIANCE GUARDIANSHIP: Removing the 'Audit Anxiety' by ensuring your books are perpetually ready for scrutiny.",
+        "TRANSITION FIX: Automating the back-end of the business to free up the founder for high-level decision making."
+      ]
+    }
+  ];
+
   return (
     <div 
-      className="pt-24 pb-20 px-4 md:px-6 min-h-screen selection:bg-[#d4af37]/30"
+      className="min-h-screen pb-32 selection:bg-[#d4af37]/30"
       style={{ 
         fontFamily: "'Plus Jakarta Sans', sans-serif",
-        backgroundColor: '#f0fdfa', 
-        color: '#3E2723' 
+        backgroundColor: '#f0fdfa',
+        color: '#3E2723'
       }}
     >
-      
-      {/* 1. HERO SECTION */}
-      <section className="max-w-7xl mx-auto py-16 md:py-32 border-b border-[#134e4a]/10">
-        <RevealOnScroll width="100%">
-          <div className="text-center mb-16 px-4">
-            <div className="flex flex-wrap items-center justify-center gap-4 mb-8">
-               <div className="flex items-center gap-0 shadow-2xl rounded-xl overflow-hidden border border-black/5">
-                 <div className="bg-[#134e4a] text-[#f0fdfa] px-4 py-2 font-black text-xs md:text-sm tracking-widest uppercase">Integrated</div>
-                 <div className="bg-[#3E2723] text-[#d4af37] px-4 py-2 font-black text-xs md:text-sm tracking-widest uppercase">Wellth</div>
-               </div>
-               <span className="text-[#134e4a] font-black uppercase text-[10px] tracking-[0.4em] w-full md:w-auto text-center">Official 2026 Protocol</span>
-            </div>
-            
-            <h1 className="text-5xl md:text-8xl font-black uppercase tracking-tighter leading-[0.9] mb-8 font-sora text-[#3E2723]">
-              Operational <br /> <span className="text-[#134e4a]">Clarity.</span>
-            </h1>
-            
-            <p className="text-lg md:text-xl text-[#64748b] italic font-medium leading-relaxed max-w-2xl mx-auto">
-              The only tactical briefing in South Africa that aligns your <span className="text-[#3E2723] underline decoration-[#d4af37] decoration-2">Financial Architecture</span> with your <span className="text-[#3E2723] underline decoration-[#d4af37] decoration-2">Digital Sovereignty</span>.
-            </p>
-          </div>
-        </RevealOnScroll>
+      {/* TOP SECRET HEADER BAR */}
+      <div className="bg-[#3E2723] text-[#f0fdfa] py-2 overflow-hidden relative">
+        <div className="flex items-center justify-center gap-4 text-[10px] font-black uppercase tracking-[0.3em] animate-pulse">
+          <Lock size={12} className="text-[#d4af37]" />
+          <span>Confidential Strategic Report // Clearance Level: Strategic Partner</span>
+          <Lock size={12} className="text-[#d4af37]" />
+        </div>
+        <div className="absolute top-0 left-0 w-full h-full bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGNpcmNsZSBjeD0iMjAiIGN5PSIyMCIgcj0iMSIgZmlsbD0iI2Q0YWYzNyIgZmlsbC1vcGFjaXR5PSIwLjEiLz48L3N2Zz4=')] opacity-20"></div>
+      </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-16">
-           <div className="relative rounded-[2.5rem] md:rounded-[3.5rem] h-[350px] md:h-[450px] overflow-hidden border-2 border-[#3E2723]/10 shadow-2xl group">
-              <img src="https://res.cloudinary.com/dka0498ns/image/upload/v1765644818/Accountability_Partnership._SMMEs_review_session._egzihs.jpg" className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105" alt="Review Session" />
-              <div className="absolute inset-0 bg-gradient-to-t from-[#3E2723] via-transparent to-transparent opacity-80" />
-              <div className="absolute bottom-0 left-0 p-8 text-left">
-                 <p className="text-[10px] font-black uppercase text-[#d4af37] tracking-widest mb-1">Architecture</p>
-                 <p className="text-white font-black text-xl uppercase tracking-tighter leading-none">Strategic Review</p>
+      {/* CLASSIFICATION HEADER */}
+      <div className="bg-[#134e4a] text-[#f0fdfa] py-8 px-6 border-b-4 border-[#d4af37]">
+        <div className="max-w-6xl mx-auto">
+          <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
+            <div className="flex items-center gap-3">
+              <div className="w-16 h-16 bg-[#3E2723] rounded-lg flex items-center justify-center border-2 border-[#d4af37]">
+                <Eye className="text-[#d4af37]" size={32} />
               </div>
-           </div>
-           <div className="relative rounded-[2.5rem] md:rounded-[3.5rem] h-[350px] md:h-[450px] overflow-hidden border-2 border-[#3E2723]/10 shadow-2xl group">
-              <img src="https://res.cloudinary.com/dka0498ns/image/upload/v1765321878/Integrated_Wellth_Financial_Literacy._nscht7.jpg" className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105" alt="Financial Literacy" />
-              <div className="absolute inset-0 bg-gradient-to-t from-[#3E2723] via-transparent to-transparent opacity-80" />
-              <div className="absolute bottom-0 left-0 p-8 text-left">
-                 <p className="text-[10px] font-black uppercase text-[#d4af37] tracking-widest mb-1">Intelligence</p>
-                 <p className="text-white font-black text-xl uppercase tracking-tighter leading-none">Compliance Audit</p>
+              <div>
+                <p className="text-[10px] font-black uppercase tracking-[0.3em] text-[#d4af37]">IntegratedWellth Solutions</p>
+                <h1 className="text-2xl md:text-3xl font-black uppercase tracking-tighter" style={{ fontFamily: "'Sora', sans-serif" }}>
+                  Strategic Command
+                </h1>
               </div>
-           </div>
+            </div>
+            <div className="text-right">
+              <p className="text-[10px] uppercase tracking-widest text-[#f0fdfa]/60">Report Classification</p>
+              <div className="flex items-center gap-2 text-[#d4af37] font-black text-lg uppercase tracking-widest">
+                <Shield size={20} />
+                Confidential
+              </div>
+            </div>
+          </div>
+          
+          <div className="grid md:grid-cols-3 gap-4 text-[10px] uppercase tracking-wider border-t border-[#f0fdfa]/20 pt-4">
+            <div><span className="text-[#f0fdfa]/50">Project:</span> <span className="font-bold text-[#f0fdfa]">Summit 2026 // SME Clarity</span></div>
+            <div><span className="text-[#f0fdfa]/50">Directive:</span> <span className="font-bold text-[#f0fdfa]">Asset Breakdown Analysis</span></div>
+            <div><span className="text-[#f0fdfa]/50">Date:</span> <span className="font-bold text-[#f0fdfa]">28 February 2026</span></div>
+          </div>
+        </div>
+      </div>
+
+      <div className="max-w-6xl mx-auto px-6 py-12 space-y-16">
+        
+        {/* EXECUTIVE SUMMARY */}
+        <section className={`transition-all duration-1000 ${securityClearance ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}>
+          <div className="bg-[#3E2723] text-[#f0fdfa] p-8 rounded-2xl shadow-2xl border-l-4 border-[#d4af37] relative overflow-hidden">
+            <div className="absolute top-0 right-0 p-4 opacity-10">
+              <FileText size={120} />
+            </div>
+            <div className="relative z-10">
+              <div className="flex items-center gap-2 mb-4">
+                <Radio className="text-[#d4af37] animate-pulse" size={20} />
+                <span className="text-[10px] font-black uppercase tracking-[0.3em] text-[#d4af37]">Executive Summary</span>
+              </div>
+              <h2 className="text-2xl md:text-4xl font-black uppercase tracking-tighter mb-4" style={{ fontFamily: "'Sora', sans-serif" }}>
+                Value Transfer Analysis
+              </h2>
+              <p className="text-[#f0fdfa]/80 text-sm md:text-base leading-relaxed max-w-3xl">
+                This report provides a granular breakdown of the high-value strategic assets being transferred to every attendee during the Summit. 
+                <span className="text-[#d4af37] font-bold"> This is not a "training session"</span>—it is a full-scale injection of professional infrastructure designed to mend the digital and financial architecture of a South African SME.
+              </p>
+            </div>
+          </div>
+        </section>
+
+        {/* STRATEGIC ARBITRAGE SUMMARY - MOVED TO TOP FOR IMPACT */}
+        <section className="bg-white rounded-3xl shadow-xl border-2 border-[#d4af37]/30 overflow-hidden">
+          <div className="bg-[#d4af37] px-6 py-4 flex items-center justify-between">
+            <h3 className="text-[#3E2723] font-black uppercase tracking-widest text-sm flex items-center gap-2">
+              <Zap size={18} /> Strategic Arbitrage Summary
+            </h3>
+            <span className="text-[10px] font-black uppercase tracking-widest bg-[#3E2723] text-[#d4af37] px-3 py-1 rounded-full">Top Secret</span>
+          </div>
+          <div className="p-8 grid md:grid-cols-3 gap-8">
+            <div className="text-center p-6 bg-[#f0fdfa] rounded-2xl border border-[#134e4a]/10">
+              <p className="text-[10px] font-black uppercase tracking-widest text-[#64748b] mb-2">Total Asset Value</p>
+              <p className="text-4xl font-black text-[#3E2723]" style={{ fontFamily: "'Sora', sans-serif" }}>R16,300</p>
+            </div>
+            <div className="text-center p-6 bg-[#134e4a]/5 rounded-2xl border border-[#134e4a]/10">
+              <p className="text-[10px] font-black uppercase tracking-widest text-[#64748b] mb-2">Ticket Price</p>
+              <p className="text-4xl font-black text-[#134e4a]" style={{ fontFamily: "'Sora', sans-serif" }}>R849.99</p>
+            </div>
+            <div className="text-center p-6 bg-[#d4af37]/10 rounded-2xl border-2 border-[#d4af37] relative overflow-hidden">
+              <div className="absolute inset-0 bg-[#d4af37]/5 animate-pulse"></div>
+              <p className="text-[10px] font-black uppercase tracking-widest text-[#3E2723] mb-2 relative z-10">Net Arbitrage Gain</p>
+              <p className="text-4xl font-black text-[#3E2723] relative z-10" style={{ fontFamily: "'Sora', sans-serif" }}>R15,450</p>
+            </div>
+          </div>
+          <div className="px-8 pb-8">
+            <div className="bg-[#3E2723] text-[#f0fdfa] p-6 rounded-xl flex items-start gap-4">
+              <AlertTriangle className="text-[#d4af37] shrink-0 mt-1" size={24} />
+              <div>
+                <h4 className="font-black uppercase tracking-widest text-sm mb-2 text-[#d4af37]">The Hard Truth</h4>
+                <p className="text-sm leading-relaxed text-[#f0fdfa]/90">
+                  Attending this summit results in an immediate net gain of <span className="text-[#d4af37] font-bold">R15,450.01</span> in professional services and consulting deliverables. 
+                  The cost of non-attendance is not just the lost value, but the continued loss of revenue caused by Digital Invisibility and Financial Fog.
+                </p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* ASSET BREAKDOWN SECTIONS */}
+        <div className="space-y-8">
+          <div className="flex items-center gap-4 mb-8">
+            <div className="h-px flex-1 bg-[#134e4a]/20"></div>
+            <h3 className="text-xl font-black uppercase tracking-[0.2em] text-[#134e4a]">Asset Breakdown</h3>
+            <div className="h-px flex-1 bg-[#134e4a]/20"></div>
+          </div>
+
+          {assets.map((asset, index) => (
+            <section 
+              key={asset.id} 
+              className="bg-white rounded-3xl shadow-lg border border-[#3E2723]/10 overflow-hidden hover:shadow-2xl transition-all duration-500 group"
+            >
+              {/* Asset Header */}
+              <div className="bg-[#134e4a] text-[#f0fdfa] p-6 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                <div className="flex items-center gap-4">
+                  <div className="w-12 h-12 rounded-xl bg-[#3E2723] border-2 border-[#d4af37] flex items-center justify-center text-[#d4af37]">
+                    {asset.icon}
+                  </div>
+                  <div>
+                    <p className="text-[10px] font-black uppercase tracking-[0.3em] text-[#d4af37] mb-1">Asset {asset.id}</p>
+                    <h4 className="text-lg md:text-xl font-black uppercase tracking-tight" style={{ fontFamily: "'Sora', sans-serif" }}>
+                      {asset.title}
+                    </h4>
+                  </div>
+                </div>
+                <div className="bg-[#3E2723] px-6 py-3 rounded-xl border border-[#d4af37]/30">
+                  <p className="text-[10px] uppercase tracking-widest text-[#f0fdfa]/60 mb-1">Market Value</p>
+                  <p className="text-2xl font-black text-[#d4af37]" style={{ fontFamily: "'Sora', sans-serif" }}>{asset.value}</p>
+                </div>
+              </div>
+
+              {/* Asset Content */}
+              <div className="p-8">
+                <div className="mb-6">
+                  <h5 className="text-xs font-black uppercase tracking-widest text-[#134e4a] mb-4 flex items-center gap-2">
+                    <Target size={14} /> The Deliverable
+                  </h5>
+                  <ul className="space-y-4">
+                    {asset.deliverables.map((item, idx) => (
+                      <li key={idx} className="flex items-start gap-3 text-sm text-[#3E2723]/80 leading-relaxed">
+                        <CheckCircle size={18} className="text-[#d4af37] shrink-0 mt-0.5" />
+                        <span>{item}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
+            </section>
+          ))}
         </div>
 
-        <div className="max-w-2xl mx-auto text-center space-y-10">
-          <div className="p-10 border-2 border-[#d4af37]/30 bg-white rounded-[3rem] shadow-2xl relative overflow-hidden">
-             <div className="flex justify-between items-center text-[10px] font-black uppercase tracking-widest text-[#134e4a] opacity-60 mb-6">
-                <span>Value: R8,500.00</span>
-                <span className="bg-[#3E2723] text-white px-3 py-1 rounded-full">50 Seats Only</span>
-             </div>
-             <div className="text-6xl font-black text-[#3E2723] font-sora tracking-tighter">R849.99</div>
-             <p className="text-[#64748b] text-sm mt-4 font-medium italic">Strategic Value Transfer to your Business Entity.</p>
+        {/* EVENT DETAILS - TACTICAL BRIEFING STYLE */}
+        <section className="bg-[#3E2723] rounded-3xl p-8 text-[#f0fdfa] relative overflow-hidden">
+          <div className="absolute top-0 right-0 w-64 h-64 bg-[#d4af37]/5 rounded-full blur-3xl"></div>
+          
+          <h3 className="text-2xl font-black uppercase tracking-tighter mb-8 flex items-center gap-3" style={{ fontFamily: "'Sora', sans-serif" }}>
+            <MapPin className="text-[#d4af37]" /> Mission Parameters
+          </h3>
+
+          <div className="grid md:grid-cols-3 gap-6 mb-8">
+            <div className="bg-[#f0fdfa]/5 backdrop-blur-sm p-6 rounded-2xl border border-[#f0fdfa]/10">
+              <Calendar className="text-[#d4af37] mb-3" size={24} />
+              <p className="text-[10px] uppercase tracking-widest text-[#f0fdfa]/50 mb-1">Date</p>
+              <p className="text-xl font-black">28 February 2026</p>
+            </div>
+            <div className="bg-[#f0fdfa]/5 backdrop-blur-sm p-6 rounded-2xl border border-[#f0fdfa]/10">
+              <Clock className="text-[#d4af37] mb-3" size={24} />
+              <p className="text-[10px] uppercase tracking-widest text-[#f0fdfa]/50 mb-1">Time</p>
+              <p className="text-xl font-black">09:00 - 16:00</p>
+            </div>
+            <div className="bg-[#f0fdfa]/5 backdrop-blur-sm p-6 rounded-2xl border border-[#f0fdfa]/10">
+              <User className="text-[#d4af37] mb-3" size={24} />
+              <p className="text-[10px] uppercase tracking-widest text-[#f0fdfa]/50 mb-1">Capacity</p>
+              <p className="text-xl font-black">50 Units Only</p>
+            </div>
           </div>
 
-          <button 
-            onClick={() => window.open(TICKET_LINK, '_blank')}
-            className="w-full bg-[#3E2723] text-white py-8 rounded-[2rem] font-black text-2xl hover:bg-[#134e4a] transition-all shadow-2xl flex items-center justify-center gap-4 uppercase tracking-widest border-2 border-[#d4af37]/20"
+          {/* Countdown Timer */}
+          <div className="bg-[#134e4a]/50 backdrop-blur-md rounded-2xl p-6 border border-[#d4af37]/20">
+            <p className="text-center text-[10px] font-black uppercase tracking-[0.3em] text-[#d4af37] mb-4">Operation Commences In</p>
+            <div className="grid grid-cols-4 gap-4 max-w-2xl mx-auto">
+              {[
+                { val: timeLeft.days, label: "Days" },
+                { val: timeLeft.hours, label: "Hours" },
+                { val: timeLeft.mins, label: "Mins" },
+                { val: timeLeft.secs, label: "Secs" }
+              ].map((t, i) => (
+                <div key={i} className="bg-[#3E2723] rounded-xl p-4 text-center border border-[#d4af37]/20">
+                  <div className="text-3xl md:text-4xl font-black text-[#d4af37]" style={{ fontFamily: "'Sora', sans-serif" }}>{t.val}</div>
+                  <div className="text-[10px] font-bold uppercase text-[#f0fdfa]/50 tracking-widest mt-1">{t.label}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* FINAL CTA */}
+        <section className="text-center space-y-6">
+          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[#d4af37]/10 border border-[#d4af37]/30 text-[#3E2723] text-[10px] font-black uppercase tracking-widest">
+            <Lock size={12} /> Security Clearance Required
+          </div>
+          
+          <h3 className="text-3xl md:text-5xl font-black uppercase tracking-tighter text-[#3E2723]" style={{ fontFamily: "'Sora', sans-serif" }}>
+            Secure Your <span className="text-[#134e4a]">Clearance</span>
+          </h3>
+          
+          <p className="text-[#64748b] max-w-xl mx-auto">
+            Access to this strategic briefing is limited to 50 entities. 
+            Clearance granted on a first-come, first-served basis.
+          </p>
+
+          <a 
+            href="https://www.quicket.co.za/events/352598-financial-clarity-for-non-financial-business-owners/#/" 
+            target="_blank" 
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-3 bg-[#134e4a] text-[#f0fdfa] px-12 py-6 rounded-2xl font-black text-lg hover:scale-105 transition-all shadow-2xl uppercase tracking-tighter border-2 border-[#134e4a] hover:bg-[#0f3d3a] group"
           >
-            {CTA_TEXT} <ArrowRight size={28} className="text-[#d4af37]" />
-          </button>
-        </div>
-      </section>
+            Initiate Access Protocol 
+            <ArrowRight size={24} className="text-[#d4af37] group-hover:translate-x-1 transition-transform" />
+          </a>
 
-      {/* 2. THE ARCHITECTS SECTION */}
-      <section className="py-32 max-w-7xl mx-auto border-b border-[#134e4a]/10">
-        <div className="text-center mb-20 px-4">
-           <h2 className="text-4xl md:text-7xl font-black uppercase tracking-tighter font-sora text-[#3E2723] mb-4">The <span className="text-[#134e4a]">Architects</span></h2>
-           <p className="text-[#64748b] font-black uppercase tracking-[0.4em] text-[10px]">Command Level Intelligence</p>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-           <div className="bg-white p-10 rounded-[4rem] shadow-xl border border-[#134e4a]/5 flex flex-col items-start text-left">
-              <div className="w-full h-[350px] rounded-[3rem] overflow-hidden mb-8 border-2 border-[#3E2723]/5">
-                 <img src="https://res.cloudinary.com/dka0498ns/image/upload/v1766077285/Chartered_Business_Accountant_in_Practice_CIBA_Hons_Psychological_Counselling_Risk_and_Project_Management_ubcpy9.jpg" className="w-full h-full object-cover" alt="Marcia" />
-              </div>
-              <h4 className="text-3xl font-black uppercase text-[#3E2723] font-sora mb-2">Marcia Kgaphola</h4>
-              <p className="text-[#134e4a] font-black uppercase text-xs tracking-widest mb-6">Financial Architecture</p>
-              <p className="text-[#64748b] leading-relaxed italic border-l-4 border-[#d4af37] pl-6 text-sm">"We bridge the gap between technical accounting and the psychology of business growth."</p>
-           </div>
-
-           <div className="bg-white p-10 rounded-[4rem] shadow-xl border border-[#134e4a]/5 flex flex-col items-start text-left">
-              <div className="w-full h-[350px] rounded-[3rem] overflow-hidden mb-8 border-2 border-[#3E2723]/5">
-                 <img src="https://res.cloudinary.com/dka0498ns/image/upload/v1766069617/Thabo_Leslie_Motsumi._AI_Google_my_Business_profile_optimization_Search_Everywhere_Optimation_SEO_Automation_and_Smart_digital_marketing._vncyse.png" className="w-full h-full object-cover" alt="Thabo" />
-              </div>
-              <h4 className="text-3xl font-black uppercase text-[#3E2723] font-sora mb-2">Thabo L. Motsumi</h4>
-              <p className="text-[#134e4a] font-black uppercase text-xs tracking-widest mb-6">Digital Sovereignty</p>
-              <p className="text-[#64748b] leading-relaxed italic border-l-4 border-[#d4af37] pl-6 text-sm">"Standardizing the digital footprint of African entities for global market scaling."</p>
-           </div>
-        </div>
-      </section>
-
-      {/* 3. KEYNOTE SPEAKER - RE-ENGINEERED FOR ABSOLUTE VISIBILITY */}
-      <section className="py-32 max-w-6xl mx-auto border-b border-[#134e4a]/10 px-4">
-          <div className="text-center mb-12">
-            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-[#d4af37]/30 bg-[#d4af37]/10 mb-6">
-              <Target size={16} color="#d4af37" />
-              <span className="text-[#3E2723] font-black uppercase text-[10px] tracking-[0.3em]">Command Briefing</span>
+          <div className="pt-8 border-t border-[#134e4a]/10">
+            <div className="flex items-center justify-center gap-8 text-[10px] font-black uppercase tracking-widest text-[#64748b]">
+              <span className="flex items-center gap-2"><Shield size={14} className="text-[#134e4a]" /> Secure Transaction</span>
+              <span className="flex items-center gap-2"><CheckCircle size={14} className="text-[#134e4a]" /> Immediate Confirmation</span>
+              <span className="flex items-center gap-2"><Lock size={14} className="text-[#134e4a]" /> Data Protected</span>
             </div>
-            <h3 className="text-4xl md:text-6xl font-black uppercase tracking-tighter leading-none font-sora text-[#3E2723]">Strategic <span className="text-[#134e4a]">Leadership</span></h3>
           </div>
+        </section>
 
-          <div className="bg-[#3E2723] rounded-[4rem] overflow-hidden shadow-2xl border-4 border-[#d4af37]/20 grid grid-cols-1 lg:grid-cols-2">
-              {/* IMAGE CONTAINER - HEIGHT FORCED FOR MOBILE */}
-              <div className="relative h-[450px] lg:h-full min-h-[400px] overflow-hidden">
-                  <img 
-                    src={KEYNOTE_IMAGE} 
-                    className="w-full h-full object-cover" 
-                    alt="Tukisang Senne Keynote Speaker" 
-                    loading="lazy"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-[#3E2723] via-transparent to-transparent lg:hidden" />
-              </div>
-              
-              <div className="p-10 md:p-20 flex flex-col justify-center space-y-8 text-left bg-[#3E2723]">
-                  <div className="space-y-2">
-                     <div className="flex items-center gap-2 text-[#d4af37] font-black uppercase text-[10px] tracking-[0.4em]">
-                        <Star size={14} className="fill-[#d4af37]" /> Keynote Speaker
-                     </div>
-                     <h4 className="text-4xl md:text-6xl font-black text-white font-sora uppercase leading-none">Tukisang <br/> Senne</h4>
-                     <p className="text-[#d4af37] font-bold uppercase text-xs tracking-widest pt-2">Business Coach & Mentor</p>
-                  </div>
-                  
-                  <p className="text-brand-50 text-lg md:text-xl font-medium leading-relaxed italic border-l-4 border-[#d4af37] pl-8">
-                    "Scaling is not about working more; it's about building the command systems that work while you sleep."
-                  </p>
+      </div>
 
-                  <div className="space-y-4 pt-4">
-                     {["Leadership Architecture", "Scaling Mindset Protocols", "Accountability Frameworks"].map((item, idx) => (
-                       <div key={idx} className="flex items-center gap-3 text-white/90 font-bold text-sm">
-                          <CheckCircle2 size={18} className="text-[#d4af37] shrink-0" /> {item}
-                       </div>
-                     ))}
-                  </div>
-              </div>
-          </div>
-      </section>
-
-      {/* 4. LOGISTICS */}
-      <section className="py-32 max-w-4xl mx-auto text-center px-4">
-         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-20">
-            <div className="bg-white p-8 rounded-[2.5rem] shadow-lg border border-[#134e4a]/10">
-               <Calendar className="mx-auto mb-4 text-[#134e4a]" size={32} />
-               <p className="text-xl font-black text-[#3E2723] font-sora uppercase">Feb 28</p>
-               <p className="text-[10px] font-black text-[#64748b] uppercase tracking-widest">Saturday 2026</p>
-            </div>
-            <div className="bg-white p-8 rounded-[2.5rem] shadow-lg border border-[#134e4a]/10">
-               <Clock className="mx-auto mb-4 text-[#134e4a]" size={32} />
-               <p className="text-xl font-black text-[#3E2723] font-sora uppercase">09:00</p>
-               <p className="text-[10px] font-black text-[#64748b] uppercase tracking-widest">Until 16:30</p>
-            </div>
-            <div className="bg-white p-8 rounded-[2.5rem] shadow-lg border border-[#134e4a]/10">
-               <MapPin className="mx-auto mb-4 text-[#134e4a]" size={32} />
-               <p className="text-xl font-black text-[#3E2723] font-sora uppercase">Waterfall</p>
-               <p className="text-[10px] font-black text-[#64748b] uppercase tracking-widest">Munyaka Estate</p>
-            </div>
-         </div>
-
-         <div className="p-10 md:p-16 bg-[#3E2723] rounded-[4rem] text-white shadow-2xl relative overflow-hidden">
-            <p className="text-[10px] font-black uppercase text-[#d4af37] tracking-[0.4em] mb-10">Operation Commences In</p>
-            <div className="grid grid-cols-4 gap-2 md:gap-6">
-               {[{ v: timeLeft.days, l: "Days" }, { v: timeLeft.hours, l: "Hrs" }, { v: timeLeft.mins, l: "Mins" }, { v: timeLeft.secs, l: "Secs" }].map((t, i) => (
-                 <div key={i} className="bg-white/5 backdrop-blur-md rounded-2xl py-6 border border-white/10">
-                    <div className="text-3xl md:text-5xl font-black text-[#d4af37] font-sora mb-1">{t.v}</div>
-                    <div className="text-[9px] font-bold uppercase text-white/40 tracking-widest">{t.l}</div>
-                 </div>
-               ))}
-            </div>
-            <Lock className="absolute -bottom-10 -right-10 text-white opacity-[0.03]" size={300} />
-         </div>
-      </section>
-
-      {/* 5. FINAL CTA */}
-      <section className="py-20 text-center space-y-8 px-4">
-         <div className="space-y-2">
-            <h2 className="text-4xl md:text-6xl font-black uppercase font-sora text-[#3E2723] tracking-tighter">Secure Your <br/> <span className="text-[#134e4a]">Clearance.</span></h2>
-            <p className="text-[#64748b] font-bold uppercase text-xs tracking-widest italic">Entry Limit: 50 Units • R 849.99</p>
-         </div>
-         <button 
-           onClick={() => window.open(TICKET_LINK, '_blank')}
-           className="inline-flex items-center gap-4 bg-[#134e4a] text-white px-16 py-8 rounded-[2rem] font-black text-2xl hover:scale-105 transition-all shadow-[0_20px_50px_rgba(19,78,74,0.3)] uppercase tracking-tighter border-2 border-[#134e4a]"
-         >
-           {CTA_TEXT} <ArrowRight size={28} className="text-[#d4af37]" />
-         </button>
-      </section>
-
+      {/* FOOTER CLASSIFICATION */}
+      <div className="bg-[#3E2723] text-[#f0fdfa]/30 py-4 text-center text-[10px] font-mono uppercase tracking-widest border-t border-[#d4af37]/20">
+        Confidential // IntegratedWellth Solutions // 2026 // Authorized Personnel Only
+      </div>
     </div>
   );
 }
