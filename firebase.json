@@ -6,7 +6,18 @@
       "**/.*",
       "**/node_modules/**"
     ],
+    "redirects": [
+      {
+        "source": "www.integratedwellth.co.za",
+        "destination": "https://integratedwellth.co.za",
+        "type": 301
+      }
+    ],
     "rewrites": [
+      {
+        "source": "/summit",
+        "destination": "/summit.html"
+      },
       {
         "source": "**",
         "destination": "/index.html"
