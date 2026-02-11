@@ -5,17 +5,17 @@ import RevealOnScroll from './RevealOnScroll';
 const PHASES = [
   {
     number: "01",
-    title: "The Sovereignty Audit",
-    meta: "THE FIRST STRIKE",
+    title: "Finding the Mess",
+    meta: "STEP ONE",
     icon: <Search size={32} />,
     tagline: "The 'Truth' Stage",
-    description: "A high-level intelligence operation to find the 'leaks' in the founder’s time and capital. We move from operational chaos to data-driven clarity.",
+    description: "We look at your books to find out where you are losing money, where you are behind on your taxes, and why you feel so tired. We find the real truth about your business.",
     lenses: [
-      { label: "Financial Integrity", desc: "Detecting leaking capital and debt inefficiencies." },
-      { label: "Systems Logic", desc: "Identifying manual friction and physical touchpoints." },
-      { label: "Psychology", desc: "Quantifying founder bottlenecks and decision fatigue." }
+      { label: "Tax Health", desc: "Checking if SARS is happy with your records." },
+      { label: "Money Leaks", desc: "Finding where your hard-earned cash is disappearing." },
+      { label: "Stress Check", desc: "Identifying the tasks that are burning you out." }
     ],
-    deliverable: "Strategic Intelligence Brief",
+    deliverable: "The 'Clear Picture' Report",
     hexBg: "#ffffff",
     textColor: "text-brand-900",
     forceColor: "#134e4a",
@@ -24,17 +24,17 @@ const PHASES = [
   },
   {
     number: "02",
-    title: "Structural Architecture",
-    meta: "THE MASTER BLUEPRINT",
+    title: "Building Your Fortress",
+    meta: "STEP TWO",
     icon: <PenTool size={32} />,
-    tagline: "The 'Blueprint' Stage",
-    description: "Designing the 'Fortress' on paper. We physically re-organize the business for total capital preservation and systematic scale.",
+    tagline: "The 'Protection' Stage",
+    description: "We create a plan to protect your money. We make sure your personal assets are safe from business risks. We build a 'wall' around your wealth.",
     lenses: [
-      { label: "Entity Optimization", desc: "Decoupling personal wealth from operational risk." },
-      { label: "Tax Efficiency", desc: "Implementing long-term legal tax strategies." },
-      { label: "Automation Engine", desc: "Designing the digital connective tissue." }
+      { label: "Asset Protection", desc: "Separating your home and savings from your business." },
+      { label: "Legal Structure", desc: "Setting up the right company types for safety." },
+      { label: "Tax Planning", desc: "Making sure you don't pay a cent more than you have to." }
     ],
-    deliverable: "The Master Sovereignty Blueprint",
+    deliverable: "Your Business Safety Blueprint",
     hexBg: "#f0fdfa",
     textColor: "text-brand-900",
     forceColor: "#134e4a",
@@ -43,18 +43,17 @@ const PHASES = [
   },
   {
     number: "03",
-    title: "The Implementation",
-    meta: "OPERATIONAL INDEPENDENCE",
+    title: "Setting Up Autopilot",
+    meta: "STEP THREE",
     icon: <Key size={32} />,
-    tagline: "The 'Construction' Stage",
-    description: "Turning the keys. The IWS team enters the trenches to install the systems and train the garrison to defend your freedom.",
+    tagline: "The 'Systems' Stage",
+    description: "We set up simple computer tools and train people to use them. We use smart technology to do the boring work for you so you can focus on growth.",
     lenses: [
-      { label: "Systematic De-coupling", desc: "Moving responsibilities from founder to AI." },
-      { label: "Stress-Test Validation", desc: "Proving structural integrity via simulations." },
-      { label: "Clean Sweep", desc: "Automating self-defending statutory guardrails." }
+      { label: "Cloud Systems", desc: "Moving your paperwork to easy tools like Xero or Zoho." },
+      { label: "Staff Training", desc: "Teaching your team how to handle the daily tasks." },
+      { label: "Automation", desc: "Using tech to handle repetitive admin work." }
     ],
-    deliverable: "Self-Sustaining Operation",
-    // CHANGED TO BROWN
+    deliverable: "A Self-Running System",
     hexBg: "#3E2723", 
     textColor: "text-white",
     forceColor: "#ffffff",
@@ -63,17 +62,17 @@ const PHASES = [
   },
   {
     number: "04",
-    title: "Sovereignty Maintenance",
-    meta: "ELITE STEWARDSHIP",
+    title: "Watching the Gates",
+    meta: "STEP FOUR",
     icon: <ShieldAlert size={32} />,
-    tagline: "The 'Sentinel' Stage",
-    description: "The transition to a permanent Sentinel State. We guard the gates of your freedom, ensuring your structure never erodes.",
+    tagline: "The 'Freedom' Stage",
+    description: "We stay on as your guards. We watch your deadlines every day to make sure you stay compliant. You finally own a business instead of a stressful job.",
     lenses: [
-      { label: "The Sentinel Watch", desc: "Active monitoring of business vital signs." },
-      { label: "Quarterly Refinement", desc: "Tune-ups for tax strategy and latest AI." },
-      { label: "Legacy Protection", desc: "Hardening structures for multi-generational wealth." }
+      { label: "Daily Monitoring", desc: "We watch your books so you don't have to." },
+      { label: "Deadline Security", desc: "Never missing a SARS or CIPC date again." },
+      { label: "Growth Advice", desc: "Monthly meetings to keep you on the right path." }
     ],
-    deliverable: "Permanent Legacy Protection",
+    deliverable: "Total Peace of Mind",
     hexBg: "#134e4a", 
     textColor: "text-white",
     forceColor: "#ffffff",
@@ -85,16 +84,19 @@ const PHASES = [
 const StrategicJourney: React.FC = () => {
   return (
     <section id="protocol" className="relative overflow-hidden font-sans">
-      <div className="bg-white py-32 md:py-48 px-6 relative z-10 text-center">
+      <div className="bg-white py-32 md:py-48 px-6 relative z-10 text-center border-b border-brand-900/5">
         <RevealOnScroll>
           <div className="max-w-4xl mx-auto space-y-8">
             <div className="inline-flex items-center gap-2 px-6 py-2 rounded-full border border-brand-900/10 bg-brand-50 text-brand-900">
               <Target size={16} className="text-brand-gold animate-pulse" />
-              <span className="text-[10px] font-black uppercase tracking-[0.5em]">The IWS Sovereignty Protocol</span>
+              <span className="text-[10px] font-black uppercase tracking-[0.5em]">The IWS Freedom Roadmap</span>
             </div>
             <h2 className="text-6xl md:text-8xl font-sora font-extrabold text-brand-900 tracking-tighter leading-[0.8]">
-              THE MAP TO <br/> <span className="text-brand-gold italic">FREEDOM.</span>
+              THE PLAN TO <br/> <span className="text-brand-gold italic">FREEDOM.</span>
             </h2>
+            <p className="text-xl md:text-2xl text-brand-900/60 font-medium leading-relaxed max-w-2xl mx-auto">
+              We take you from a stressful job to a silent, money-making machine in four simple steps.
+            </p>
           </div>
         </RevealOnScroll>
       </div>
@@ -147,7 +149,7 @@ const StrategicJourney: React.FC = () => {
                         {phase.icon}
                       </div>
                       <div className="space-y-4">
-                         <p className={`text-[11px] font-black uppercase tracking-[0.6em] ${i < 2 ? 'text-white/40' : 'text-brand-900/40'}`}>Protocol Stage {phase.number}</p>
+                         <p className={`text-[11px] font-black uppercase tracking-[0.6em] ${i < 2 ? 'text-white/40' : 'text-brand-900/40'}`}>PHASE {phase.number}</p>
                          <p className="text-4xl md:text-5xl font-sora font-black uppercase tracking-tighter leading-tight">
                            {phase.title}
                          </p>
