@@ -1,6 +1,6 @@
 // src/pages/SummitPage.tsx
 import { useEffect, useState } from 'react';
-import { ArrowRight, MapPin, Calendar, Clock, CheckCircle2, Shield, Zap, TrendingDown, AlertTriangle, Radio, Lock, Eye, Target, Database, User } from 'lucide-react';
+import { ArrowRight, MapPin, Calendar, Clock, CheckCircle2, Shield, Zap, TrendingDown, AlertTriangle, Radio, Lock, Eye, Target, Database, User, Users, Flame } from 'lucide-react';
 
 export default function SummitPage() {
   const [timeLeft, setTimeLeft] = useState({ days: 0, hours: 0, mins: 0, secs: 0 });
@@ -398,24 +398,64 @@ export default function SummitPage() {
               </div>
             </div>
 
-            {/* Countdown */}
-            <div className="bg-[#3E2723] rounded-3xl p-8 border border-[#d4af37]/20">
-              <p className="text-center text-[10px] font-black uppercase tracking-[0.3em] text-[#d4af37] mb-6">Operation Commences In</p>
-              <div className="grid grid-cols-4 gap-4">
-                {[
-                  { val: timeLeft.days, label: "Days" },
-                  { val: timeLeft.hours, label: "Hours" },
-                  { val: timeLeft.mins, label: "Mins" },
-                  { val: timeLeft.secs, label: "Secs" }
-                ].map((t, i) => (
-                  <div key={i} className="bg-[#134e4a] rounded-2xl p-4 text-center border border-[#f0fdfa]/10">
-                    <div className="text-3xl md:text-4xl font-black text-[#d4af37]" style={{ fontFamily: "'Sora', sans-serif" }}>{t.val}</div>
-                    <div className="text-[10px] font-bold uppercase text-[#f0fdfa]/50 tracking-widest mt-1">{t.label}</div>
-                  </div>
-                ))}
+            {/* Countdown & Seats Alert */}
+            <div className="space-y-6">
+              {/* Countdown Timer */}
+              <div className="bg-[#3E2723] rounded-3xl p-8 border border-[#d4af37]/20">
+                <p className="text-center text-[10px] font-black uppercase tracking-[0.3em] text-[#d4af37] mb-6">Operation Commences In</p>
+                <div className="grid grid-cols-4 gap-4">
+                  {[
+                    { val: timeLeft.days, label: "Days" },
+                    { val: timeLeft.hours, label: "Hours" },
+                    { val: timeLeft.mins, label: "Mins" },
+                    { val: timeLeft.secs, label: "Secs" }
+                  ].map((t, i) => (
+                    <div key={i} className="bg-[#134e4a] rounded-2xl p-4 text-center border border-[#f0fdfa]/10">
+                      <div className="text-3xl md:text-4xl font-black text-[#d4af37]" style={{ fontFamily: "'Sora', sans-serif" }}>{t.val}</div>
+                      <div className="text-[10px] font-bold uppercase text-[#f0fdfa]/50 tracking-widest mt-1">{t.label}</div>
+                    </div>
+                  ))}
+                </div>
               </div>
 
-              <div className="mt-8 text-center">
+              {/* SEATS TAKEN ALERT - HIGH VISIBILITY */}
+              <div className="bg-[#d4af37] rounded-3xl p-6 border-4 border-[#3E2723] shadow-2xl animate-pulse">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-4">
+                    <div className="w-16 h-16 rounded-2xl bg-[#3E2723] flex items-center justify-center text-[#d4af37] shadow-lg">
+                      <Users size={32} />
+                    </div>
+                    <div>
+                      <p className="text-[10px] font-black uppercase tracking-[0.3em] text-[#3E2723]/70 mb-1">Security Clearance Status</p>
+                      <p className="text-3xl md:text-4xl font-black text-[#3E2723]" style={{ fontFamily: "'Sora', sans-serif" }}>
+                        20 SEATS <span className="text-[#134e4a]">TAKEN</span>
+                      </p>
+                    </div>
+                  </div>
+                  <div className="text-right hidden md:block">
+                    <p className="text-5xl font-black text-[#3E2723]" style={{ fontFamily: "'Sora', sans-serif" }}>30</p>
+                    <p className="text-[10px] font-black uppercase tracking-widest text-[#3E2723]/70">Remaining</p>
+                  </div>
+                </div>
+                
+                {/* Progress Bar */}
+                <div className="mt-6">
+                  <div className="flex justify-between text-[10px] font-black uppercase tracking-widest text-[#3E2723] mb-2">
+                    <span>Capacity Filled</span>
+                    <span>40%</span>
+                  </div>
+                  <div className="h-4 bg-[#3E2723]/20 rounded-full overflow-hidden border-2 border-[#3E2723]">
+                    <div className="h-full bg-[#3E2723] rounded-full transition-all duration-1000" style={{ width: '40%' }}></div>
+                  </div>
+                </div>
+
+                <div className="mt-4 flex items-center gap-2 text-[#3E2723] text-xs font-bold">
+                  <Flame size={16} className="text-red-600" />
+                  <span>High demand: 5 seats reserved in the last 24 hours</span>
+                </div>
+              </div>
+
+              <div className="text-center">
                 <p className="text-[#f0fdfa]/60 text-sm mb-6">
                   Every day you wait is revenue lost to Financial Fog and Digital Invisibility.
                 </p>
@@ -423,7 +463,7 @@ export default function SummitPage() {
                   href="https://www.quicket.co.za/events/352598-financial-clarity-for-non-financial-business-owners/#/"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center gap-3 bg-[#d4af37] text-[#3E2723] px-10 py-5 rounded-2xl font-black text-lg hover:scale-105 transition-all shadow-2xl uppercase tracking-tighter group w-full justify-center"
+                  className="inline-flex items-center gap-3 bg-[#d4af37] text-[#3E2723] px-10 py-5 rounded-2xl font-black text-lg hover:scale-105 transition-all shadow-2xl uppercase tracking-tighter group w-full justify-center border-4 border-[#d4af37] hover:bg-[#f0fdfa]"
                 >
                   Initiate Access Protocol
                   <ArrowRight size={24} className="group-hover:translate-x-1 transition-transform" />
