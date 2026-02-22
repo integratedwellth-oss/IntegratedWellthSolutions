@@ -1,0 +1,6 @@
+User-agent: *
+Allow: /
+Disallow: /#intel
+Disallow: /#tracker
+
+Sitemap: https://www.integratedwellth.co.za/sitemap.xml
