@@ -25,7 +25,6 @@ const FinancialHealthScore: React.FC<FinancialHealthScoreProps> = ({ isModal = f
   const [started, setStarted] = useState(false);
   const [currentStep, setCurrentStep] = useState(0);
   const [score, setScore] = useState(0);
-  // Track structured answers: [{ q: "Question", a: "Answer" }]
   const [detailedAnswers, setDetailedAnswers] = useState<{q: string, a: string}[]>([]);
   const [showForm, setShowForm] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -60,16 +59,14 @@ const FinancialHealthScore: React.FC<FinancialHealthScoreProps> = ({ isModal = f
 
     try {
       if (db) {
-        // A. Store Detailed Intelligence Brief
         await addDoc(collection(db, 'assessments'), {
           ...formData,
           score,
           persona: res.persona,
-          intelligence_report: detailedAnswers, // <--- THE FULL ARRAY OF ANSWERS
+          intelligence_report: detailedAnswers,
           timestamp: serverTimestamp()
         });
 
-        // B. Send Professional HTML Email
         const emailBody = detailedAnswers.map(item => `<b>${item.q}</b><br/>${item.a}<br/><br/>`).join('');
         
         await addDoc(collection(db, 'mail'), {
@@ -77,7 +74,7 @@ const FinancialHealthScore: React.FC<FinancialHealthScoreProps> = ({ isModal = f
           message: {
             subject: `REPORT: ${formData.enterprise} Assessment Results`,
             html: `
-              <div style="font-family: Arial, sans-serif; color: #134e4a; max-width: 600px;">
+              <div style="font-family: sans-serif; color: #134e4a; max-width: 600px;">
                 <h1 style="color: #d4af37;">ASSESSMENT COMPLETE</h1>
                 <p>Hello ${formData.name},</p>
                 <div style="background: #f0fdfa; padding: 20px; border-left: 5px solid #d4af37; margin-bottom: 20px;">
@@ -89,8 +86,6 @@ const FinancialHealthScore: React.FC<FinancialHealthScoreProps> = ({ isModal = f
                 <div style="text-align: center; margin-top: 40px;">
                   <a href="https://calendly.com/enquiries-integratedwellth/30min" style="background: #134e4a; color: white; padding: 15px 30px; text-decoration: none; font-weight: bold; border-radius: 50px;">BOOK YOUR FREE CONSULTATION</a>
                 </div>
-                <hr style="margin: 40px 0; border: 0; border-top: 1px solid #eee;"/>
-                <p>Join us for the <b>Financial Clarity Summit</b> on Feb 28, 2026. <a href="https://www.integratedwellth.co.za/#summit">Book Your Seat Here</a></p>
               </div>
             `
           }
@@ -109,13 +104,12 @@ const FinancialHealthScore: React.FC<FinancialHealthScoreProps> = ({ isModal = f
       <div className="bg-white rounded-[3rem] p-1 shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-hidden relative">
         <div className="bg-white rounded-[2.8rem] h-full overflow-y-auto p-8 md:p-16 relative">
           <button onClick={onClose} className="absolute top-8 right-8 text-brand-900/40 hover:text-brand-900"><X size={32} /></button>
-
           {!started ? (
             <div className="text-center space-y-8 py-12">
               <div className="w-20 h-20 bg-brand-900 text-brand-gold rounded-2xl flex items-center justify-center mx-auto shadow-xl"><Sparkles size={40} /></div>
-              <h2 className="text-4xl md:text-6xl font-sora font-black text-brand-900 uppercase leading-none tracking-tighter">Financial <br/><span className="text-brand-gold italic">Vitals Check.</span></h2>
+              <h2 className="text-4xl md:text-6xl font-sora font-black text-brand-900 uppercase leading-none tracking-tighter text-center">Financial <br/><span className="text-brand-gold italic">Vitals Check.</span></h2>
               <p className="text-lg text-brand-900/60 max-w-lg mx-auto font-medium leading-relaxed">Discover if your entity is built for Sovereignty or if you are trapped in a high-stress job.</p>
-              <button onClick={() => setStarted(true)} className="rounded-full px-12 py-5 text-lg bg-brand-gold text-brand-900 font-black uppercase shadow-2xl hover:scale-105 transition-all">Start Audit</button>
+              <button onClick={() => setStarted(true)} className="rounded-full px-12 py-5 text-lg bg-brand-gold text-brand-900 font-black uppercase shadow-2xl hover:scale-105 transition-all mx-auto block">Start Audit</button>
             </div>
           ) : !showForm && !showResult ? (
             <div className="space-y-12 animate-fadeIn">
@@ -124,42 +118,35 @@ const FinancialHealthScore: React.FC<FinancialHealthScoreProps> = ({ isModal = f
                     <p className="text-brand-gold text-[10px] font-black uppercase tracking-[0.4em] mb-2">Diagnostic 0{currentStep+1}</p>
                     <h3 className="text-xl font-black text-brand-900 uppercase">{QUESTIONS[currentStep].category}</h3>
                   </div>
-                  <div className="flex gap-1.5">{QUESTIONS.map((_, i) => <div key={i} className={`w-3 h-1 rounded-full ${i <= currentStep ? 'bg-brand-900' : 'bg-brand-900/10'}`}></div>)}</div>
                </div>
                <h2 className="text-2xl md:text-3xl font-bold text-brand-900 leading-tight">{QUESTIONS[currentStep].question}</h2>
                <div className="grid gap-4">
                   {QUESTIONS[currentStep].options.map((opt, i) => (
                     <button key={i} onClick={() => handleAnswer(opt.text, opt.score)} className="group p-6 text-left rounded-2xl border-2 border-brand-900/5 hover:border-brand-gold bg-brand-50/30 hover:bg-white transition-all flex justify-between items-center">
                        <span className="text-base font-bold text-brand-900">{opt.text}</span>
-                       <ArrowRight className="text-brand-900/20 group-hover:text-brand-gold group-hover:translate-x-1 transition-all" size={20}/>
+                       <ArrowRight className="text-brand-900/20 group-hover:text-brand-gold" size={20}/>
                     </button>
                   ))}
                </div>
             </div>
           ) : showForm ? (
-            <div className="max-w-md mx-auto text-center space-y-8 py-10 animate-fadeIn">
+            <div className="max-w-md mx-auto text-center space-y-8 py-10">
                <h3 className="text-3xl font-black text-brand-900 uppercase tracking-tighter">Audit Complete.</h3>
-               <p className="text-brand-900/60 font-medium leading-relaxed">Uplink your credentials to unlock your professional archetype and recovery brief.</p>
                <form onSubmit={handleFormSubmit} className="space-y-4 text-left">
-                  <input required className="w-full bg-brand-50 border-2 border-brand-900/5 rounded-xl px-6 py-4 font-bold text-brand-900 outline-none focus:border-brand-gold" placeholder="FULL NAME" value={formData.name} onChange={(e) => setFormData({...formData, name: e.target.value})} />
-                  <input required className="w-full bg-brand-50 border-2 border-brand-900/5 rounded-xl px-6 py-4 font-bold text-brand-900 outline-none focus:border-brand-gold" placeholder="ENTERPRISE NAME" value={formData.enterprise} onChange={(e) => setFormData({...formData, enterprise: e.target.value})} />
-                  <input required type="email" className="w-full bg-brand-50 border-2 border-brand-900/5 rounded-xl px-6 py-4 font-bold text-brand-900 outline-none focus:border-brand-gold" placeholder="SECURE EMAIL" value={formData.email} onChange={(e) => setFormData({...formData, email: e.target.value})} />
-                  <button type="submit" disabled={isSubmitting} className="w-full py-5 rounded-full bg-brand-900 text-white font-black uppercase tracking-widest hover:bg-brand-gold hover:text-brand-900 transition-all shadow-xl">
+                  <input required className="w-full bg-brand-50 border-2 border-brand-900/5 rounded-xl px-6 py-4 font-bold" placeholder="FULL NAME" value={formData.name} onChange={(e) => setFormData({...formData, name: e.target.value})} />
+                  <input required className="w-full bg-brand-50 border-2 border-brand-900/5 rounded-xl px-6 py-4 font-bold" placeholder="ENTERPRISE NAME" value={formData.enterprise} onChange={(e) => setFormData({...formData, enterprise: e.target.value})} />
+                  <input required type="email" className="w-full bg-brand-50 border-2 border-brand-900/5 rounded-xl px-6 py-4 font-bold" placeholder="SECURE EMAIL" value={formData.email} onChange={(e) => setFormData({...formData, email: e.target.value})} />
+                  <button type="submit" disabled={isSubmitting} className="w-full py-5 rounded-full bg-brand-900 text-white font-black uppercase shadow-xl hover:bg-brand-gold hover:text-brand-900 transition-all">
                     {isSubmitting ? <Loader2 className="animate-spin mx-auto" /> : 'REVEAL ARCHETYPE'}
                   </button>
                </form>
             </div>
           ) : (
-            <div className="text-center space-y-10 py-6 animate-fadeIn">
-               <div className="mx-auto w-24 h-24 rounded-[2rem] flex items-center justify-center bg-brand-50 border border-brand-gold shadow-inner text-brand-gold">
-                  <Activity size={40}/>
-               </div>
-               <div>
-                  <p className="text-[10px] font-black uppercase tracking-[0.4em] text-brand-900/40 mb-2">Archetype Identified</p>
-                  <h2 className={`text-4xl md:text-6xl font-black uppercase tracking-tighter ${res.color}`}>{res.persona}</h2>
-               </div>
-               <p className="text-xl text-brand-900/80 font-medium italic max-w-xl mx-auto leading-relaxed">"{res.msg}"</p>
-               <button onClick={() => window.open('https://calendly.com/enquiries-integratedwellth/30min', '_blank')} className="rounded-full px-12 py-5 bg-brand-gold text-brand-900 font-black uppercase tracking-widest hover:bg-brand-900 hover:text-white transition-all shadow-2xl">Book Discovery Call</button>
+            <div className="text-center space-y-10 py-6">
+               <div className="mx-auto w-24 h-24 rounded-[2rem] flex items-center justify-center bg-brand-50 text-brand-gold shadow-inner"><Activity size={40}/></div>
+               <h2 className={`text-4xl md:text-6xl font-black uppercase ${res.color}`}>{res.persona}</h2>
+               <p className="text-xl italic max-w-xl mx-auto">"{res.msg}"</p>
+               <button onClick={() => window.open('https://calendly.com/enquiries-integratedwellth/30min', '_blank')} className="rounded-full px-12 py-5 bg-brand-gold text-brand-900 font-black uppercase shadow-2xl">Book Discovery Call</button>
             </div>
           )}
         </div>
