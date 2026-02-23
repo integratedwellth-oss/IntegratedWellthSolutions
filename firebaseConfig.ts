@@ -13,29 +13,36 @@ const firebaseConfig = {
   measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID
 };
 
-// Initialize Firebase defensively
-let app: FirebaseApp;
-let db: Firestore;
-let auth: Auth;
+// Initialize variables with null/undefined for TypeScript safety
+let app: FirebaseApp | undefined;
+let db: Firestore | undefined;
+let auth: Auth | undefined;
 let analytics: any = null;
 
 try {
-  if (!getApps().length) {
-    app = initializeApp(firebaseConfig);
+  // Check if we have the minimum required keys before trying to initialize
+  if (firebaseConfig.apiKey && firebaseConfig.projectId) {
+    if (!getApps().length) {
+      app = initializeApp(firebaseConfig);
+    } else {
+      app = getApps()[0];
+    }
+    
+    if (app) {
+      db = getFirestore(app);
+      auth = getAuth(app);
+      
+      if (typeof window !== 'undefined' && firebaseConfig.measurementId) {
+        analytics = getAnalytics(app);
+      }
+    }
   } else {
-    app = getApps()[0];
-  }
-  
-  db = getFirestore(app);
-  auth = getAuth(app);
-  
-  // Analytics only runs in browser and if ID is present
-  if (typeof window !== 'undefined' && firebaseConfig.measurementId) {
-    analytics = getAnalytics(app);
+    console.warn("Firebase configuration is missing keys. Running in offline mode.");
   }
 } catch (error) {
-  console.error("Firebase Initialization Error (Dashboard will run in offline mode):", error);
+  console.error("Firebase Initialization Error:", error);
 }
 
+// Export with the exact names used by other files
 export { app, db, auth, analytics };
 export default app;
