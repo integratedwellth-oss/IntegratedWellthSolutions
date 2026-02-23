@@ -27,7 +27,7 @@ import Dashboard from './components/Dashboard';
 import UserDashboard from './components/UserDashboard'; 
 import SummitPage from './components/pages/SummitPage';
 
-// Solution Detail Pages
+// Audiences
 import StartupSolutions from './components/audiences/StartupSolutions';
 import BusinessSolutions from './components/audiences/BusinessSolutions';
 import NPOSolutions from './components/audiences/NPOSolutions';
@@ -41,7 +41,6 @@ import FinancialHealthScore from './components/FinancialHealthScore';
 
 const App: React.FC = () => {
   const [currentView, setCurrentView] = useState('home');
-  // Modal State is now independent of the URL
   const [showAssessmentModal, setShowAssessmentModal] = useState(false);
   const [showEventPopup, setShowEventPopup] = useState(false);
 
@@ -58,6 +57,11 @@ const App: React.FC = () => {
       try {
         const hash = window.location.hash.replace('#', '');
         
+        if (hash === 'assessment') {
+          setShowAssessmentModal(true);
+          return;
+        }
+
         const validViews = [
           'home', 'services', 'who-we-help', 'team', 'workshops', 'blog', 'contact', 
           'privacy', 'startups', 'existing-business', 'npos', 'individuals', 
@@ -92,7 +96,6 @@ const App: React.FC = () => {
   const renderCurrentView = () => {
     try {
       switch (currentView) {
-        // Pass the trigger down to the UserDashboard so it can open the modal directly
         case 'my-intel': return <UserDashboard onTriggerAssessment={() => setShowAssessmentModal(true)} />;
         case 'summit': return <SummitPage />;
         case 'intel': return <Dashboard />;
@@ -112,10 +115,10 @@ const App: React.FC = () => {
         case 'tracker': return <ComplianceTracker />;
         case 'warroom': return <WarRoom />;
         case 'protocol': return <StrategicJourney />;
-        default: return <Home onOpenAssessment={() => setShowAssessmentModal(true)} />;
+        default: return <Home onOpenAssessment={() => window.location.hash = '#assessment'} />;
       }
     } catch (err) {
-      return <Home onOpenAssessment={() => setShowAssessmentModal(true)} />;
+      return <Home onOpenAssessment={() => window.location.hash = '#assessment'} />;
     }
   };
 
@@ -159,13 +162,14 @@ const App: React.FC = () => {
         {currentView !== 'intel' && (
           <>
             <EventPopup isOpen={showEventPopup} onClose={() => {setShowEventPopup(false); sessionStorage.setItem('hasSeenIWS_Event_Immediate', 'true');}} />
-            
             <FinancialHealthScore 
               isModal={true} 
               isOpen={showAssessmentModal} 
-              onClose={() => setShowAssessmentModal(false)} 
+              onClose={() => {
+                setShowAssessmentModal(false);
+                if(window.location.hash === '#assessment') window.location.hash = '#home';
+              }} 
             />
-            
             <FloatingCTA />
             <WhatsAppButton />
             <UnifiedSupportWidget />
