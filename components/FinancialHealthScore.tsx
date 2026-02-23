@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
-import { CheckCircle2, TrendingUp, Shield, Activity, X, ArrowRight, Sparkles, Loader2, ChevronRight } from 'lucide-react';
-import { db, auth } from '../firebaseConfig'; // Added auth
+import React, { useState, useEffect } from 'react';
+import { Shield, Activity, X, ArrowRight, Sparkles, Loader2, TrendingUp, Lock } from 'lucide-react';
+import { db, auth } from '../firebaseConfig';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
+import { GoogleAuthProvider, signInWithPopup, onAuthStateChanged } from 'firebase/auth';
 
 interface FinancialHealthScoreProps {
   isModal?: boolean;
@@ -18,69 +19,82 @@ const QUESTIONS = [
 ];
 
 const FinancialHealthScore: React.FC<FinancialHealthScoreProps> = ({ isModal = false, isOpen = true, onClose }) => {
-  const [started, setStarted] = useState(false);
+  const [user, setUser] = useState<any>(null);
+  const [isAuthLoading, setIsAuthLoading] = useState(true);
+  
   const [currentStep, setCurrentStep] = useState(0);
   const [score, setScore] = useState(0);
   const [detailedAnswers, setDetailedAnswers] = useState<{q: string, a: string}[]>([]);
-  const [showForm, setShowForm] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [showResult, setShowResult] = useState(false);
-  const [formData, setFormData] = useState({ name: '', enterprise: '', email: '' });
+
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+      setUser(currentUser);
+      setIsAuthLoading(false);
+    });
+    return () => unsubscribe();
+  }, []);
 
   if (isModal && !isOpen) return null;
 
-  const handleAnswer = (answerText: string, points: number) => {
-    setDetailedAnswers([...detailedAnswers, { q: QUESTIONS[currentStep].question, a: answerText }]);
+  const handleGoogleLogin = async () => {
+    setIsAuthLoading(true);
+    try {
+      await signInWithPopup(auth, new GoogleAuthProvider());
+    } catch (err) {
+      console.error(err);
+      alert("Authentication failed.");
+    }
+    setIsAuthLoading(false);
+  };
+
+  const getResult = (finalScore: number) => {
+    if (finalScore >= 15) return { persona: "VISIONARY ARCHITECT", msg: "Optimized for scale." };
+    if (finalScore >= 8) return { persona: "THE INTEGRATOR", msg: "Moving away from dependency." };
+    return { persona: "DAILY LABORER", msg: "High-stress job, not an asset." };
+  };
+
+  const processSubmission = async (finalScore: number, finalAnswers: any[]) => {
+    setIsSubmitting(true);
+    const res = getResult(finalScore);
+
+    try {
+      if (db && user) {
+        // Save to Database linked to their email
+        await addDoc(collection(db, 'assessments'), {
+          email: user.email,
+          name: user.displayName || 'Sovereign Client',
+          score: finalScore,
+          maxScore: QUESTIONS.length * 4,
+          persona: res.persona,
+          intelligence_report: finalAnswers,
+          timestamp: serverTimestamp()
+        });
+        
+        // Redirect them to their personal dashboard where they can see the result
+        window.location.hash = '#my-intel';
+        if (onClose) onClose();
+      }
+    } catch (err) {
+      console.error(err);
+      alert("Error saving data.");
+    }
+    setIsSubmitting(false);
+  };
+
+  const handleAnswer = async (answerText: string, points: number) => {
+    const newAnswers = [...detailedAnswers, { q: QUESTIONS[currentStep].question, a: answerText }];
+    setDetailedAnswers(newAnswers);
     const newScore = score + points;
+    
     if (currentStep < QUESTIONS.length - 1) {
       setScore(newScore);
       setCurrentStep(currentStep + 1);
     } else {
-      setScore(newScore);
-      // Pre-fill email if user is already logged in
-      if (auth.currentUser?.email) {
-          setFormData({ ...formData, email: auth.currentUser.email, name: auth.currentUser.displayName || '' });
-      }
-      setShowForm(true);
+      // Final Question Answered -> Process immediately
+      await processSubmission(newScore, newAnswers);
     }
   };
-
-  const getResult = () => {
-    if (score >= 15) return { persona: "VISIONARY ARCHITECT", color: "text-emerald-600", msg: "Legacy Engineering: Optimized for scale." };
-    if (score >= 8) return { persona: "THE INTEGRATOR", color: "text-brand-gold", msg: "Bridge Building: Moving away from dependency." };
-    return { persona: "DAILY LABORER", color: "text-rose-600", msg: "Critical Triage: Business is currently a job, not an asset." };
-  };
-
-  const handleFormSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsSubmitting(true);
-    const res = getResult();
-    try {
-      if (db) {
-        await addDoc(collection(db, 'assessments'), { 
-            ...formData, 
-            userId: auth.currentUser?.uid || 'anonymous', // LINK TO ACCOUNT
-            score, 
-            persona: res.persona, 
-            intelligence_report: detailedAnswers, 
-            timestamp: serverTimestamp() 
-        });
-        
-        await addDoc(collection(db, 'mail'), {
-          to: formData.email,
-          message: {
-            subject: `REPORT: ${formData.enterprise} Assessment`,
-            html: `<h1>Assessment Complete</h1><p>Archetype: ${res.persona}</p><p>You can track your progress here: <a href="https://integratedwellth.co.za/#my-intel">My Dashboard</a></p>`
-          }
-        });
-      }
-      setShowForm(false);
-      setShowResult(true);
-    } catch (err) { console.error(err); }
-    setIsSubmitting(false);
-  };
-
-  const res = getResult();
 
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-brand-900/95 backdrop-blur-xl font-sans text-left animate-fadeIn">
@@ -88,17 +102,41 @@ const FinancialHealthScore: React.FC<FinancialHealthScoreProps> = ({ isModal = f
         <div className="bg-white rounded-[2.8rem] h-full overflow-y-auto p-8 md:p-16 relative">
           <button onClick={onClose} className="absolute top-8 right-8 text-brand-900/40 hover:text-brand-900"><X size={32}/></button>
 
-          {!started ? (
-            <div className="text-center py-12 space-y-8">
-              <div className="w-20 h-20 bg-brand-900 text-brand-gold rounded-2xl flex items-center justify-center mx-auto shadow-xl"><Sparkles size={40}/></div>
-              <h2 className="text-4xl md:text-6xl font-sora font-black text-brand-900 uppercase tracking-tighter text-center">Financial <br/><span className="text-brand-gold italic">Vitals Check.</span></h2>
-              <p className="text-lg text-brand-900/60 text-center font-medium max-w-lg mx-auto leading-relaxed">Answer 5 quick metrics to reveal your business archetype.</p>
-              <button onClick={() => setStarted(true)} className="rounded-full px-12 py-5 text-lg bg-brand-gold text-brand-900 font-black uppercase shadow-2xl hover:scale-105 transition-all mx-auto block">Start Audit</button>
+          {/* STEP 1: AUTHENTICATION GATE */}
+          {!user ? (
+            <div className="text-center space-y-8 py-12 animate-fadeIn max-w-md mx-auto">
+              <div className="w-20 h-20 bg-brand-900 text-brand-gold rounded-2xl flex items-center justify-center mx-auto shadow-xl">
+                 <Lock size={40} />
+              </div>
+              <div>
+                <h2 className="text-3xl font-sora font-black text-brand-900 uppercase tracking-tighter">Secure Client Portal</h2>
+                <p className="text-brand-900/60 font-medium mt-4">Authenticate to take the Financial Vitals Check and unlock your personal dashboard.</p>
+              </div>
+              <button 
+                onClick={handleGoogleLogin} 
+                disabled={isAuthLoading}
+                className="w-full flex items-center justify-center gap-3 bg-brand-900 text-white py-5 rounded-2xl hover:bg-brand-gold hover:text-brand-900 transition-all font-black uppercase tracking-widest shadow-xl"
+              >
+                {isAuthLoading ? <Loader2 className="animate-spin" /> : 'Sign in with Google'}
+              </button>
             </div>
-          ) : !showForm && !showResult ? (
-            <div className="space-y-12">
-               <div className="border-b border-brand-900/10 pb-6"><p className="text-brand-gold text-[10px] font-black uppercase mb-2">Diagnostic 0{currentStep+1}</p><h3 className="text-xl font-black text-brand-900 uppercase">{QUESTIONS[currentStep].category}</h3></div>
-               <h2 className="text-2xl md:text-3xl font-bold text-brand-900">{QUESTIONS[currentStep].question}</h2>
+          ) : isSubmitting ? (
+            // SUBMITTING STATE
+            <div className="text-center py-20 space-y-6">
+               <Loader2 className="animate-spin w-16 h-16 text-brand-gold mx-auto" />
+               <p className="font-black uppercase tracking-widest text-brand-900">Uplinking to Dashboard...</p>
+            </div>
+          ) : (
+            // STEP 2: THE QUIZ
+            <div className="space-y-12 animate-fadeIn">
+               <div className="flex justify-between items-end border-b border-brand-900/10 pb-6">
+                  <div>
+                    <p className="text-brand-gold text-[10px] font-black uppercase tracking-[0.4em] mb-2">Diagnostic 0{currentStep+1}</p>
+                    <h3 className="text-xl font-black text-brand-900 uppercase">{QUESTIONS[currentStep].category}</h3>
+                  </div>
+                  <div className="flex gap-1.5">{QUESTIONS.map((_, i) => <div key={i} className={`w-3 h-1 rounded-full ${i <= currentStep ? 'bg-brand-900' : 'bg-brand-900/10'}`}></div>)}</div>
+               </div>
+               <h2 className="text-2xl md:text-3xl font-bold text-brand-900 leading-tight">{QUESTIONS[currentStep].question}</h2>
                <div className="grid gap-4">
                   {QUESTIONS[currentStep].options.map((opt, i) => (
                     <button key={i} onClick={() => handleAnswer(opt.text, opt.score)} className="group p-6 text-left rounded-2xl border-2 border-brand-900/5 hover:border-brand-gold bg-brand-50/30 hover:bg-white transition-all flex justify-between items-center font-bold text-brand-900 text-sm">
@@ -106,27 +144,6 @@ const FinancialHealthScore: React.FC<FinancialHealthScoreProps> = ({ isModal = f
                        <ArrowRight size={20} className="text-brand-900/20 group-hover:text-brand-gold"/>
                     </button>
                   ))}
-               </div>
-            </div>
-          ) : showForm ? (
-            <div className="max-w-md mx-auto py-10 space-y-8 text-center animate-fadeIn">
-               <h3 className="text-3xl font-black text-brand-900 uppercase">Audit Complete</h3>
-               <p className="text-sm font-medium text-brand-900/60 leading-relaxed">To save these results and track your progress over time, please confirm your identity.</p>
-               <form onSubmit={handleFormSubmit} className="space-y-4">
-                  <input required className="w-full bg-brand-50 border-2 border-brand-900/5 rounded-xl px-6 py-4 font-bold text-brand-900 outline-none focus:border-brand-gold" placeholder="FULL NAME" value={formData.name} onChange={(e) => setFormData({...formData, name: e.target.value})} />
-                  <input required className="w-full bg-brand-50 border-2 border-brand-900/5 rounded-xl px-6 py-4 font-bold text-brand-900 outline-none focus:border-brand-gold" placeholder="ENTERPRISE" value={formData.enterprise} onChange={(e) => setFormData({...formData, enterprise: e.target.value})} />
-                  <input required type="email" className="w-full bg-brand-50 border-2 border-brand-900/5 rounded-xl px-6 py-4 font-bold text-brand-900 outline-none focus:border-brand-gold" placeholder="SECURE EMAIL" value={formData.email} onChange={(e) => setFormData({...formData, email: e.target.value})} />
-                  <button type="submit" disabled={isSubmitting} className="w-full py-5 rounded-full bg-brand-900 text-white font-black uppercase tracking-widest transition-all hover:bg-brand-gold hover:text-brand-900 shadow-xl">{isSubmitting ? <Loader2 className="animate-spin mx-auto"/> : 'UPLINK TO PORTAL'}</button>
-               </form>
-            </div>
-          ) : (
-            <div className="text-center space-y-10 py-6">
-               <div className="mx-auto w-24 h-24 rounded-[2rem] flex items-center justify-center bg-brand-50 text-brand-gold shadow-inner border border-brand-gold/10"><Activity size={40}/></div>
-               <h2 className={`text-4xl md:text-6xl font-black uppercase tracking-tighter ${res.color}`}>{res.persona}</h2>
-               <p className="text-xl italic font-medium leading-relaxed max-w-xl mx-auto">"{res.msg}"</p>
-               <div className="flex flex-col gap-4 max-w-sm mx-auto">
-                 <button onClick={() => window.open('https://calendly.com/enquiries-integratedwellth/30min', '_blank')} className="rounded-full px-12 py-5 bg-brand-gold text-brand-900 font-black uppercase shadow-2xl transition-all hover:scale-105">Book Strategy Review</button>
-                 <button onClick={() => window.location.hash = '#my-intel'} className="text-brand-900/40 hover:text-brand-900 font-black uppercase text-[10px] tracking-widest underline underline-offset-8">Go to My Dashboard</button>
                </div>
             </div>
           )}
