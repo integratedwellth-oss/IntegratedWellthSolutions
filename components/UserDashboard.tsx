@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { db, auth } from '../firebaseConfig';
-import { collection, getDocs, query, where, orderBy } from 'firebase/firestore';
+import { collection, getDocs, query, where } from 'firebase/firestore';
 import { GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from 'firebase/auth';
-import { Lock, LogOut, FileText, RefreshCcw, X, ChevronRight, Layout, Calculator, Receipt, Box, FileSpreadsheet, CreditCard } from 'lucide-react';
+// FIX: Added Loader2 to the imports
+import { LogOut, RefreshCcw, Layout, FileText, ChevronRight, Calculator, Receipt, Box, FileSpreadsheet, CreditCard, Lock, Loader2, X, Mail, MessageSquare } from 'lucide-react';
 
 const UserDashboard: React.FC = () => {
   const [user, setUser] = useState<any>(null);
@@ -23,16 +24,11 @@ const UserDashboard: React.FC = () => {
   const fetchMyData = async (email: string) => {
     setLoading(true);
     try {
-      // Query Firebase for assessments linked to this email
       const q = query(collection(db, 'assessments'), where('email', '==', email));
       const snap = await getDocs(q);
       const data = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-      
-      // Sort by latest first
       setMyAssessments(data.sort((a: any, b: any) => (b.timestamp?.seconds || 0) - (a.timestamp?.seconds || 0)));
-    } catch (err) {
-      console.error("Error fetching data:", err);
-    }
+    } catch (err) { console.error(err); }
     setLoading(false);
   };
 
@@ -71,12 +67,8 @@ const UserDashboard: React.FC = () => {
             </p>
           </div>
           <div className="flex gap-4">
-            <button onClick={() => user?.email && fetchMyData(user.email)} className="p-4 bg-white rounded-2xl shadow-sm border border-[#134e4a]/10 hover:bg-[#134e4a] hover:text-white transition-all">
-              <RefreshCcw size={18} className={loading ? 'animate-spin' : ''} />
-            </button>
-            <button onClick={() => signOut(auth)} className="px-8 py-4 bg-white text-rose-600 rounded-2xl text-xs font-black uppercase border border-rose-600/20 hover:bg-rose-600 hover:text-white transition-all shadow-sm">
-              Logout
-            </button>
+            <button onClick={() => user?.email && fetchMyData(user.email)} className="p-4 bg-white rounded-2xl shadow-sm border border-[#134e4a]/10 hover:bg-[#134e4a] hover:text-white transition-all"><RefreshCcw size={18} className={loading ? 'animate-spin' : ''} /></button>
+            <button onClick={() => signOut(auth)} className="px-8 py-4 bg-white text-rose-600 rounded-2xl text-xs font-black uppercase border border-rose-600/20 hover:bg-rose-600 hover:text-white transition-all shadow-sm">Logout</button>
           </div>
         </div>
 
