@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { 
   Shield, AlertTriangle, FileText, 
-  ArrowRight, Download, Calendar, Clock, ChevronDown, CheckCircle2 
+  ArrowRight, Download, Calendar, Clock, ChevronDown, CheckCircle2,
+  XCircle, TrendingUp
 } from 'lucide-react';
 import Button from './Button';
 import ZohoFinanceWidget from './ZohoFinanceWidget';
 
-// Mock Data for the Dashboard
+// Mock Data for Compliance Status
 const COMPLIANCE_STATUS = [
   { label: 'CIPC Annual Return', status: 'compliant', date: 'Filed: 02 Feb 2026' },
   { label: 'SARS VAT', status: 'pending', date: 'Due: 25 Feb 2026' },
@@ -14,6 +15,7 @@ const COMPLIANCE_STATUS = [
   { label: 'Workmans Comp', status: 'warning', date: 'Action Req: Letter of Good Standing' }
 ];
 
+// Mock Data for Vault Documents
 const DOCUMENTS = [
   { name: 'Feb 2026 Management Accounts.pdf', date: '12 Feb', type: 'Financials' },
   { name: 'Tax Clearance Certificate.pdf', date: '10 Jan', type: 'Compliance' },
@@ -33,7 +35,11 @@ const UserDashboard: React.FC<UserDashboardProps> = ({ onTriggerAssessment }) =>
   useEffect(() => {
     const savedResults = localStorage.getItem('iws_health_score_results');
     if (savedResults) {
-      setAssessmentHistory(JSON.parse(savedResults));
+      try {
+        setAssessmentHistory(JSON.parse(savedResults));
+      } catch (e) {
+        console.error("Failed to parse assessment history");
+      }
     }
   }, []);
 
@@ -44,6 +50,12 @@ const UserDashboard: React.FC<UserDashboardProps> = ({ onTriggerAssessment }) =>
       case 'warning': return 'bg-red-500';
       default: return 'bg-gray-300';
     }
+  };
+
+  const getScoreColor = (score: number) => {
+    if (score >= 80) return 'text-emerald-600';
+    if (score >= 50) return 'text-yellow-600';
+    return 'text-red-600';
   };
 
   return (
@@ -82,40 +94,64 @@ const UserDashboard: React.FC<UserDashboardProps> = ({ onTriggerAssessment }) =>
           </div>
         </div>
 
-        {/* --- NEW SECTION: ASSESSMENT REVIEW --- */}
+        {/* --- ASSESSMENT REVIEW SECTION --- */}
+        {/* Only shows if user has taken the quiz */}
         {assessmentHistory && (
           <div className="mb-12 bg-white rounded-[2.5rem] p-8 shadow-sm border border-brand-900/5 animate-slideInRight">
             <div className="flex flex-col md:flex-row justify-between items-center gap-6">
-              <div>
-                <h3 className="text-xl font-black text-brand-900 uppercase tracking-tight mb-2">
-                  Last Assessment Results
-                </h3>
-                <div className="flex items-center gap-4">
-                    <span className="text-4xl font-black text-brand-gold">{assessmentHistory.totalScore}%</span>
-                    <span className="text-sm text-gray-500 font-medium">Financial Health Score</span>
+              <div className="flex items-center gap-6">
+                <div className="relative w-20 h-20 flex-shrink-0">
+                  <svg className="w-full h-full transform -rotate-90">
+                    <circle
+                      cx="40" cy="40" r="36"
+                      fill="transparent"
+                      stroke="#f3f4f6"
+                      strokeWidth="8"
+                    />
+                    <circle
+                      cx="40" cy="40" r="36"
+                      fill="transparent"
+                      stroke={assessmentHistory.totalScore >= 80 ? '#059669' : assessmentHistory.totalScore >= 50 ? '#d97706' : '#dc2626'}
+                      strokeWidth="8"
+                      strokeDasharray={`${assessmentHistory.totalScore * 2.26} 226`}
+                      strokeLinecap="round"
+                    />
+                  </svg>
+                  <div className="absolute inset-0 flex items-center justify-center font-black text-lg text-brand-900">
+                    {assessmentHistory.totalScore}%
+                  </div>
+                </div>
+                <div>
+                  <h3 className="text-xl font-black text-brand-900 uppercase tracking-tight">
+                    Financial Health Status
+                  </h3>
+                  <p className="text-sm text-gray-500 font-medium mt-1">
+                    Last check: Today
+                  </p>
                 </div>
               </div>
               
-              <div className="flex gap-4">
+              <div className="flex flex-col md:flex-row items-center gap-4 w-full md:w-auto">
                 <button 
                   onClick={() => setShowHistory(!showHistory)}
                   className="flex items-center gap-2 text-xs font-bold text-brand-900 uppercase tracking-widest hover:text-brand-gold transition-colors"
                 >
-                  {showHistory ? 'Hide Details' : 'Review Answers'} <ChevronDown className={`transition-transform ${showHistory ? 'rotate-180' : ''}`} size={16} />
+                  {showHistory ? 'Close Review' : 'See Breakdown'} 
+                  <ChevronDown className={`transition-transform duration-300 ${showHistory ? 'rotate-180' : ''}`} size={16} />
                 </button>
                 
                 {/* DYNAMIC CTA BASED ON SCORE */}
                 {assessmentHistory.totalScore < 50 ? (
-                   <Button size="sm" className="bg-red-600 hover:bg-red-700 text-white" onClick={() => window.location.hash = '#contact'}>
-                      Critical: Book Urgent Review
+                   <Button size="sm" className="w-full md:w-auto bg-red-600 hover:bg-red-700 text-white border-0" onClick={() => window.location.hash = '#contact'}>
+                      <AlertTriangle size={16} className="mr-2" /> Critical: Book Urgent Review
                    </Button>
                 ) : assessmentHistory.totalScore < 80 ? (
-                   <Button size="sm" variant="secondary" onClick={() => window.location.hash = '#contact'}>
-                      Improve Score: Strategy Call
+                   <Button size="sm" variant="secondary" className="w-full md:w-auto" onClick={() => window.location.hash = '#contact'}>
+                      <TrendingUp size={16} className="mr-2" /> Improve Score: Strategy Call
                    </Button>
                 ) : (
-                   <Button size="sm" className="bg-emerald-600 hover:bg-emerald-700" onClick={() => window.location.hash = '#contact'}>
-                      Score High: Discuss Expansion
+                   <Button size="sm" className="w-full md:w-auto bg-emerald-600 hover:bg-emerald-700 border-0" onClick={() => window.location.hash = '#contact'}>
+                      <CheckCircle2 size={16} className="mr-2" /> Score High: Discuss Expansion
                    </Button>
                 )}
               </div>
@@ -123,36 +159,38 @@ const UserDashboard: React.FC<UserDashboardProps> = ({ onTriggerAssessment }) =>
 
             {/* EXPANDABLE HISTORY VIEW */}
             {showHistory && (
-              <div className="mt-8 pt-8 border-t border-gray-100 grid md:grid-cols-2 gap-8">
-                {assessmentHistory.sections && Object.keys(assessmentHistory.sections).map((sectionKey: string, idx: number) => (
-                  <div key={idx} className="bg-gray-50 rounded-2xl p-6">
-                    <h4 className="font-bold text-brand-900 uppercase tracking-wider text-xs mb-4 border-b border-gray-200 pb-2">
-                      {sectionKey}
+              <div className="mt-8 pt-8 border-t border-gray-100 animate-fadeIn">
+                <div className="grid md:grid-cols-2 gap-8">
+                  {/* Detailed Breakdown */}
+                  <div className="space-y-4">
+                    <h4 className="font-bold text-brand-900 uppercase tracking-wider text-xs mb-4">
+                      Section Performance
                     </h4>
-                    <div className="space-y-4">
-                       {/* This maps through the stored answers provided the structure allows. 
-                           If localStorage only stores the score, we display the score. 
-                           Assuming standard IWS Health Score structure matches */}
-                       <div className="flex justify-between items-center">
-                          <span className="text-sm text-gray-600">Section Score</span>
-                          <span className="font-black text-brand-900">{assessmentHistory.sections[sectionKey]} / 100</span>
-                       </div>
-                    </div>
+                    {assessmentHistory.sections && Object.entries(assessmentHistory.sections).map(([key, score]: [string, any]) => (
+                      <div key={key} className="flex items-center justify-between bg-gray-50 p-4 rounded-xl">
+                        <span className="text-sm font-bold text-brand-900 capitalize">{key.replace(/([A-Z])/g, ' $1').trim()}</span>
+                        <span className={`font-black ${getScoreColor(score)}`}>{score}/100</span>
+                      </div>
+                    ))}
                   </div>
-                ))}
-                
-                {/* Full Breakdown Explanation */}
-                <div className="md:col-span-2 bg-brand-900 text-white rounded-2xl p-6 mt-4">
-                  <h4 className="font-bold uppercase tracking-wider text-xs mb-2 text-brand-gold">
-                    Strategic Recommendation
-                  </h4>
-                  <p className="text-sm leading-relaxed opacity-90">
-                    Based on your score of <strong>{assessmentHistory.totalScore}%</strong>, your business is currently in the 
-                    <strong> {assessmentHistory.totalScore < 50 ? 'VULNERABLE' : assessmentHistory.totalScore < 80 ? 'STABLE' : 'OPTIMIZED'} </strong> 
-                    phase. {assessmentHistory.totalScore < 50 
-                      ? "Immediate intervention is required to decouple your personal assets from business risk." 
-                      : "You have a solid foundation. The next step is automating compliance and wealth extraction."}
-                  </p>
+
+                  {/* Strategic Insight */}
+                  <div className="bg-brand-900 text-white rounded-2xl p-6 flex flex-col justify-center">
+                    <h4 className="font-bold uppercase tracking-wider text-xs mb-4 text-brand-gold flex items-center gap-2">
+                      <Shield size={14} /> Intelligence Report
+                    </h4>
+                    <p className="text-sm leading-relaxed opacity-90 mb-4">
+                      Your business architecture is currently in the 
+                      <strong> {assessmentHistory.totalScore < 50 ? 'VULNERABLE PHASE' : assessmentHistory.totalScore < 80 ? 'STABILIZATION PHASE' : 'OPTIMIZATION PHASE'}</strong>.
+                    </p>
+                    <p className="text-sm leading-relaxed opacity-90">
+                      {assessmentHistory.totalScore < 50 
+                        ? "Immediate intervention is required to decouple your personal assets from business risk. Your structural sovereignty is compromised." 
+                        : assessmentHistory.totalScore < 80 
+                        ? "You have a solid foundation, but operational friction is slowing you down. Automation and tighter compliance loops are your next step."
+                        : "You are operating at peak efficiency. The focus now shifts from 'protection' to 'multiplication' and asset acquisition."}
+                    </p>
+                  </div>
                 </div>
               </div>
             )}
@@ -243,44 +281,23 @@ const UserDashboard: React.FC<UserDashboardProps> = ({ onTriggerAssessment }) =>
               </div>
             </div>
 
-            {/* 2. Financial Health Mini-Score */}
-            <div className="bg-white rounded-[2.5rem] p-8 shadow-sm border border-brand-900/5">
+            {/* 2. Mini Score Widget (Only shows simple score here, detailed view is above) */}
+            <div className="bg-white rounded-[2.5rem] p-8 shadow-sm border border-brand-900/5 text-center">
               <h3 className="text-lg font-black text-brand-900 uppercase tracking-tight mb-2">
-                Battle Readiness
+                Operational Pulse
               </h3>
-              <p className="text-xs text-gray-500 mb-6">Last assessment: Today</p>
+              <p className="text-xs text-gray-500 mb-6">Real-time business vitality</p>
               
-              <div className="flex items-center justify-center py-4">
-                <div className="relative w-32 h-32">
-                  <svg className="w-full h-full" viewBox="0 0 36 36">
-                    <path
-                      d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
-                      fill="none"
-                      stroke="#f1f5f9"
-                      strokeWidth="3"
-                    />
-                    <path
-                      d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
-                      fill="none"
-                      stroke="#d4af37"
-                      strokeWidth="3"
-                      strokeDasharray={`${assessmentHistory ? assessmentHistory.totalScore : 0}, 100`}
-                    />
-                  </svg>
-                  <div className="absolute inset-0 flex flex-col items-center justify-center text-brand-900">
-                    <span className="text-3xl font-black">{assessmentHistory ? assessmentHistory.totalScore : 0}</span>
-                    <span className="text-[8px] font-bold uppercase tracking-widest opacity-50">Score</span>
-                  </div>
-                </div>
+              <div className="inline-flex items-center justify-center p-6 bg-brand-50 rounded-full mb-4">
+                 <CheckCircle2 size={32} className={assessmentHistory?.totalScore >= 80 ? 'text-emerald-600' : 'text-brand-900'} />
               </div>
               
-              <div className="text-center">
-                <p className="text-sm font-bold text-brand-900">Optimize Cash Flow</p>
+              <div className="space-y-2">
                 <button 
                   onClick={onTriggerAssessment}
-                  className="text-[10px] text-brand-gold font-black uppercase tracking-widest mt-2 hover:underline"
+                  className="w-full py-3 bg-brand-900 text-white rounded-xl text-xs font-bold uppercase tracking-widest hover:bg-brand-gold hover:text-brand-900 transition-all"
                 >
-                  Recalculate Strategy
+                  Recalculate
                 </button>
               </div>
             </div>
