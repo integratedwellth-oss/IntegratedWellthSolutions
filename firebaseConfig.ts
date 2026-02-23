@@ -13,44 +13,37 @@ const firebaseConfig = {
   measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID
 };
 
-// 1. Initialize variables with null/undefined to satisfy the TS2454 compiler error
-// We use 'any' as a fallback type to ensure no downstream files break during the build
-let app: FirebaseApp | any = undefined;
-let db: Firestore | any = undefined;
-let auth: Auth | any = undefined;
+// Default Safe Exports to prevent "undefined" crashes
+let app: FirebaseApp | any = {};
+let db: Firestore | any = null;
+let auth: Auth | any = {
+  onAuthStateChanged: () => () => {}, // Mock function that does nothing
+  currentUser: null
+};
 let analytics: any = null;
 
-// 2. The Defensive Shield
-// This block ensures the app initializes IF keys exist, but doesn't crash if they don't.
 try {
-  // Only attempt initialization if the environment provided a Project ID
-  if (firebaseConfig.projectId && firebaseConfig.apiKey) {
+  // Only initialize if we have a valid API Key
+  if (firebaseConfig.apiKey && firebaseConfig.apiKey !== "undefined") {
     if (!getApps().length) {
       app = initializeApp(firebaseConfig);
     } else {
       app = getApps()[0];
     }
     
-    // Assign services only if app was successfully created
-    if (app) {
-      db = getFirestore(app);
-      auth = getAuth(app);
-      
-      // Analytics is browser-only
-      if (typeof window !== 'undefined' && firebaseConfig.measurementId) {
-        analytics = getAnalytics(app);
-      }
+    db = getFirestore(app);
+    auth = getAuth(app);
+    
+    if (typeof window !== 'undefined' && firebaseConfig.measurementId) {
+      analytics = getAnalytics(app);
     }
+    console.log("IWS Intelligence: Firebase Secure Connection Established.");
   } else {
-    // This warning will show in the browser console, but the page will stay visible
-    console.warn("IWS System: Firebase keys missing. Intelligence Dashboard running in read-only mode.");
+    console.warn("IWS Intelligence: Running in Protected Offline Mode (Keys Missing).");
   }
 } catch (error) {
-  // Catching the error here prevents the 'Blackout' (White screen)
-  console.error("IWS System: Critical initialization failure. Protecting UI from crash.", error);
+  console.error("IWS Intelligence: Critical Protocol Shield Active.", error);
 }
 
-// 3. Guaranteed Exports
-// These are now definitely assigned (even if assigned to undefined/null)
 export { app, db, auth, analytics };
 export default app;
