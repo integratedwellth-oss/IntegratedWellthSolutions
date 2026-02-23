@@ -1,13 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { db, auth } from '../firebaseConfig';
-import { collection, getDocs, query, where } from 'firebase/firestore';
+import { collection, getDocs, query, where, orderBy } from 'firebase/firestore';
 import { GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from 'firebase/auth';
-import { LogOut, RefreshCcw, Layout, FileText, ChevronRight, Calculator, Receipt, Box, FileSpreadsheet, CreditCard, Lock } from 'lucide-react';
+import { Lock, LogOut, FileText, RefreshCcw, X, ChevronRight, Layout, Calculator, Receipt, Box, FileSpreadsheet, CreditCard } from 'lucide-react';
 
 const UserDashboard: React.FC = () => {
   const [user, setUser] = useState<any>(null);
   const [myAssessments, setMyAssessments] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
+  const [selectedResult, setSelectedResult] = useState<any>(null);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
@@ -22,11 +23,16 @@ const UserDashboard: React.FC = () => {
   const fetchMyData = async (email: string) => {
     setLoading(true);
     try {
+      // Query Firebase for assessments linked to this email
       const q = query(collection(db, 'assessments'), where('email', '==', email));
       const snap = await getDocs(q);
       const data = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      
+      // Sort by latest first
       setMyAssessments(data.sort((a: any, b: any) => (b.timestamp?.seconds || 0) - (a.timestamp?.seconds || 0)));
-    } catch (err) { console.error(err); }
+    } catch (err) {
+      console.error("Error fetching data:", err);
+    }
     setLoading(false);
   };
 
@@ -65,8 +71,12 @@ const UserDashboard: React.FC = () => {
             </p>
           </div>
           <div className="flex gap-4">
-            <button onClick={() => user?.email && fetchMyData(user.email)} className="p-4 bg-white rounded-2xl shadow-sm border border-[#134e4a]/10 hover:bg-[#134e4a] hover:text-white transition-all"><RefreshCcw size={18} className={loading ? 'animate-spin' : ''} /></button>
-            <button onClick={() => signOut(auth)} className="px-8 py-4 bg-white text-rose-600 rounded-2xl text-xs font-black uppercase border border-rose-600/20 hover:bg-rose-600 hover:text-white transition-all shadow-sm">Logout</button>
+            <button onClick={() => user?.email && fetchMyData(user.email)} className="p-4 bg-white rounded-2xl shadow-sm border border-[#134e4a]/10 hover:bg-[#134e4a] hover:text-white transition-all">
+              <RefreshCcw size={18} className={loading ? 'animate-spin' : ''} />
+            </button>
+            <button onClick={() => signOut(auth)} className="px-8 py-4 bg-white text-rose-600 rounded-2xl text-xs font-black uppercase border border-rose-600/20 hover:bg-rose-600 hover:text-white transition-all shadow-sm">
+              Logout
+            </button>
           </div>
         </div>
 
@@ -75,8 +85,13 @@ const UserDashboard: React.FC = () => {
            {/* LEFT COLUMN: THEIR DATA */}
            <div className="lg:col-span-8 space-y-8">
               <h3 className="text-2xl font-black uppercase tracking-tighter">My Diagnostics</h3>
-              {myAssessments.length === 0 ? (
-                <div className="bg-white p-16 rounded-[3rem] text-center border-2 border-dashed border-[#134e4a]/20 shadow-sm">
+              {loading ? (
+                <div className="bg-white p-20 rounded-[3rem] text-center shadow-sm">
+                   <Loader2 className="animate-spin text-[#d4af37] mx-auto mb-4" size={32} />
+                   <p className="text-[#134e4a]/40 font-black uppercase tracking-[0.3em]">Syncing Records...</p>
+                </div>
+              ) : myAssessments.length === 0 ? (
+                <div className="bg-white p-20 rounded-[3rem] text-center border-2 border-dashed border-[#134e4a]/20 shadow-sm">
                     <div className="w-16 h-16 bg-[#f0fdfa] text-[#134e4a] rounded-full flex items-center justify-center mx-auto mb-4"><FileText size={24}/></div>
                     <p className="text-[#134e4a]/60 font-black uppercase tracking-[0.2em] mb-6">No Records Found</p>
                     <button onClick={() => window.location.hash = '#assessment'} className="bg-[#134e4a] text-white px-8 py-4 rounded-xl font-black uppercase tracking-widest text-xs shadow-lg hover:bg-[#d4af37] hover:text-[#134e4a] transition-all">Take Initial Audit</button>
@@ -84,31 +99,29 @@ const UserDashboard: React.FC = () => {
               ) : (
                 <div className="grid gap-6">
                   {myAssessments.map((item) => (
-                    <div key={item.id} className="bg-white p-8 md:p-10 rounded-[2.5rem] border border-[#134e4a]/10 shadow-lg relative overflow-hidden">
-                       {/* Decorative Score Background */}
-                       <div className="absolute -right-10 -top-10 text-[150px] font-black text-[#f0fdfa] opacity-50 pointer-events-none select-none">
-                         {item.score}
-                       </div>
+                    <div key={item.id} className="bg-white p-8 md:p-10 rounded-[2.5rem] border border-[#134e4a]/10 shadow-lg relative overflow-hidden flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
                        
-                       <div className="relative z-10">
-                         <span className="inline-block px-3 py-1 bg-[#d4af37]/20 text-[#134e4a] rounded-full text-[10px] font-black uppercase tracking-widest mb-4">
-                           {item.timestamp?.toDate ? item.timestamp.toDate().toLocaleDateString() : 'Recent'}
-                         </span>
-                         <h4 className="text-3xl font-black uppercase text-[#134e4a] leading-none mb-2">{item.persona}</h4>
-                         <p className="text-xl font-bold text-[#d4af37] mb-8">Score: {item.score} / {item.maxScore}</p>
-                         
-                         <div className="space-y-4">
-                           <p className="text-xs font-black uppercase tracking-widest text-[#134e4a]/40 border-b border-[#134e4a]/10 pb-2">Discovery Trail</p>
-                           {item.intelligence_report?.map((ans: any, i: number) => (
-                             <div key={i} className="flex gap-4 items-start">
-                               <ChevronRight size={16} className="text-[#d4af37] shrink-0 mt-0.5" />
-                               <div>
-                                 <p className="text-xs font-bold text-[#134e4a]/70">{ans.q}</p>
-                                 <p className="text-sm font-black text-[#134e4a]">{ans.a}</p>
-                               </div>
-                             </div>
-                           ))}
+                       <div className="flex items-center gap-6 z-10 relative">
+                         <div className="w-16 h-16 bg-[#f0fdfa] rounded-2xl flex items-center justify-center text-[#134e4a] font-black text-xl shadow-inner border border-[#134e4a]/10">
+                           {item.score}
                          </div>
+                         <div>
+                            <h4 className="text-xs font-black text-[#d4af37] uppercase tracking-widest mb-1">
+                              {item.timestamp?.toDate ? item.timestamp.toDate().toLocaleDateString() : 'Recent'}
+                            </h4>
+                            <p className="text-xl font-black uppercase text-[#134e4a] leading-none">{item.persona}</p>
+                         </div>
+                       </div>
+
+                       <button 
+                         onClick={() => setSelectedResult(item)} 
+                         className="w-full md:w-auto px-10 py-4 bg-[#134e4a] text-white rounded-2xl font-black uppercase text-[10px] tracking-widest flex items-center justify-center gap-3 hover:bg-[#d4af37] hover:text-[#134e4a] transition-all shadow-lg z-10"
+                       >
+                         View Full Brief <ChevronRight size={14}/>
+                       </button>
+
+                       <div className="absolute -right-10 -bottom-10 text-[120px] font-black text-[#f0fdfa] opacity-50 pointer-events-none select-none">
+                         {item.score}
                        </div>
                     </div>
                   ))}
@@ -146,6 +159,49 @@ const UserDashboard: React.FC = () => {
 
         </div>
       </div>
+
+      {/* POPUP BRIEF */}
+      {selectedResult && (
+        <div className="fixed inset-0 z-[500] flex items-center justify-center p-4 bg-[#134e4a]/90 backdrop-blur-md">
+          <div className="bg-white text-[#134e4a] w-full max-w-2xl rounded-[3rem] p-8 md:p-12 shadow-2xl overflow-y-auto max-h-[90vh] animate-fadeIn">
+            <div className="flex justify-between items-start mb-8 border-b border-[#134e4a]/10 pb-6">
+              <div>
+                <h3 className="text-3xl font-black uppercase tracking-tighter leading-none text-[#134e4a]">{selectedResult.persona}</h3>
+                <p className="text-[#d4af37] font-black uppercase text-[10px] mt-2 tracking-widest">
+                  Score: {selectedResult.score} / {selectedResult.maxScore}
+                </p>
+              </div>
+              <button onClick={() => setSelectedResult(null)} className="p-2 bg-[#f0fdfa] rounded-full hover:bg-gray-200 transition-all text-[#134e4a]"><X /></button>
+            </div>
+
+            <div className="space-y-8">
+               <div className="bg-[#f0fdfa] p-6 md:p-8 rounded-3xl border border-[#134e4a]/10">
+                  <p className="text-lg font-medium italic text-[#134e4a]/80 mb-6 leading-relaxed">
+                    "{selectedResult.diagnosis}"
+                  </p>
+                  
+                  <div className="space-y-6 pt-6 border-t border-[#134e4a]/10">
+                    <p className="text-[10px] font-black uppercase tracking-widest text-[#134e4a]/40 mb-4">Your Answers</p>
+                    {selectedResult.intelligence_report?.map((item: any, idx: number) => (
+                       <div key={idx} className="space-y-1">
+                          <p className="text-xs font-bold text-[#134e4a]/60 leading-tight">{item.q}</p>
+                          <p className="text-sm font-black text-[#134e4a] flex items-center gap-2 mt-1">
+                             <ChevronRight size={14} className="text-[#d4af37]" /> {item.a}
+                          </p>
+                       </div>
+                    ))}
+                  </div>
+               </div>
+
+               <div className="text-center pt-4 border-t border-[#134e4a]/10">
+                 <button onClick={() => window.open('https://calendly.com/enquiries-integratedwellth/30min', '_blank')} className="w-full bg-[#d4af37] text-[#134e4a] py-6 rounded-2xl font-black uppercase text-sm tracking-widest shadow-xl hover:scale-105 transition-all">
+                   Book Strategy Review Session
+                 </button>
+               </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
