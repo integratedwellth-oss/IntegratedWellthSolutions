@@ -1,40 +1,45 @@
 import React, { useState, useEffect } from 'react';
 import { db, auth } from '../firebaseConfig';
-import { collection, getDocs, query, where } from 'firebase/firestore';
+import { collection, onSnapshot, query, where } from 'firebase/firestore';
 import { GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from 'firebase/auth';
-import { Lock, LogOut, FileText, RefreshCcw, X, ChevronRight, Layout, Calculator, Receipt, Box, FileSpreadsheet, CreditCard, Loader2, Mail, MessageSquare } from 'lucide-react';
+import { Lock, LogOut, FileText, X, ChevronRight, Layout, Calculator, Receipt, Box, FileSpreadsheet, CreditCard, Loader2, Mail, MessageSquare } from 'lucide-react';
 
-// THIS WAS MISSING - It tells TypeScript that this component accepts the onTriggerAssessment prop from App.tsx
-interface UserDashboardProps {
+// CRITICAL FIX: This interface allows App.tsx to pass the function without TypeScript crashing
+export interface UserDashboardProps {
   onTriggerAssessment?: () => void;
 }
 
 const UserDashboard: React.FC<UserDashboardProps> = ({ onTriggerAssessment }) => {
   const [user, setUser] = useState<any>(null);
   const [myAssessments, setMyAssessments] = useState<any[]>([]);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [selectedResult, setSelectedResult] = useState<any>(null);
 
+  // REAL-TIME DATA LISTENER
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+    let unsubscribeSnapshot: () => void;
+
+    const unsubscribeAuth = onAuthStateChanged(auth, (currentUser) => {
       setUser(currentUser);
       if (currentUser && currentUser.email) {
-        fetchMyData(currentUser.email);
+        // Use onSnapshot for REAL-TIME updates. No refresh required.
+        const q = query(collection(db, 'assessments'), where('email', '==', currentUser.email));
+        unsubscribeSnapshot = onSnapshot(q, (snap) => {
+          const data = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+          setMyAssessments(data.sort((a: any, b: any) => (b.timestamp?.seconds || 0) - (a.timestamp?.seconds || 0)));
+          setLoading(false);
+        });
+      } else {
+        setMyAssessments([]);
+        setLoading(false);
       }
     });
-    return () => unsubscribe();
-  }, []);
 
-  const fetchMyData = async (email: string) => {
-    setLoading(true);
-    try {
-      const q = query(collection(db, 'assessments'), where('email', '==', email));
-      const snap = await getDocs(q);
-      const data = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-      setMyAssessments(data.sort((a: any, b: any) => (b.timestamp?.seconds || 0) - (a.timestamp?.seconds || 0)));
-    } catch (err) { console.error(err); }
-    setLoading(false);
-  };
+    return () => {
+      unsubscribeAuth();
+      if (unsubscribeSnapshot) unsubscribeSnapshot();
+    };
+  }, []);
 
   const UPCOMING_SERVICES = [
     { name: "IWS Books", icon: <Calculator size={28} />, desc: "Automated Ledger" },
@@ -43,6 +48,8 @@ const UserDashboard: React.FC<UserDashboardProps> = ({ onTriggerAssessment }) =>
     { name: "IWS Invoice", icon: <FileSpreadsheet size={28} />, desc: "Client Billing" },
     { name: "IWS Pay", icon: <CreditCard size={28} />, desc: "Payment Gateway" }
   ];
+
+  if (loading) return <div className="min-h-screen bg-[#f0fdfa] flex items-center justify-center"><Loader2 className="animate-spin text-[#134e4a]" size={48}/></div>;
 
   if (!user) return (
     <div className="min-h-screen bg-[#f0fdfa] flex items-center justify-center p-6 font-sans">
@@ -62,6 +69,7 @@ const UserDashboard: React.FC<UserDashboardProps> = ({ onTriggerAssessment }) =>
     <div className="min-h-screen bg-[#f0fdfa] text-[#134e4a] font-sans pt-32 pb-20 px-6 text-left">
       <div className="max-w-7xl mx-auto">
         
+        {/* HEADER */}
         <div className="flex flex-col md:flex-row justify-between items-end mb-12 border-b border-[#134e4a]/10 pb-8 gap-6">
           <div>
             <h1 className="text-4xl md:text-5xl font-black uppercase tracking-tighter leading-none font-sora">My Hub</h1>
@@ -69,25 +77,22 @@ const UserDashboard: React.FC<UserDashboardProps> = ({ onTriggerAssessment }) =>
               <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span> {user.email}
             </p>
           </div>
-          <div className="flex gap-4">
-            <button onClick={() => user?.email && fetchMyData(user.email)} className="p-4 bg-white rounded-2xl shadow-sm border border-[#134e4a]/10 hover:bg-[#134e4a] hover:text-white transition-all"><RefreshCcw size={18} className={loading ? 'animate-spin' : ''} /></button>
-            <button onClick={() => signOut(auth)} className="px-6 md:px-8 py-4 bg-white text-rose-600 rounded-2xl text-xs font-black uppercase border border-rose-600/20 hover:bg-rose-600 hover:text-white transition-all shadow-sm">Logout</button>
-          </div>
+          <button onClick={() => signOut(auth)} className="px-6 md:px-8 py-4 bg-white text-rose-600 rounded-2xl text-xs font-black uppercase border border-rose-600/20 hover:bg-rose-600 hover:text-white transition-all shadow-sm">
+            Logout
+          </button>
         </div>
 
         <div className="grid lg:grid-cols-12 gap-12">
            
+           {/* LEFT COLUMN: THEIR DATA */}
            <div className="lg:col-span-8 space-y-8">
               <h3 className="text-2xl font-black uppercase tracking-tighter">My Diagnostics</h3>
               
-              {loading ? (
-                <div className="bg-white p-20 rounded-[3rem] text-center shadow-sm">
-                   <Loader2 className="animate-spin text-[#d4af37] mx-auto mb-4" size={32} />
-                   <p className="text-[#134e4a]/40 font-black uppercase tracking-[0.3em]">Syncing Records...</p>
-                </div>
-              ) : myAssessments.length === 0 ? (
-                <div className="bg-white p-12 md:p-20 rounded-[3rem] text-center border-2 border-dashed border-[#134e4a]/20 shadow-sm">
-                    <div className="w-16 h-16 bg-[#f0fdfa] text-[#134e4a] rounded-full flex items-center justify-center mx-auto mb-4"><FileText size={24}/></div>
+              {myAssessments.length === 0 ? (
+                <div className="bg-white p-12 md:p-20 rounded-[3rem] text-center border-2 border-dashed border-[#134e4a]/20 shadow-sm transition-all duration-500">
+                    <div className="w-16 h-16 bg-[#f0fdfa] text-[#134e4a] rounded-full flex items-center justify-center mx-auto mb-4">
+                      <FileText size={24}/>
+                    </div>
                     <p className="text-[#134e4a]/60 font-black uppercase tracking-[0.2em] mb-6">No Records Found</p>
                     <button 
                       onClick={() => onTriggerAssessment && onTriggerAssessment()} 
@@ -99,7 +104,7 @@ const UserDashboard: React.FC<UserDashboardProps> = ({ onTriggerAssessment }) =>
               ) : (
                 <div className="grid gap-6">
                   {myAssessments.map((item) => (
-                    <div key={item.id} className="bg-white p-8 md:p-10 rounded-[2.5rem] border border-[#134e4a]/10 shadow-lg relative overflow-hidden flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+                    <div key={item.id} className="bg-white p-8 md:p-10 rounded-[2.5rem] border border-[#134e4a]/10 shadow-lg relative overflow-hidden flex flex-col md:flex-row justify-between items-start md:items-center gap-6 hover:shadow-2xl transition-all duration-500">
                        
                        <div className="flex items-center gap-6 z-10 relative">
                          <div className="w-16 h-16 bg-[#f0fdfa] rounded-2xl flex items-center justify-center text-[#134e4a] font-black text-xl shadow-inner border border-[#134e4a]/10">
@@ -107,7 +112,7 @@ const UserDashboard: React.FC<UserDashboardProps> = ({ onTriggerAssessment }) =>
                          </div>
                          <div>
                             <h4 className="text-xs font-black text-[#d4af37] uppercase tracking-widest mb-1">
-                              {item.timestamp?.toDate ? item.timestamp.toDate().toLocaleDateString() : 'Recent'}
+                              {item.timestamp?.toDate ? item.timestamp.toDate().toLocaleDateString() : 'Just Now'}
                             </h4>
                             <p className="text-xl font-black uppercase text-[#134e4a] leading-none">{item.persona}</p>
                          </div>
@@ -115,11 +120,12 @@ const UserDashboard: React.FC<UserDashboardProps> = ({ onTriggerAssessment }) =>
 
                        <button 
                          onClick={() => setSelectedResult(item)} 
-                         className="w-full md:w-auto px-10 py-4 bg-[#134e4a] text-white rounded-2xl font-black uppercase text-[10px] tracking-widest flex items-center justify-center gap-3 hover:bg-[#d4af37] hover:text-[#134e4a] transition-all shadow-lg z-10"
+                         className="w-full md:w-auto px-10 py-4 bg-[#134e4a] text-white rounded-2xl font-black uppercase text-[10px] tracking-widest flex items-center justify-center gap-3 hover:bg-[#d4af37] hover:text-[#134e4a] transition-all shadow-lg z-10 group"
                        >
-                         View Full Brief <ChevronRight size={14}/>
+                         View Full Brief <ChevronRight size={14} className="group-hover:translate-x-1 transition-transform"/>
                        </button>
 
+                       {/* Decorative Score Background */}
                        <div className="absolute -right-10 -bottom-10 text-[120px] font-black text-[#f0fdfa] opacity-50 pointer-events-none select-none">
                          {item.score}
                        </div>
@@ -129,6 +135,7 @@ const UserDashboard: React.FC<UserDashboardProps> = ({ onTriggerAssessment }) =>
               )}
            </div>
 
+           {/* RIGHT COLUMN: UPCOMING SAAS SERVICES */}
            <div className="lg:col-span-4 space-y-8">
               <h3 className="text-2xl font-black uppercase tracking-tighter">Software Ecosystem</h3>
               <div className="bg-[#3E2723] rounded-[3rem] p-8 shadow-2xl relative overflow-hidden text-white border border-[#d4af37]/20">
@@ -138,7 +145,7 @@ const UserDashboard: React.FC<UserDashboardProps> = ({ onTriggerAssessment }) =>
                  <div className="grid grid-cols-1 gap-4">
                     {UPCOMING_SERVICES.map((srv, i) => (
                       <div key={i} className="group flex items-center gap-4 p-4 rounded-2xl bg-white/5 hover:bg-white/10 border border-white/5 hover:border-[#d4af37]/50 transition-all cursor-not-allowed">
-                         <div className="w-12 h-12 rounded-xl bg-black/40 flex items-center justify-center text-white group-hover:text-[#d4af37] group-hover:scale-110 transition-all shadow-inner">
+                         <div className="w-12 h-12 rounded-xl bg-black/40 flex items-center justify-center text-white group-hover:text-[#d4af37] group-hover:scale-110 transition-all shadow-inner duration-300">
                             {srv.icon}
                          </div>
                          <div>
@@ -159,9 +166,10 @@ const UserDashboard: React.FC<UserDashboardProps> = ({ onTriggerAssessment }) =>
         </div>
       </div>
 
+      {/* POPUP BRIEF (Shows the questions and answers) */}
       {selectedResult && (
         <div className="fixed inset-0 z-[500] flex items-center justify-center p-4 bg-[#134e4a]/90 backdrop-blur-md">
-          <div className="bg-white text-[#134e4a] w-full max-w-2xl rounded-[3rem] p-8 md:p-12 shadow-2xl overflow-y-auto max-h-[90vh] animate-fadeIn">
+          <div className="bg-white text-[#134e4a] w-full max-w-2xl rounded-[3rem] p-8 md:p-12 shadow-2xl overflow-y-auto max-h-[90vh]">
             <div className="flex justify-between items-start mb-8 border-b border-[#134e4a]/10 pb-6">
               <div>
                 <h3 className="text-3xl font-black uppercase tracking-tighter leading-none text-[#134e4a]">{selectedResult.persona}</h3>
@@ -169,7 +177,7 @@ const UserDashboard: React.FC<UserDashboardProps> = ({ onTriggerAssessment }) =>
                   Score: {selectedResult.score} / {selectedResult.maxScore}
                 </p>
               </div>
-              <button onClick={() => setSelectedResult(null)} className="p-2 bg-[#f0fdfa] rounded-full hover:bg-gray-200 transition-all text-[#134e4a]"><X /></button>
+              <button onClick={() => setSelectedResult(null)} className="p-2 bg-[#f0fdfa] rounded-full hover:bg-gray-200 transition-all text-[#134e4a] hover:rotate-90 duration-300"><X /></button>
             </div>
 
             <div className="space-y-8">
