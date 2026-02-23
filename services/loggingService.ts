@@ -2,39 +2,39 @@ import { db } from '../firebaseConfig';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 
 export const logUserActivity = async (action: string, details: string) => {
-  console.log(`[ACTION ATTEMPT]: ${action} - ${details}`);
+  console.log(`[LOG ATTEMPT]: ${action} - ${details}`);
   
-  // If database failed to load, don't crash the app
+  // Safety check: Don't run if Firestore (db) failed to initialize
   if (!db) {
-    console.warn("Database not initialized. Activity not saved to cloud.");
+    console.warn("Cloud logging unavailable: Firestore is not initialized.");
     return;
   }
 
   try {
     await addDoc(collection(db, 'user_logs'), {
-      action: action,
-      details: details,
+      action,
+      details,
       timestamp: serverTimestamp(),
       userAgent: navigator.userAgent,
       url: window.location.href,
-      platform: 'IWS_DASHBOARD'
+      platform: 'IWS_DASHBOARD_WEB'
     });
   } catch (error) {
-    console.error("Failed to sync activity to cloud:", error);
+    console.error("Cloud logging failed:", error);
   }
 };
 
 export const saveAssessmentResult = (result: any) => {
   try {
-    // Save to local storage first (Always works even without internet)
+    // Local storage is our primary 'no-blackout' backup
     localStorage.setItem('iws_health_score_results', JSON.stringify(result));
     
-    // Attempt cloud sync
+    // Attempt to notify admin
     logUserActivity(
-      'Assessment Result Saved', 
-      `Score: ${result.totalScore}%`
+      'Assessment Saved', 
+      `Total Score: ${result.totalScore}%`
     );
   } catch (error) {
-    console.error("Critical: Could not save assessment locally.");
+    console.error("Critical: Could not save to browser storage.");
   }
 };
