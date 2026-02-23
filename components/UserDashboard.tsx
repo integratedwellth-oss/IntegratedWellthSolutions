@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
-  Shield, AlertTriangle, CheckCircle2, FileText, 
-  ArrowRight, Download, Calendar, Clock 
+  Shield, AlertTriangle, FileText, 
+  ArrowRight, Download, Calendar, Clock, ChevronDown, CheckCircle2 
 } from 'lucide-react';
 import Button from './Button';
 import ZohoFinanceWidget from './ZohoFinanceWidget';
@@ -25,7 +25,17 @@ interface UserDashboardProps {
 }
 
 const UserDashboard: React.FC<UserDashboardProps> = ({ onTriggerAssessment }) => {
-  const [activeTab, setActiveTab] = useState('overview');
+  // State to hold assessment history
+  const [assessmentHistory, setAssessmentHistory] = useState<any>(null);
+  const [showHistory, setShowHistory] = useState(false);
+
+  // Load assessment results from localStorage on mount
+  useEffect(() => {
+    const savedResults = localStorage.getItem('iws_health_score_results');
+    if (savedResults) {
+      setAssessmentHistory(JSON.parse(savedResults));
+    }
+  }, []);
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -53,7 +63,7 @@ const UserDashboard: React.FC<UserDashboardProps> = ({ onTriggerAssessment }) =>
               Command Center
             </h1>
             <p className="text-brand-900/60 font-medium">
-              Welcome back, <span className="text-brand-gold font-bold">Thabo</span>. Your financial architecture is stable.
+              Welcome back. Your financial architecture is stable.
             </p>
           </div>
           
@@ -72,13 +82,90 @@ const UserDashboard: React.FC<UserDashboardProps> = ({ onTriggerAssessment }) =>
           </div>
         </div>
 
+        {/* --- NEW SECTION: ASSESSMENT REVIEW --- */}
+        {assessmentHistory && (
+          <div className="mb-12 bg-white rounded-[2.5rem] p-8 shadow-sm border border-brand-900/5 animate-slideInRight">
+            <div className="flex flex-col md:flex-row justify-between items-center gap-6">
+              <div>
+                <h3 className="text-xl font-black text-brand-900 uppercase tracking-tight mb-2">
+                  Last Assessment Results
+                </h3>
+                <div className="flex items-center gap-4">
+                    <span className="text-4xl font-black text-brand-gold">{assessmentHistory.totalScore}%</span>
+                    <span className="text-sm text-gray-500 font-medium">Financial Health Score</span>
+                </div>
+              </div>
+              
+              <div className="flex gap-4">
+                <button 
+                  onClick={() => setShowHistory(!showHistory)}
+                  className="flex items-center gap-2 text-xs font-bold text-brand-900 uppercase tracking-widest hover:text-brand-gold transition-colors"
+                >
+                  {showHistory ? 'Hide Details' : 'Review Answers'} <ChevronDown className={`transition-transform ${showHistory ? 'rotate-180' : ''}`} size={16} />
+                </button>
+                
+                {/* DYNAMIC CTA BASED ON SCORE */}
+                {assessmentHistory.totalScore < 50 ? (
+                   <Button size="sm" className="bg-red-600 hover:bg-red-700 text-white" onClick={() => window.location.hash = '#contact'}>
+                      Critical: Book Urgent Review
+                   </Button>
+                ) : assessmentHistory.totalScore < 80 ? (
+                   <Button size="sm" variant="secondary" onClick={() => window.location.hash = '#contact'}>
+                      Improve Score: Strategy Call
+                   </Button>
+                ) : (
+                   <Button size="sm" className="bg-emerald-600 hover:bg-emerald-700" onClick={() => window.location.hash = '#contact'}>
+                      Score High: Discuss Expansion
+                   </Button>
+                )}
+              </div>
+            </div>
+
+            {/* EXPANDABLE HISTORY VIEW */}
+            {showHistory && (
+              <div className="mt-8 pt-8 border-t border-gray-100 grid md:grid-cols-2 gap-8">
+                {assessmentHistory.sections && Object.keys(assessmentHistory.sections).map((sectionKey: string, idx: number) => (
+                  <div key={idx} className="bg-gray-50 rounded-2xl p-6">
+                    <h4 className="font-bold text-brand-900 uppercase tracking-wider text-xs mb-4 border-b border-gray-200 pb-2">
+                      {sectionKey}
+                    </h4>
+                    <div className="space-y-4">
+                       {/* This maps through the stored answers provided the structure allows. 
+                           If localStorage only stores the score, we display the score. 
+                           Assuming standard IWS Health Score structure matches */}
+                       <div className="flex justify-between items-center">
+                          <span className="text-sm text-gray-600">Section Score</span>
+                          <span className="font-black text-brand-900">{assessmentHistory.sections[sectionKey]} / 100</span>
+                       </div>
+                    </div>
+                  </div>
+                ))}
+                
+                {/* Full Breakdown Explanation */}
+                <div className="md:col-span-2 bg-brand-900 text-white rounded-2xl p-6 mt-4">
+                  <h4 className="font-bold uppercase tracking-wider text-xs mb-2 text-brand-gold">
+                    Strategic Recommendation
+                  </h4>
+                  <p className="text-sm leading-relaxed opacity-90">
+                    Based on your score of <strong>{assessmentHistory.totalScore}%</strong>, your business is currently in the 
+                    <strong> {assessmentHistory.totalScore < 50 ? 'VULNERABLE' : assessmentHistory.totalScore < 80 ? 'STABLE' : 'OPTIMIZED'} </strong> 
+                    phase. {assessmentHistory.totalScore < 50 
+                      ? "Immediate intervention is required to decouple your personal assets from business risk." 
+                      : "You have a solid foundation. The next step is automating compliance and wealth extraction."}
+                  </p>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
         {/* Main Grid Layout */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
           
           {/* LEFT COLUMN (8 cols) - Finance & Operations */}
           <div className="lg:col-span-8 space-y-8 animate-slideInRight" style={{ animationDelay: '100ms' }}>
             
-            {/* 1. ZOHO FINANCE WIDGET (The Core Feature) */}
+            {/* 1. IWS FINANCE WIDGET (REBRANDED) */}
             <ZohoFinanceWidget />
 
             {/* 2. Recent Documents */}
@@ -161,7 +248,7 @@ const UserDashboard: React.FC<UserDashboardProps> = ({ onTriggerAssessment }) =>
               <h3 className="text-lg font-black text-brand-900 uppercase tracking-tight mb-2">
                 Battle Readiness
               </h3>
-              <p className="text-xs text-gray-500 mb-6">Last assessment: 15 Jan 2026</p>
+              <p className="text-xs text-gray-500 mb-6">Last assessment: Today</p>
               
               <div className="flex items-center justify-center py-4">
                 <div className="relative w-32 h-32">
@@ -177,11 +264,11 @@ const UserDashboard: React.FC<UserDashboardProps> = ({ onTriggerAssessment }) =>
                       fill="none"
                       stroke="#d4af37"
                       strokeWidth="3"
-                      strokeDasharray="85, 100"
+                      strokeDasharray={`${assessmentHistory ? assessmentHistory.totalScore : 0}, 100`}
                     />
                   </svg>
                   <div className="absolute inset-0 flex flex-col items-center justify-center text-brand-900">
-                    <span className="text-3xl font-black">85</span>
+                    <span className="text-3xl font-black">{assessmentHistory ? assessmentHistory.totalScore : 0}</span>
                     <span className="text-[8px] font-bold uppercase tracking-widest opacity-50">Score</span>
                   </div>
                 </div>
