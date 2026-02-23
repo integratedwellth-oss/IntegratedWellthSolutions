@@ -13,7 +13,6 @@ exports.createInvoice = functions.https.onRequest((req, res) => {
     try {
       const { customerName, itemName, rate } = req.body;
       
-      // 1. Get Access Token using Secrets from Firebase Config
       const tokenParams = new URLSearchParams();
       tokenParams.append("refresh_token", process.env.ZOHO_REFRESH_TOKEN);
       tokenParams.append("client_id", process.env.ZOHO_CLIENT_ID);
@@ -23,7 +22,6 @@ exports.createInvoice = functions.https.onRequest((req, res) => {
       const tokenRes = await axios.post("https://accounts.zoho.com/oauth/v2/token", tokenParams);
       const accessToken = tokenRes.data.access_token;
 
-      // 2. Prepare Zoho Invoice Data
       const invoiceData = {
         customer_name: customerName,
         line_items: [{ name: itemName, rate: rate, quantity: 1 }]
@@ -32,7 +30,6 @@ exports.createInvoice = functions.https.onRequest((req, res) => {
       const form = new FormData();
       form.append("JSONString", JSON.stringify(invoiceData));
 
-      // 3. Send to Zoho
       const zohoRes = await axios.post(
         `https://www.zohoapis.com/invoice/v3/invoices?organization_id=${process.env.ZOHO_ORG_ID}`,
         form,
