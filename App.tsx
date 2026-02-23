@@ -1,7 +1,7 @@
 import React, { useState, useEffect, Suspense } from 'react';
 import { ArrowRight, Loader2 } from 'lucide-react';
 
-// Swiper CSS for Testimonials
+// Swiper CSS
 import 'swiper/css';
 import 'swiper/css/pagination';
 import 'swiper/css/navigation';
@@ -27,8 +27,9 @@ import WorkshopPage from './components/pages/WorkshopPage';
 import BlogPage from './components/pages/BlogPage';
 import ContactPage from './components/pages/ContactPage';
 import PrivacyPolicy from './components/PrivacyPolicy';
-import Dashboard from './components/Dashboard';
-import SummitPage from './components/pages/SummitPage'; // NEW PAGE
+import Dashboard from './components/Dashboard'; // Admin Dashboard
+import UserDashboard from './components/UserDashboard'; // NEW: Client Dashboard
+import SummitPage from './components/pages/SummitPage';
 
 // Solution Detail Pages
 import StartupSolutions from './components/audiences/StartupSolutions';
@@ -50,7 +51,7 @@ const App: React.FC = () => {
   useEffect(() => {
     let popupTimer: number | undefined;
     const hasSeenEvent = sessionStorage.getItem('hasSeenIWS_Event_Immediate');
-    const isSpecialPage = ['#warroom', '#intel', '#summit'].includes(window.location.hash);
+    const isSpecialPage = ['#warroom', '#intel', '#summit', '#my-intel'].includes(window.location.hash);
     
     if (!hasSeenEvent && !isSpecialPage) {
       popupTimer = window.setTimeout(() => setShowEventPopup(true), 800);
@@ -68,7 +69,7 @@ const App: React.FC = () => {
         const validViews = [
           'home', 'services', 'who-we-help', 'team', 'workshops', 'blog', 'contact', 
           'privacy', 'startups', 'existing-business', 'npos', 'individuals', 
-          'wellness', 'accountability', 'tracker', 'warroom', 'protocol', 'intel', 'summit'
+          'wellness', 'accountability', 'tracker', 'warroom', 'protocol', 'intel', 'summit', 'my-intel'
         ];
 
         if (['protocol', 'services'].includes(hash)) {
@@ -84,7 +85,6 @@ const App: React.FC = () => {
           setCurrentView('home');
         }
       } catch (e) {
-        console.error("Navigation error:", e);
         setCurrentView('home');
       }
     };
@@ -100,8 +100,9 @@ const App: React.FC = () => {
   const renderCurrentView = () => {
     try {
       switch (currentView) {
+        case 'my-intel': return <UserDashboard />; // CLIENT VIEW
         case 'summit': return <SummitPage />;
-        case 'intel': return <Dashboard />;
+        case 'intel': return <Dashboard />; // ADMIN VIEW
         case 'services': return <ServicesPage />;
         case 'who-we-help': return <WhoWeHelpPage />;
         case 'team': return <Team />;
@@ -125,13 +126,13 @@ const App: React.FC = () => {
     }
   };
 
-  const isFullPageMode = ['warroom', 'intel', 'summit'].includes(currentView);
+  const isFullPageMode = ['warroom', 'intel', 'summit', 'my-intel'].includes(currentView);
 
   return (
     <ErrorBoundary>
       <div className={`font-sans text-brand-900 bg-white min-h-screen flex flex-col selection:bg-brand-gold/20 ${(showAssessmentModal || showEventPopup) ? 'h-screen overflow-hidden' : ''}`}>
         
-        {currentView !== 'intel' && <Navbar onNavigate={(view) => { window.location.hash = `#${view}`; }} />}
+        {currentView !== 'intel' && currentView !== 'my-intel' && <Navbar onNavigate={(view) => { window.location.hash = `#${view}`; }} />}
         
         <main className="flex-grow">
           <Suspense fallback={
@@ -145,32 +146,7 @@ const App: React.FC = () => {
 
         {!isFullPageMode && <Footer />}
         
-        {!isFullPageMode && (
-          <div className="fixed bottom-0 left-0 w-full bg-brand-gold z-[40] px-6 py-4 flex items-center justify-between shadow-[0_-10px_40px_rgba(212,175,55,0.2)]">
-            <div className="flex items-center gap-4">
-              <div className="bg-brand-900 text-white px-3 py-1 rounded text-[10px] font-black uppercase tracking-widest hidden md:block">Upcoming</div>
-              <p className="text-brand-900 font-bold text-sm md:text-base tracking-tight">
-                Financial Clarity Workshop - <span className="font-black">Feb 28, 2026</span>
-              </p>
-            </div>
-            <button 
-              onClick={() => window.location.hash = '#summit'}
-              className="flex items-center gap-2 text-brand-900 font-black uppercase tracking-widest text-[10px] md:text-xs hover:translate-x-1 transition-transform"
-            >
-              Learn More <ArrowRight size={16} />
-            </button>
-          </div>
-        )}
-
-        {currentView !== 'intel' && (
-          <>
-            <EventPopup isOpen={showEventPopup} onClose={() => {setShowEventPopup(false); sessionStorage.setItem('hasSeenIWS_Event_Immediate', 'true');}} />
-            <FinancialHealthScore isModal={true} isOpen={showAssessmentModal} onClose={() => setShowAssessmentModal(false)} />
-            <FloatingCTA />
-            <WhatsAppButton />
-            <UnifiedSupportWidget />
-          </>
-        )}
+        <FinancialHealthScore isModal={true} isOpen={showAssessmentModal} onClose={() => setShowAssessmentModal(false)} />
         <CookieConsent />
       </div>
     </ErrorBoundary>
