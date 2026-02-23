@@ -1,7 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import {
-  LayoutGrid, Users, Calendar, Target, Workflow, ArrowRight, ShieldAlert, Menu, X, LogIn, Layout
-} from 'lucide-react';
+import { LayoutGrid, Users, Calendar, Target, Workflow, ArrowRight, ShieldAlert, Menu, X, Layout } from 'lucide-react';
 import { auth } from '../firebaseConfig';
 import { onAuthStateChanged } from 'firebase/auth';
 
@@ -79,7 +77,6 @@ const Navbar: React.FC<NavbarProps> = ({ onNavigate }) => {
               {link.icon} {link.label}
             </button>
           ))}
-          {/* CLIENT PORTAL BUTTON */}
           <button 
              onClick={() => handleLinkClick('#my-intel')}
              className={`ml-1 flex items-center gap-2 px-6 py-3 rounded-full text-[10px] font-black uppercase tracking-widest transition-all ${activeHash === '#my-intel' ? 'bg-brand-gold text-brand-900' : 'bg-brand-900/5 text-brand-900 hover:bg-brand-900 hover:text-white'}`}
