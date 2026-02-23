@@ -1,213 +1,207 @@
-import React, { useState, useEffect } from 'react';
-import { db, auth } from '../firebaseConfig';
-import { collection, onSnapshot, query, where } from 'firebase/firestore';
-import { GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from 'firebase/auth';
-import { Lock, LogOut, FileText, X, ChevronRight, Layout, Calculator, Receipt, Box, FileSpreadsheet, CreditCard, Loader2, Mail, MessageSquare } from 'lucide-react';
+import React, { useState } from 'react';
+import { 
+  Shield, AlertTriangle, CheckCircle2, FileText, 
+  ArrowRight, Download, Calendar, Clock 
+} from 'lucide-react';
+import Button from './Button';
+import ZohoFinanceWidget from './ZohoFinanceWidget';
 
-// CRITICAL FIX: This interface allows App.tsx to pass the function without TypeScript crashing
-export interface UserDashboardProps {
-  onTriggerAssessment?: () => void;
+// Mock Data for the Dashboard
+const COMPLIANCE_STATUS = [
+  { label: 'CIPC Annual Return', status: 'compliant', date: 'Filed: 02 Feb 2026' },
+  { label: 'SARS VAT', status: 'pending', date: 'Due: 25 Feb 2026' },
+  { label: 'PAYE/UIF', status: 'compliant', date: 'Filed: 07 Feb 2026' },
+  { label: 'Workmans Comp', status: 'warning', date: 'Action Req: Letter of Good Standing' }
+];
+
+const DOCUMENTS = [
+  { name: 'Feb 2026 Management Accounts.pdf', date: '12 Feb', type: 'Financials' },
+  { name: 'Tax Clearance Certificate.pdf', date: '10 Jan', type: 'Compliance' },
+  { name: 'Director Resolution_004.pdf', date: '15 Dec', type: 'Governance' }
+];
+
+interface UserDashboardProps {
+  onTriggerAssessment: () => void;
 }
 
 const UserDashboard: React.FC<UserDashboardProps> = ({ onTriggerAssessment }) => {
-  const [user, setUser] = useState<any>(null);
-  const [myAssessments, setMyAssessments] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [selectedResult, setSelectedResult] = useState<any>(null);
+  const [activeTab, setActiveTab] = useState('overview');
 
-  // REAL-TIME DATA LISTENER
-  useEffect(() => {
-    let unsubscribeSnapshot: () => void;
-
-    const unsubscribeAuth = onAuthStateChanged(auth, (currentUser) => {
-      setUser(currentUser);
-      if (currentUser && currentUser.email) {
-        // Use onSnapshot for REAL-TIME updates. No refresh required.
-        const q = query(collection(db, 'assessments'), where('email', '==', currentUser.email));
-        unsubscribeSnapshot = onSnapshot(q, (snap) => {
-          const data = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-          setMyAssessments(data.sort((a: any, b: any) => (b.timestamp?.seconds || 0) - (a.timestamp?.seconds || 0)));
-          setLoading(false);
-        });
-      } else {
-        setMyAssessments([]);
-        setLoading(false);
-      }
-    });
-
-    return () => {
-      unsubscribeAuth();
-      if (unsubscribeSnapshot) unsubscribeSnapshot();
-    };
-  }, []);
-
-  const UPCOMING_SERVICES = [
-    { name: "IWS Books", icon: <Calculator size={28} />, desc: "Automated Ledger" },
-    { name: "IWS Expense", icon: <Receipt size={28} />, desc: "Receipt Scanning" },
-    { name: "IWS Inventory", icon: <Box size={28} />, desc: "Stock Control" },
-    { name: "IWS Invoice", icon: <FileSpreadsheet size={28} />, desc: "Client Billing" },
-    { name: "IWS Pay", icon: <CreditCard size={28} />, desc: "Payment Gateway" }
-  ];
-
-  if (loading) return <div className="min-h-screen bg-[#f0fdfa] flex items-center justify-center"><Loader2 className="animate-spin text-[#134e4a]" size={48}/></div>;
-
-  if (!user) return (
-    <div className="min-h-screen bg-[#f0fdfa] flex items-center justify-center p-6 font-sans">
-      <div className="max-w-md w-full bg-white border border-[#134e4a]/10 p-12 rounded-[3rem] text-center shadow-2xl">
-        <div className="w-20 h-20 bg-[#134e4a] text-[#d4af37] rounded-2xl flex items-center justify-center mx-auto mb-8 shadow-xl">
-           <Lock size={40} />
-        </div>
-        <h2 className="text-3xl font-black text-[#134e4a] mb-2 uppercase tracking-tighter">Client Portal</h2>
-        <p className="text-[#134e4a]/60 mb-10 text-xs font-bold uppercase tracking-widest leading-relaxed">Secure access to your Financial Architecture.</p>
-        <button onClick={() => signInWithPopup(auth, new GoogleAuthProvider())} className="w-full bg-[#134e4a] text-white font-black py-5 rounded-2xl hover:bg-[#d4af37] hover:text-[#134e4a] transition-all uppercase tracking-widest text-xs shadow-lg">Sign in with Google</button>
-        <button onClick={() => window.location.hash = '#home'} className="mt-6 text-[10px] font-black uppercase text-[#134e4a]/40 hover:text-[#134e4a] tracking-widest transition-colors">Back to Site</button>
-      </div>
-    </div>
-  );
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'compliant': return 'bg-emerald-500';
+      case 'pending': return 'bg-yellow-500';
+      case 'warning': return 'bg-red-500';
+      default: return 'bg-gray-300';
+    }
+  };
 
   return (
-    <div className="min-h-screen bg-[#f0fdfa] text-[#134e4a] font-sans pt-32 pb-20 px-6 text-left">
+    <div className="min-h-screen bg-gray-50 pt-24 pb-20 px-4 sm:px-6 lg:px-8 font-sans">
       <div className="max-w-7xl mx-auto">
         
-        {/* HEADER */}
-        <div className="flex flex-col md:flex-row justify-between items-end mb-12 border-b border-[#134e4a]/10 pb-8 gap-6">
+        {/* Header Section */}
+        <div className="flex flex-col md:flex-row justify-between items-end mb-12 gap-6 animate-fadeIn">
           <div>
-            <h1 className="text-4xl md:text-5xl font-black uppercase tracking-tighter leading-none font-sora">My Hub</h1>
-            <p className="text-[#d4af37] text-[10px] md:text-xs uppercase mt-3 font-bold tracking-widest flex items-center gap-2">
-              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span> {user.email}
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-brand-900/5 border border-brand-900/10 mb-4">
+              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+              <span className="text-[10px] font-black uppercase tracking-widest text-brand-900">
+                System Operational
+              </span>
+            </div>
+            <h1 className="text-4xl md:text-5xl font-black text-brand-900 tracking-tighter uppercase mb-2">
+              Command Center
+            </h1>
+            <p className="text-brand-900/60 font-medium">
+              Welcome back, <span className="text-brand-gold font-bold">Thabo</span>. Your financial architecture is stable.
             </p>
           </div>
-          <button onClick={() => signOut(auth)} className="px-6 md:px-8 py-4 bg-white text-rose-600 rounded-2xl text-xs font-black uppercase border border-rose-600/20 hover:bg-rose-600 hover:text-white transition-all shadow-sm">
-            Logout
-          </button>
+          
+          <div className="flex gap-3">
+            <Button 
+              variant="outline" 
+              onClick={() => window.open('https://calendly.com/enquiries-integratedwellth/30min', '_blank')}
+            >
+              <Calendar size={16} className="mr-2" />
+              Strategic Session
+            </Button>
+            <Button onClick={onTriggerAssessment}>
+              <Clock size={16} className="mr-2" />
+              Run Health Check
+            </Button>
+          </div>
         </div>
 
-        <div className="grid lg:grid-cols-12 gap-12">
-           
-           {/* LEFT COLUMN: THEIR DATA */}
-           <div className="lg:col-span-8 space-y-8">
-              <h3 className="text-2xl font-black uppercase tracking-tighter">My Diagnostics</h3>
-              
-              {myAssessments.length === 0 ? (
-                <div className="bg-white p-12 md:p-20 rounded-[3rem] text-center border-2 border-dashed border-[#134e4a]/20 shadow-sm transition-all duration-500">
-                    <div className="w-16 h-16 bg-[#f0fdfa] text-[#134e4a] rounded-full flex items-center justify-center mx-auto mb-4">
-                      <FileText size={24}/>
-                    </div>
-                    <p className="text-[#134e4a]/60 font-black uppercase tracking-[0.2em] mb-6">No Records Found</p>
-                    <button 
-                      onClick={() => onTriggerAssessment && onTriggerAssessment()} 
-                      className="bg-[#134e4a] text-white px-8 py-4 rounded-xl font-black uppercase tracking-widest text-xs shadow-lg hover:bg-[#d4af37] hover:text-[#134e4a] transition-all"
-                    >
-                      Take Initial Audit
-                    </button>
-                </div>
-              ) : (
-                <div className="grid gap-6">
-                  {myAssessments.map((item) => (
-                    <div key={item.id} className="bg-white p-8 md:p-10 rounded-[2.5rem] border border-[#134e4a]/10 shadow-lg relative overflow-hidden flex flex-col md:flex-row justify-between items-start md:items-center gap-6 hover:shadow-2xl transition-all duration-500">
-                       
-                       <div className="flex items-center gap-6 z-10 relative">
-                         <div className="w-16 h-16 bg-[#f0fdfa] rounded-2xl flex items-center justify-center text-[#134e4a] font-black text-xl shadow-inner border border-[#134e4a]/10">
-                           {item.score}
-                         </div>
-                         <div>
-                            <h4 className="text-xs font-black text-[#d4af37] uppercase tracking-widest mb-1">
-                              {item.timestamp?.toDate ? item.timestamp.toDate().toLocaleDateString() : 'Just Now'}
-                            </h4>
-                            <p className="text-xl font-black uppercase text-[#134e4a] leading-none">{item.persona}</p>
-                         </div>
-                       </div>
+        {/* Main Grid Layout */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+          
+          {/* LEFT COLUMN (8 cols) - Finance & Operations */}
+          <div className="lg:col-span-8 space-y-8 animate-slideInRight" style={{ animationDelay: '100ms' }}>
+            
+            {/* 1. ZOHO FINANCE WIDGET (The Core Feature) */}
+            <ZohoFinanceWidget />
 
-                       <button 
-                         onClick={() => setSelectedResult(item)} 
-                         className="w-full md:w-auto px-10 py-4 bg-[#134e4a] text-white rounded-2xl font-black uppercase text-[10px] tracking-widest flex items-center justify-center gap-3 hover:bg-[#d4af37] hover:text-[#134e4a] transition-all shadow-lg z-10 group"
-                       >
-                         View Full Brief <ChevronRight size={14} className="group-hover:translate-x-1 transition-transform"/>
-                       </button>
-
-                       {/* Decorative Score Background */}
-                       <div className="absolute -right-10 -bottom-10 text-[120px] font-black text-[#f0fdfa] opacity-50 pointer-events-none select-none">
-                         {item.score}
-                       </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-           </div>
-
-           {/* RIGHT COLUMN: UPCOMING SAAS SERVICES */}
-           <div className="lg:col-span-4 space-y-8">
-              <h3 className="text-2xl font-black uppercase tracking-tighter">Software Ecosystem</h3>
-              <div className="bg-[#3E2723] rounded-[3rem] p-8 shadow-2xl relative overflow-hidden text-white border border-[#d4af37]/20">
-                 <div className="absolute top-0 right-0 w-40 h-40 bg-[#d4af37]/10 blur-3xl rounded-full pointer-events-none"></div>
-                 <p className="text-[10px] font-black uppercase tracking-[0.3em] text-[#d4af37] mb-6">In Development</p>
-                 
-                 <div className="grid grid-cols-1 gap-4">
-                    {UPCOMING_SERVICES.map((srv, i) => (
-                      <div key={i} className="group flex items-center gap-4 p-4 rounded-2xl bg-white/5 hover:bg-white/10 border border-white/5 hover:border-[#d4af37]/50 transition-all cursor-not-allowed">
-                         <div className="w-12 h-12 rounded-xl bg-black/40 flex items-center justify-center text-white group-hover:text-[#d4af37] group-hover:scale-110 transition-all shadow-inner duration-300">
-                            {srv.icon}
-                         </div>
-                         <div>
-                            <h4 className="font-black text-sm uppercase tracking-wider">{srv.name}</h4>
-                            <p className="text-[10px] text-white/50 uppercase tracking-widest">{srv.desc}</p>
-                         </div>
-                      </div>
-                    ))}
-                 </div>
-
-                 <div className="mt-8 p-4 bg-[#134e4a]/50 rounded-2xl border border-[#134e4a] text-center">
-                    <Lock size={16} className="mx-auto text-[#d4af37] mb-2 opacity-50" />
-                    <p className="text-[9px] font-bold text-white/60 uppercase tracking-widest leading-relaxed">Modules will unlock automatically upon release for Sovereign Members.</p>
-                 </div>
+            {/* 2. Recent Documents */}
+            <div className="bg-white rounded-[2.5rem] p-8 shadow-sm border border-brand-900/5">
+              <div className="flex justify-between items-center mb-6">
+                <h3 className="text-xl font-black text-brand-900 uppercase tracking-tight">
+                  Vault Access
+                </h3>
+                <button className="text-xs font-bold text-brand-gold uppercase tracking-widest hover:text-brand-900 transition-colors">
+                  View All
+                </button>
               </div>
-           </div>
+              
+              <div className="space-y-4">
+                {DOCUMENTS.map((doc, idx) => (
+                  <div key={idx} className="group flex items-center justify-between p-4 rounded-2xl bg-gray-50 hover:bg-brand-50 transition-colors border border-transparent hover:border-brand-900/10 cursor-pointer">
+                    <div className="flex items-center gap-4">
+                      <div className="w-10 h-10 rounded-xl bg-white flex items-center justify-center text-brand-900 shadow-sm">
+                        <FileText size={20} />
+                      </div>
+                      <div>
+                        <p className="font-bold text-brand-900 text-sm group-hover:text-brand-600 transition-colors">
+                          {doc.name}
+                        </p>
+                        <p className="text-[10px] uppercase tracking-wider text-gray-500 font-bold">
+                          {doc.type} • {doc.date}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="w-8 h-8 rounded-full bg-white flex items-center justify-center text-brand-900 opacity-0 group-hover:opacity-100 transition-opacity shadow-sm">
+                      <Download size={14} />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {/* RIGHT COLUMN (4 cols) - Compliance & Risk */}
+          <div className="lg:col-span-4 space-y-8 animate-slideInRight" style={{ animationDelay: '200ms' }}>
+            
+            {/* 1. Compliance Traffic Lights */}
+            <div className="bg-brand-900 rounded-[2.5rem] p-8 text-white relative overflow-hidden">
+              <div className="absolute top-0 right-0 w-32 h-32 bg-brand-gold/10 rounded-full blur-2xl -translate-y-10 translate-x-10"></div>
+              
+              <div className="flex items-center gap-3 mb-8 relative z-10">
+                <Shield className="text-brand-gold" size={24} />
+                <h3 className="text-xl font-black uppercase tracking-tight">
+                  Compliance
+                </h3>
+              </div>
+
+              <div className="space-y-6 relative z-10">
+                {COMPLIANCE_STATUS.map((item, idx) => (
+                  <div key={idx} className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm font-bold text-white mb-1">{item.label}</p>
+                      <p className="text-[10px] text-brand-100/60 uppercase tracking-widest font-medium">
+                        {item.date}
+                      </p>
+                    </div>
+                    <div className={`w-3 h-3 rounded-full shadow-[0_0_10px_rgba(0,0,0,0.5)] ${getStatusColor(item.status)}`}></div>
+                  </div>
+                ))}
+              </div>
+
+              <div className="mt-8 pt-8 border-t border-white/10">
+                <div className="flex items-center gap-3 bg-red-500/20 border border-red-500/30 p-4 rounded-2xl">
+                  <AlertTriangle className="text-red-500 flex-shrink-0" size={20} />
+                  <div>
+                    <p className="text-xs font-bold text-white uppercase tracking-wide">Action Required</p>
+                    <p className="text-[10px] text-white/70 mt-1">Submit Letter of Good Standing documents.</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* 2. Financial Health Mini-Score */}
+            <div className="bg-white rounded-[2.5rem] p-8 shadow-sm border border-brand-900/5">
+              <h3 className="text-lg font-black text-brand-900 uppercase tracking-tight mb-2">
+                Battle Readiness
+              </h3>
+              <p className="text-xs text-gray-500 mb-6">Last assessment: 15 Jan 2026</p>
+              
+              <div className="flex items-center justify-center py-4">
+                <div className="relative w-32 h-32">
+                  <svg className="w-full h-full" viewBox="0 0 36 36">
+                    <path
+                      d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+                      fill="none"
+                      stroke="#f1f5f9"
+                      strokeWidth="3"
+                    />
+                    <path
+                      d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+                      fill="none"
+                      stroke="#d4af37"
+                      strokeWidth="3"
+                      strokeDasharray="85, 100"
+                    />
+                  </svg>
+                  <div className="absolute inset-0 flex flex-col items-center justify-center text-brand-900">
+                    <span className="text-3xl font-black">85</span>
+                    <span className="text-[8px] font-bold uppercase tracking-widest opacity-50">Score</span>
+                  </div>
+                </div>
+              </div>
+              
+              <div className="text-center">
+                <p className="text-sm font-bold text-brand-900">Optimize Cash Flow</p>
+                <button 
+                  onClick={onTriggerAssessment}
+                  className="text-[10px] text-brand-gold font-black uppercase tracking-widest mt-2 hover:underline"
+                >
+                  Recalculate Strategy
+                </button>
+              </div>
+            </div>
+
+          </div>
 
         </div>
       </div>
-
-      {/* POPUP BRIEF (Shows the questions and answers) */}
-      {selectedResult && (
-        <div className="fixed inset-0 z-[500] flex items-center justify-center p-4 bg-[#134e4a]/90 backdrop-blur-md">
-          <div className="bg-white text-[#134e4a] w-full max-w-2xl rounded-[3rem] p-8 md:p-12 shadow-2xl overflow-y-auto max-h-[90vh]">
-            <div className="flex justify-between items-start mb-8 border-b border-[#134e4a]/10 pb-6">
-              <div>
-                <h3 className="text-3xl font-black uppercase tracking-tighter leading-none text-[#134e4a]">{selectedResult.persona}</h3>
-                <p className="text-[#d4af37] font-black uppercase text-[10px] mt-2 tracking-widest">
-                  Score: {selectedResult.score} / {selectedResult.maxScore}
-                </p>
-              </div>
-              <button onClick={() => setSelectedResult(null)} className="p-2 bg-[#f0fdfa] rounded-full hover:bg-gray-200 transition-all text-[#134e4a] hover:rotate-90 duration-300"><X /></button>
-            </div>
-
-            <div className="space-y-8">
-               <div className="bg-[#f0fdfa] p-6 md:p-8 rounded-3xl border border-[#134e4a]/10">
-                  <p className="text-lg font-medium italic text-[#134e4a]/80 mb-6 leading-relaxed">
-                    "{selectedResult.diagnosis}"
-                  </p>
-                  
-                  <div className="space-y-6 pt-6 border-t border-[#134e4a]/10">
-                    <p className="text-[10px] font-black uppercase tracking-widest text-[#134e4a]/40 mb-4">Your Answers</p>
-                    {selectedResult.intelligence_report?.map((item: any, idx: number) => (
-                       <div key={idx} className="space-y-1">
-                          <p className="text-xs font-bold text-[#134e4a]/60 leading-tight">{item.q}</p>
-                          <p className="text-sm font-black text-[#134e4a] flex items-center gap-2 mt-1">
-                             <ChevronRight size={14} className="text-[#d4af37] shrink-0" /> {item.a}
-                          </p>
-                       </div>
-                    ))}
-                  </div>
-               </div>
-
-               <div className="text-center pt-4 border-t border-[#134e4a]/10">
-                 <button onClick={() => window.open('https://calendly.com/enquiries-integratedwellth/30min', '_blank')} className="w-full bg-[#d4af37] text-[#134e4a] py-6 rounded-2xl font-black uppercase text-sm tracking-widest shadow-xl hover:scale-105 transition-all">
-                   Book Strategy Review Session
-                 </button>
-               </div>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 };
