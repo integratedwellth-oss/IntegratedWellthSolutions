@@ -2,10 +2,13 @@ import React, { useState, useEffect } from 'react';
 import { db, auth } from '../firebaseConfig';
 import { collection, getDocs, query, where } from 'firebase/firestore';
 import { GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from 'firebase/auth';
-// FIX: Added Loader2 to the imports
-import { LogOut, RefreshCcw, Layout, FileText, ChevronRight, Calculator, Receipt, Box, FileSpreadsheet, CreditCard, Lock, Loader2, X, Mail, MessageSquare } from 'lucide-react';
+import { Lock, LogOut, FileText, RefreshCcw, X, ChevronRight, Layout, Calculator, Receipt, Box, FileSpreadsheet, CreditCard } from 'lucide-react';
 
-const UserDashboard: React.FC = () => {
+interface UserDashboardProps {
+  onTriggerAssessment?: () => void;
+}
+
+const UserDashboard: React.FC<UserDashboardProps> = ({ onTriggerAssessment }) => {
   const [user, setUser] = useState<any>(null);
   const [myAssessments, setMyAssessments] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
@@ -55,20 +58,24 @@ const UserDashboard: React.FC = () => {
   );
 
   return (
-    <div className="min-h-screen bg-[#f0fdfa] text-[#134e4a] font-sans pt-32 pb-20 px-6">
+    <div className="min-h-screen bg-[#f0fdfa] text-[#134e4a] font-sans pt-12 md:pt-32 pb-20 px-6">
       <div className="max-w-7xl mx-auto">
         
         {/* HEADER */}
         <div className="flex flex-col md:flex-row justify-between items-end mb-12 border-b border-[#134e4a]/10 pb-8 gap-6">
           <div>
             <h1 className="text-4xl md:text-5xl font-black uppercase tracking-tighter leading-none font-sora">My Hub</h1>
-            <p className="text-[#d4af37] text-xs uppercase mt-3 font-bold tracking-widest flex items-center gap-2">
+            <p className="text-[#d4af37] text-[10px] md:text-xs uppercase mt-3 font-bold tracking-widest flex items-center gap-2">
               <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span> {user.email}
             </p>
           </div>
           <div className="flex gap-4">
-            <button onClick={() => user?.email && fetchMyData(user.email)} className="p-4 bg-white rounded-2xl shadow-sm border border-[#134e4a]/10 hover:bg-[#134e4a] hover:text-white transition-all"><RefreshCcw size={18} className={loading ? 'animate-spin' : ''} /></button>
-            <button onClick={() => signOut(auth)} className="px-8 py-4 bg-white text-rose-600 rounded-2xl text-xs font-black uppercase border border-rose-600/20 hover:bg-rose-600 hover:text-white transition-all shadow-sm">Logout</button>
+            <button onClick={() => user?.email && fetchMyData(user.email)} className="p-4 bg-white rounded-2xl shadow-sm border border-[#134e4a]/10 hover:bg-[#134e4a] hover:text-white transition-all">
+              <RefreshCcw size={18} className={loading ? 'animate-spin' : ''} />
+            </button>
+            <button onClick={() => signOut(auth)} className="px-6 md:px-8 py-4 bg-white text-rose-600 rounded-2xl text-xs font-black uppercase border border-rose-600/20 hover:bg-rose-600 hover:text-white transition-all shadow-sm">
+              Logout
+            </button>
           </div>
         </div>
 
@@ -77,16 +84,19 @@ const UserDashboard: React.FC = () => {
            {/* LEFT COLUMN: THEIR DATA */}
            <div className="lg:col-span-8 space-y-8">
               <h3 className="text-2xl font-black uppercase tracking-tighter">My Diagnostics</h3>
-              {loading ? (
-                <div className="bg-white p-20 rounded-[3rem] text-center shadow-sm">
-                   <Loader2 className="animate-spin text-[#d4af37] mx-auto mb-4" size={32} />
-                   <p className="text-[#134e4a]/40 font-black uppercase tracking-[0.3em]">Syncing Records...</p>
-                </div>
-              ) : myAssessments.length === 0 ? (
-                <div className="bg-white p-20 rounded-[3rem] text-center border-2 border-dashed border-[#134e4a]/20 shadow-sm">
+              
+              {myAssessments.length === 0 ? (
+                <div className="bg-white p-12 md:p-20 rounded-[3rem] text-center border-2 border-dashed border-[#134e4a]/20 shadow-sm">
                     <div className="w-16 h-16 bg-[#f0fdfa] text-[#134e4a] rounded-full flex items-center justify-center mx-auto mb-4"><FileText size={24}/></div>
                     <p className="text-[#134e4a]/60 font-black uppercase tracking-[0.2em] mb-6">No Records Found</p>
-                    <button onClick={() => window.location.hash = '#assessment'} className="bg-[#134e4a] text-white px-8 py-4 rounded-xl font-black uppercase tracking-widest text-xs shadow-lg hover:bg-[#d4af37] hover:text-[#134e4a] transition-all">Take Initial Audit</button>
+                    
+                    {/* FIXED: Uses the direct function passed from App.tsx instead of Hash routing */}
+                    <button 
+                      onClick={() => onTriggerAssessment && onTriggerAssessment()} 
+                      className="bg-[#134e4a] text-white px-8 py-4 rounded-xl font-black uppercase tracking-widest text-xs shadow-lg hover:bg-[#d4af37] hover:text-[#134e4a] transition-all"
+                    >
+                      Take Initial Audit
+                    </button>
                 </div>
               ) : (
                 <div className="grid gap-6">
@@ -178,7 +188,7 @@ const UserDashboard: React.FC = () => {
                        <div key={idx} className="space-y-1">
                           <p className="text-xs font-bold text-[#134e4a]/60 leading-tight">{item.q}</p>
                           <p className="text-sm font-black text-[#134e4a] flex items-center gap-2 mt-1">
-                             <ChevronRight size={14} className="text-[#d4af37]" /> {item.a}
+                             <ChevronRight size={14} className="text-[#d4af37] shrink-0" /> {item.a}
                           </p>
                        </div>
                     ))}
