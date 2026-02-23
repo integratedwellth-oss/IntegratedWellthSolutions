@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { db, auth } from '../firebaseConfig';
-import { collection, getDocs, query, where, orderBy } from 'firebase/firestore';
+import { collection, getDocs, query, where } from 'firebase/firestore';
 import { GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from 'firebase/auth';
-import { Lock, LogOut, FileText, Activity, RefreshCcw, Eye, X, ChevronRight, Layout } from 'lucide-react';
+import { LogOut, RefreshCcw, X, ChevronRight, Layout } from 'lucide-react';
 
 const UserDashboard: React.FC = () => {
   const [user, setUser] = useState<any>(null);
@@ -13,7 +13,10 @@ const UserDashboard: React.FC = () => {
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
       setUser(currentUser);
-      if (currentUser) fetchMyData(currentUser.email);
+      // FIXED: Added check to ensure email is not null before fetching
+      if (currentUser && currentUser.email) {
+        fetchMyData(currentUser.email);
+      }
     });
     return () => unsubscribe();
   }, []);
@@ -21,7 +24,6 @@ const UserDashboard: React.FC = () => {
   const fetchMyData = async (email: string) => {
     setLoading(true);
     try {
-      // Fetch only records matching the logged-in email
       const q = query(collection(db, 'assessments'), where('email', '==', email));
       const snap = await getDocs(q);
       const data = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
@@ -45,12 +47,12 @@ const UserDashboard: React.FC = () => {
   );
 
   return (
-    <div className="min-h-screen bg-brand-50 text-brand-900 font-sans pt-12 pb-20 px-6">
+    <div className="min-h-screen bg-brand-50 text-brand-900 font-sans pt-12 pb-20 px-6 text-left">
       <div className="max-w-5xl mx-auto">
         <div className="flex justify-between items-end mb-12 border-b border-brand-900/10 pb-8">
           <div><h1 className="text-4xl font-black uppercase tracking-tighter leading-none">My Intelligence</h1><p className="text-brand-gold text-xs uppercase mt-2 font-bold tracking-widest">Sovereign Profile: {user.email}</p></div>
           <div className="flex gap-4">
-            <button onClick={() => fetchMyData(user.email)} className="p-3 bg-white rounded-full border border-brand-900/10 hover:bg-brand-900 hover:text-white transition-all"><RefreshCcw size={18} className={loading ? 'animate-spin' : ''} /></button>
+            <button onClick={() => user?.email && fetchMyData(user.email)} className="p-3 bg-white rounded-full border border-brand-900/10 hover:bg-brand-900 hover:text-white transition-all"><RefreshCcw size={18} className={loading ? 'animate-spin' : ''} /></button>
             <button onClick={() => signOut(auth)} className="px-6 py-3 bg-white text-brand-900 rounded-full text-xs font-black uppercase border border-brand-900/10 hover:bg-rose-500 hover:text-white transition-all">Logout</button>
           </div>
         </div>
@@ -67,7 +69,7 @@ const UserDashboard: React.FC = () => {
                   <div className="flex items-center gap-6">
                      <div className="w-16 h-16 bg-brand-50 rounded-2xl flex items-center justify-center text-brand-900 font-black text-xl shadow-inner">{item.score}</div>
                      <div>
-                        <h4 className="text-xs font-black text-brand-gold uppercase tracking-widest mb-1">{item.timestamp?.toDate().toLocaleDateString()}</h4>
+                        <h4 className="text-xs font-black text-brand-gold uppercase tracking-widest mb-1">{item.timestamp?.toDate ? item.timestamp.toDate().toLocaleDateString() : 'Recent'}</h4>
                         <p className="text-xl font-black uppercase text-brand-900 leading-none">{item.persona}</p>
                      </div>
                   </div>
@@ -86,9 +88,9 @@ const UserDashboard: React.FC = () => {
             <div className="flex justify-between items-start mb-8 border-b border-brand-900/10 pb-6">
               <div>
                 <h3 className="text-3xl font-black uppercase tracking-tighter leading-none">Intelligence Brief</h3>
-                <p className="text-brand-gold font-black uppercase text-[10px] mt-2 tracking-widest">{selectedResult.timestamp?.toDate().toLocaleDateString()}</p>
+                <p className="text-brand-gold font-black uppercase text-[10px] mt-2 tracking-widest">{selectedResult.timestamp?.toDate ? selectedResult.timestamp.toDate().toLocaleDateString() : 'Recent'}</p>
               </div>
-              <button onClick={() => setSelectedResult(null)} className="p-2 bg-brand-50 rounded-full hover:bg-brand-100 transition-all"><X /></button>
+              <button onClick={() => setSelectedResult(null)} className="p-2 bg-brand-50 rounded-full hover:bg-brand-100 transition-all text-brand-900"><X /></button>
             </div>
             <div className="space-y-6">
                <div className="bg-brand-50 p-8 rounded-3xl">
@@ -98,7 +100,7 @@ const UserDashboard: React.FC = () => {
                           <p className="text-[10px] font-black text-brand-900/30 uppercase">Metric 0{idx + 1}</p>
                           <p className="text-sm font-bold text-brand-900/80 leading-tight">{item.q}</p>
                           <p className="text-sm font-black text-brand-900 flex items-center gap-2 mt-1">
-                             <ChevronRight size={14} className="text-brand-gold" /> {item.a}
+                             - {item.a}
                           </p>
                        </div>
                     ))}
