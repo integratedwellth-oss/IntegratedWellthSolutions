@@ -162,6 +162,7 @@ const App: React.FC = () => {
         {currentView !== 'intel' && (
           <>
             <EventPopup isOpen={showEventPopup} onClose={() => {setShowEventPopup(false); sessionStorage.setItem('hasSeenIWS_Event_Immediate', 'true');}} />
+            
             <FinancialHealthScore 
               isModal={true} 
               isOpen={showAssessmentModal} 
@@ -170,6 +171,7 @@ const App: React.FC = () => {
                 if(window.location.hash === '#assessment') window.location.hash = '#home';
               }} 
             />
+            
             <FloatingCTA />
             <WhatsAppButton />
             <UnifiedSupportWidget />
