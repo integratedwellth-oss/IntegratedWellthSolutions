@@ -13,17 +13,14 @@ const firebaseConfig = {
   measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID
 };
 
-// Default Safe Exports to prevent "undefined" crashes
-let app: FirebaseApp | any = {};
+// Initialize with dummy values to satisfy the TypeScript compiler (TS2454)
+const dummyApp = { name: 'dummy' } as unknown as FirebaseApp;
+let app: FirebaseApp = dummyApp;
 let db: Firestore | any = null;
-let auth: Auth | any = {
-  onAuthStateChanged: () => () => {}, // Mock function that does nothing
-  currentUser: null
-};
+let auth: Auth | any = { onAuthStateChanged: () => () => {}, currentUser: null };
 let analytics: any = null;
 
 try {
-  // Only initialize if we have a valid API Key
   if (firebaseConfig.apiKey && firebaseConfig.apiKey !== "undefined") {
     if (!getApps().length) {
       app = initializeApp(firebaseConfig);
@@ -37,12 +34,9 @@ try {
     if (typeof window !== 'undefined' && firebaseConfig.measurementId) {
       analytics = getAnalytics(app);
     }
-    console.log("IWS Intelligence: Firebase Secure Connection Established.");
-  } else {
-    console.warn("IWS Intelligence: Running in Protected Offline Mode (Keys Missing).");
   }
 } catch (error) {
-  console.error("IWS Intelligence: Critical Protocol Shield Active.", error);
+  console.error("Firebase Shield: Initialization suppressed.", error);
 }
 
 export { app, db, auth, analytics };
