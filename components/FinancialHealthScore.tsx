@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Shield, Activity, X, ArrowRight, Sparkles, Loader2, Lock } from 'lucide-react';
+import { Shield, Activity, X, ArrowRight, Sparkles, Loader2, Lock, CheckCircle } from 'lucide-react';
 import { db, auth } from '../firebaseConfig';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 import { GoogleAuthProvider, signInWithPopup, onAuthStateChanged } from 'firebase/auth';
@@ -33,20 +33,31 @@ const FinancialHealthScore: React.FC<FinancialHealthScoreProps> = ({ isModal = f
   
   const [showProfileForm, setShowProfileForm] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submissionComplete, setSubmissionComplete] = useState(false); // NEW STATE
   const [formData, setFormData] = useState({ name: '', enterprise: '' });
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
       setUser(currentUser);
       setIsAuthLoading(false);
-      
-      // If user is logged in, we can start the assessment
-      if (currentUser && !started) {
+      if (currentUser && !started && isOpen) {
         setStarted(true);
       }
     });
     return () => unsubscribe();
-  }, [started]);
+  }, [started, isOpen]);
+
+  // Reset state when opened/closed
+  useEffect(() => {
+     if (isOpen && user) {
+        setStarted(true);
+        setCurrentStep(0);
+        setScore(0);
+        setDetailedAnswers([]);
+        setShowProfileForm(false);
+        setSubmissionComplete(false);
+     }
+  }, [isOpen, user]);
 
   if (isModal && !isOpen) return null;
 
@@ -71,15 +82,14 @@ const FinancialHealthScore: React.FC<FinancialHealthScoreProps> = ({ isModal = f
       setCurrentStep(currentStep + 1);
     } else {
       setScore(newScore);
-      // Move to profile collection before final submit
       setShowProfileForm(true);
     }
   };
 
   const getResult = (finalScore: number) => {
-    if (finalScore >= 28) return { persona: "VISIONARY ARCHITECT", msg: "Legacy Engineering: Optimized for scale. Your structure is ready to support multi-generational wealth." };
-    if (finalScore >= 15) return { persona: "THE INTEGRATOR", msg: "Bridge Building: You're moving away from founder-dependency. Now is the time to deploy AI to fully decouple." };
-    return { persona: "DAILY LABORER", msg: "Critical Triage: Your business is currently a high-stress job, not an asset. We need an immediate 'Clean Sweep' intervention." };
+    if (finalScore >= 28) return { persona: "VISIONARY ARCHITECT", msg: "Legacy Engineering: Optimized for scale." };
+    if (finalScore >= 15) return { persona: "THE INTEGRATOR", msg: "Bridge Building: You're moving away from founder-dependency." };
+    return { persona: "DAILY LABORER", msg: "Critical Triage: Your business is currently a high-stress job, not an asset." };
   };
 
   const handleFinalSubmit = async (e: React.FormEvent) => {
@@ -92,7 +102,6 @@ const FinancialHealthScore: React.FC<FinancialHealthScoreProps> = ({ isModal = f
       if (db && user) {
         const userEmail = user.email;
         
-        // 1. Save Lead to 'assessments' collection
         await addDoc(collection(db, 'assessments'), {
           name: formData.name || user.displayName,
           enterprise: formData.enterprise,
@@ -106,9 +115,8 @@ const FinancialHealthScore: React.FC<FinancialHealthScoreProps> = ({ isModal = f
           timestamp: serverTimestamp()
         });
 
-        // 2. Trigger Email via 'mail' collection
+        // Trigger Email
         const emailBody = detailedAnswers.map(item => `<b>${item.q}</b><br/>${item.a}<br/><br/>`).join('');
-        
         await addDoc(collection(db, 'mail'), {
           to: userEmail,
           message: {
@@ -117,41 +125,37 @@ const FinancialHealthScore: React.FC<FinancialHealthScoreProps> = ({ isModal = f
               <div style="font-family: Arial, sans-serif; color: #134e4a; padding: 20px; max-width: 600px;">
                 <h1 style="color: #d4af37;">ASSESSMENT COMPLETE</h1>
                 <p>Hello ${formData.name || user.displayName},</p>
-                
                 <div style="background: #f0fdfa; padding: 20px; border-left: 5px solid #d4af37; margin: 20px 0;">
                   <h3 style="margin-top:0;">ARCHETYPE: ${res.persona}</h3>
                   <p><strong>Score:</strong> ${score} / ${QUESTIONS.length * 4}</p>
                   <p><strong>Diagnosis:</strong> ${res.msg}</p>
                 </div>
-
                 <h2>Your Discovery Trail</h2>
                 <div style="color: #64748b; font-size: 14px;">${emailBody}</div>
-                
-                <p>To fix this score and move to Sovereign status, we need to implement the Protocol.</p>
-                
                 <p style="text-align: center; margin: 30px 0;">
-                  <a href="https://calendly.com/enquiries-integratedwellth/30min" style="background-color: #134e4a; color: white; padding: 15px 30px; text-decoration: none; font-weight: bold; border-radius: 50px; font-size: 16px;">BOOK YOUR RESULTS REVIEW</a>
+                  <a href="https://calendly.com/enquiries-integratedwellth/30min" style="background-color: #134e4a; color: white; padding: 15px 30px; text-decoration: none; font-weight: bold; border-radius: 50px;">BOOK YOUR RESULTS REVIEW</a>
                 </p>
-
-                <hr style="border: 0; border-top: 1px solid #eee; margin: 30px 0;" />
-
-                <h3>🎟️ EXCLUSIVE SUMMIT INVITATION</h3>
-                <p>This diagnosis is just the start. Join Marcia Kgaphola at the <strong>Financial Clarity Summit</strong> on Feb 28, 2026.</p>
-                <p><a href="https://www.quicket.co.za/events/352598-financial-clarity-for-non-financial-business-owners/#/" style="color: #d4af37; font-weight: bold;">Secure Your Seat Here</a></p>
               </div>
             `
           }
         });
         
-        // Redirect to Dashboard
-        if (onClose) onClose();
-        window.location.hash = '#my-intel';
+        setIsSubmitting(false);
+        setSubmissionComplete(true);
+
+        // THE FIX: Wait 1.5 seconds for Firebase to index the data, then reload the dashboard
+        setTimeout(() => {
+          if (onClose) onClose();
+          // Force a full reload of the intelligence hub to ensure fresh data
+          window.location.href = '/#my-intel';
+          window.location.reload(); 
+        }, 1500);
       }
     } catch (err) {
       console.error(err);
       alert("Error saving data. Please try again.");
+      setIsSubmitting(false);
     }
-    setIsSubmitting(false);
   };
 
   return (
@@ -160,7 +164,6 @@ const FinancialHealthScore: React.FC<FinancialHealthScoreProps> = ({ isModal = f
         <div className="bg-white rounded-[2.8rem] h-full overflow-y-auto p-8 md:p-16 relative flex flex-col justify-center">
           <button onClick={onClose} className="absolute top-8 right-8 text-brand-900/40 hover:text-brand-900"><X size={32}/></button>
 
-          {/* STEP 1: AUTHENTICATION GATE */}
           {!user ? (
             <div className="text-center space-y-8 animate-fadeIn max-w-md mx-auto">
               <div className="w-20 h-20 bg-brand-900 text-brand-gold rounded-2xl flex items-center justify-center mx-auto shadow-xl">
@@ -178,8 +181,19 @@ const FinancialHealthScore: React.FC<FinancialHealthScoreProps> = ({ isModal = f
                 {isAuthLoading ? <Loader2 className="animate-spin" /> : 'Sign in with Google'}
               </button>
             </div>
+          ) : submissionComplete ? (
+            // THE FIX: Success state while we wait for the redirect
+            <div className="text-center py-20 space-y-6 animate-fadeIn">
+               <CheckCircle className="w-24 h-24 text-emerald-500 mx-auto" />
+               <h3 className="text-3xl font-black text-brand-900 uppercase tracking-tighter">Data Secured</h3>
+               <p className="font-bold text-brand-900/60">Routing to your Intelligence Hub...</p>
+            </div>
+          ) : isSubmitting ? (
+            <div className="text-center py-20 space-y-6">
+               <Loader2 className="animate-spin w-16 h-16 text-brand-gold mx-auto" />
+               <p className="font-black uppercase tracking-widest text-brand-900">Uplinking to Dashboard...</p>
+            </div>
           ) : !showProfileForm ? (
-            // STEP 2: THE QUIZ
             <div className="space-y-12 animate-fadeIn w-full">
                <div className="flex justify-between items-end border-b border-brand-900/10 pb-6">
                   <div>
@@ -199,16 +213,14 @@ const FinancialHealthScore: React.FC<FinancialHealthScoreProps> = ({ isModal = f
                </div>
             </div>
           ) : (
-             // STEP 3: FINAL DATA CAPTURE
              <div className="max-w-md mx-auto text-center space-y-8 py-10 animate-fadeIn">
                <h3 className="text-3xl font-black text-brand-900 uppercase tracking-tighter">Audit Complete.</h3>
                <p className="text-brand-900/60 font-medium leading-relaxed">Enter your business details to save this report to your Client Dashboard.</p>
                <form onSubmit={handleFinalSubmit} className="space-y-4 text-left">
                   <input required className="w-full bg-brand-50 border-2 border-brand-900/5 rounded-xl px-6 py-4 font-bold text-brand-900 outline-none focus:border-brand-gold" placeholder="FULL NAME" value={formData.name} onChange={(e) => setFormData({...formData, name: e.target.value})} />
                   <input required className="w-full bg-brand-50 border-2 border-brand-900/5 rounded-xl px-6 py-4 font-bold text-brand-900 outline-none focus:border-brand-gold" placeholder="BUSINESS NAME" value={formData.enterprise} onChange={(e) => setFormData({...formData, enterprise: e.target.value})} />
-                  
                   <button type="submit" disabled={isSubmitting} className="w-full py-5 rounded-full bg-brand-900 text-white font-black uppercase tracking-widest hover:bg-brand-gold hover:text-brand-900 transition-all shadow-xl">
-                    {isSubmitting ? <Loader2 className="animate-spin mx-auto" /> : 'REVEAL SCORE ON DASHBOARD'}
+                    REVEAL SCORE ON DASHBOARD
                   </button>
                </form>
             </div>
