@@ -1,10 +1,8 @@
-import { initializeApp } from "firebase/app";
+import { initializeApp, getApps, FirebaseApp } from "firebase/app";
 import { getAnalytics } from "firebase/analytics";
-import { getFirestore } from "firebase/firestore";
-import { getFunctions } from "firebase/functions";
-import { getAuth } from "firebase/auth";
+import { getFirestore, Firestore } from "firebase/firestore";
+import { getAuth, Auth } from "firebase/auth";
 
-// Vite requires the "VITE_" prefix to see these variables
 const firebaseConfig = {
   apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
   authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
@@ -15,12 +13,29 @@ const firebaseConfig = {
   measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID
 };
 
-// Initialize Firebase
-const app = initializeApp(firebaseConfig);
+// Initialize Firebase defensively
+let app: FirebaseApp;
+let db: Firestore;
+let auth: Auth;
+let analytics: any = null;
 
-export const analytics = typeof window !== 'undefined' ? getAnalytics(app) : null;
-export const db = getFirestore(app);
-export const functions = getFunctions(app);
-export const auth = getAuth(app);
+try {
+  if (!getApps().length) {
+    app = initializeApp(firebaseConfig);
+  } else {
+    app = getApps()[0];
+  }
+  
+  db = getFirestore(app);
+  auth = getAuth(app);
+  
+  // Analytics only runs in browser and if ID is present
+  if (typeof window !== 'undefined' && firebaseConfig.measurementId) {
+    analytics = getAnalytics(app);
+  }
+} catch (error) {
+  console.error("Firebase Initialization Error (Dashboard will run in offline mode):", error);
+}
 
+export { app, db, auth, analytics };
 export default app;
