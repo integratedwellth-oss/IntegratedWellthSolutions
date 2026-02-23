@@ -2,10 +2,11 @@ import React, { useState, useEffect } from 'react';
 import { 
   Shield, AlertTriangle, FileText, 
   ArrowRight, Download, Calendar, Clock, ChevronDown, CheckCircle2,
-  XCircle, TrendingUp
+  XCircle, TrendingUp, History, Lock
 } from 'lucide-react';
 import Button from './Button';
 import ZohoFinanceWidget from './ZohoFinanceWidget';
+import { logUserActivity } from '../services/loggingService'; // Ensure you created this file
 
 // Mock Data for Compliance Status
 const COMPLIANCE_STATUS = [
@@ -17,9 +18,9 @@ const COMPLIANCE_STATUS = [
 
 // Mock Data for Vault Documents
 const DOCUMENTS = [
-  { name: 'Feb 2026 Management Accounts.pdf', date: '12 Feb', type: 'Financials' },
-  { name: 'Tax Clearance Certificate.pdf', date: '10 Jan', type: 'Compliance' },
-  { name: 'Director Resolution_004.pdf', date: '15 Dec', type: 'Governance' }
+  { name: 'Feb 2026 Management Accounts.pdf', date: '12 Feb', type: 'Financials', url: '#' },
+  { name: 'Tax Clearance Certificate.pdf', date: '10 Jan', type: 'Compliance', url: '#' },
+  { name: 'Director Resolution_004.pdf', date: '15 Dec', type: 'Governance', url: '#' }
 ];
 
 interface UserDashboardProps {
@@ -27,21 +28,36 @@ interface UserDashboardProps {
 }
 
 const UserDashboard: React.FC<UserDashboardProps> = ({ onTriggerAssessment }) => {
-  // State to hold assessment history
   const [assessmentHistory, setAssessmentHistory] = useState<any>(null);
   const [showHistory, setShowHistory] = useState(false);
 
-  // Load assessment results from localStorage on mount
   useEffect(() => {
+    // 1. Try to load from local storage immediately
     const savedResults = localStorage.getItem('iws_health_score_results');
     if (savedResults) {
       try {
         setAssessmentHistory(JSON.parse(savedResults));
       } catch (e) {
-        console.error("Failed to parse assessment history");
+        console.error("Failed to parse local history");
       }
+    } else {
+        // Optional: Fetch from Firestore here if you want persistence across devices
     }
+    
+    // Log that user entered dashboard
+    logUserActivity('Dashboard View', 'User accessed the Command Center');
   }, []);
+
+  const handleDocumentClick = (docName: string) => {
+    logUserActivity('Vault Access', `Downloaded document: ${docName}`);
+    // Simulate download
+    alert(`Downloading ${docName}... (An email notification has been sent to admin)`);
+  };
+
+  const handleAssessmentTrigger = () => {
+    logUserActivity('Assessment Started', 'User clicked Run Health Check');
+    onTriggerAssessment();
+  };
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -82,12 +98,15 @@ const UserDashboard: React.FC<UserDashboardProps> = ({ onTriggerAssessment }) =>
           <div className="flex gap-3">
             <Button 
               variant="outline" 
-              onClick={() => window.open('https://calendly.com/enquiries-integratedwellth/30min', '_blank')}
+              onClick={() => {
+                logUserActivity('Strategy Call', 'User clicked Book Session');
+                window.open('https://calendly.com/enquiries-integratedwellth/30min', '_blank');
+              }}
             >
               <Calendar size={16} className="mr-2" />
               Strategic Session
             </Button>
-            <Button onClick={onTriggerAssessment}>
+            <Button onClick={handleAssessmentTrigger}>
               <Clock size={16} className="mr-2" />
               Run Health Check
             </Button>
@@ -95,19 +114,13 @@ const UserDashboard: React.FC<UserDashboardProps> = ({ onTriggerAssessment }) =>
         </div>
 
         {/* --- ASSESSMENT REVIEW SECTION --- */}
-        {/* Only shows if user has taken the quiz */}
-        {assessmentHistory && (
+        {assessmentHistory ? (
           <div className="mb-12 bg-white rounded-[2.5rem] p-8 shadow-sm border border-brand-900/5 animate-slideInRight">
             <div className="flex flex-col md:flex-row justify-between items-center gap-6">
               <div className="flex items-center gap-6">
                 <div className="relative w-20 h-20 flex-shrink-0">
                   <svg className="w-full h-full transform -rotate-90">
-                    <circle
-                      cx="40" cy="40" r="36"
-                      fill="transparent"
-                      stroke="#f3f4f6"
-                      strokeWidth="8"
-                    />
+                    <circle cx="40" cy="40" r="36" fill="transparent" stroke="#f3f4f6" strokeWidth="8" />
                     <circle
                       cx="40" cy="40" r="36"
                       fill="transparent"
@@ -126,7 +139,7 @@ const UserDashboard: React.FC<UserDashboardProps> = ({ onTriggerAssessment }) =>
                     Financial Health Status
                   </h3>
                   <p className="text-sm text-gray-500 font-medium mt-1">
-                    Last check: Today
+                    Based on your recent inputs
                   </p>
                 </div>
               </div>
@@ -139,21 +152,6 @@ const UserDashboard: React.FC<UserDashboardProps> = ({ onTriggerAssessment }) =>
                   {showHistory ? 'Close Review' : 'See Breakdown'} 
                   <ChevronDown className={`transition-transform duration-300 ${showHistory ? 'rotate-180' : ''}`} size={16} />
                 </button>
-                
-                {/* DYNAMIC CTA BASED ON SCORE */}
-                {assessmentHistory.totalScore < 50 ? (
-                   <Button size="sm" className="w-full md:w-auto bg-red-600 hover:bg-red-700 text-white border-0" onClick={() => window.location.hash = '#contact'}>
-                      <AlertTriangle size={16} className="mr-2" /> Critical: Book Urgent Review
-                   </Button>
-                ) : assessmentHistory.totalScore < 80 ? (
-                   <Button size="sm" variant="secondary" className="w-full md:w-auto" onClick={() => window.location.hash = '#contact'}>
-                      <TrendingUp size={16} className="mr-2" /> Improve Score: Strategy Call
-                   </Button>
-                ) : (
-                   <Button size="sm" className="w-full md:w-auto bg-emerald-600 hover:bg-emerald-700 border-0" onClick={() => window.location.hash = '#contact'}>
-                      <CheckCircle2 size={16} className="mr-2" /> Score High: Discuss Expansion
-                   </Button>
-                )}
               </div>
             </div>
 
@@ -161,7 +159,6 @@ const UserDashboard: React.FC<UserDashboardProps> = ({ onTriggerAssessment }) =>
             {showHistory && (
               <div className="mt-8 pt-8 border-t border-gray-100 animate-fadeIn">
                 <div className="grid md:grid-cols-2 gap-8">
-                  {/* Detailed Breakdown */}
                   <div className="space-y-4">
                     <h4 className="font-bold text-brand-900 uppercase tracking-wider text-xs mb-4">
                       Section Performance
@@ -173,27 +170,35 @@ const UserDashboard: React.FC<UserDashboardProps> = ({ onTriggerAssessment }) =>
                       </div>
                     ))}
                   </div>
-
-                  {/* Strategic Insight */}
                   <div className="bg-brand-900 text-white rounded-2xl p-6 flex flex-col justify-center">
                     <h4 className="font-bold uppercase tracking-wider text-xs mb-4 text-brand-gold flex items-center gap-2">
                       <Shield size={14} /> Intelligence Report
                     </h4>
-                    <p className="text-sm leading-relaxed opacity-90 mb-4">
-                      Your business architecture is currently in the 
-                      <strong> {assessmentHistory.totalScore < 50 ? 'VULNERABLE PHASE' : assessmentHistory.totalScore < 80 ? 'STABILIZATION PHASE' : 'OPTIMIZATION PHASE'}</strong>.
-                    </p>
                     <p className="text-sm leading-relaxed opacity-90">
                       {assessmentHistory.totalScore < 50 
-                        ? "Immediate intervention is required to decouple your personal assets from business risk. Your structural sovereignty is compromised." 
-                        : assessmentHistory.totalScore < 80 
-                        ? "You have a solid foundation, but operational friction is slowing you down. Automation and tighter compliance loops are your next step."
-                        : "You are operating at peak efficiency. The focus now shifts from 'protection' to 'multiplication' and asset acquisition."}
+                        ? "Immediate intervention is required to decouple your personal assets from business risk." 
+                        : "You have a solid foundation, but operational friction is slowing you down."}
                     </p>
                   </div>
                 </div>
               </div>
             )}
+          </div>
+        ) : (
+          /* EMPTY STATE - NO ASSESSMENT YET */
+          <div className="mb-12 bg-white rounded-[2.5rem] p-8 shadow-sm border border-brand-900/5 flex flex-col md:flex-row items-center justify-between gap-6">
+             <div className="flex items-center gap-6">
+                <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center text-gray-400">
+                   <History size={32} />
+                </div>
+                <div>
+                   <h3 className="text-lg font-black text-brand-900 uppercase tracking-tight">No Assessment Data</h3>
+                   <p className="text-sm text-gray-500">Run the Health Check to generate your financial score.</p>
+                </div>
+             </div>
+             <Button onClick={handleAssessmentTrigger}>
+                Initialize Assessment
+             </Button>
           </div>
         )}
 
@@ -204,22 +209,28 @@ const UserDashboard: React.FC<UserDashboardProps> = ({ onTriggerAssessment }) =>
           <div className="lg:col-span-8 space-y-8 animate-slideInRight" style={{ animationDelay: '100ms' }}>
             
             {/* 1. IWS FINANCE WIDGET (REBRANDED) */}
-            <ZohoFinanceWidget />
+            <div onClick={() => logUserActivity('Zoho Widget', 'Interacted with IWS Finance Widget')}>
+               <ZohoFinanceWidget />
+            </div>
 
-            {/* 2. Recent Documents */}
+            {/* 2. Recent Documents (VAULT) */}
             <div className="bg-white rounded-[2.5rem] p-8 shadow-sm border border-brand-900/5">
               <div className="flex justify-between items-center mb-6">
                 <h3 className="text-xl font-black text-brand-900 uppercase tracking-tight">
                   Vault Access
                 </h3>
-                <button className="text-xs font-bold text-brand-gold uppercase tracking-widest hover:text-brand-900 transition-colors">
-                  View All
-                </button>
+                <div className="flex items-center gap-2 text-[10px] font-bold text-emerald-600 bg-emerald-50 px-3 py-1 rounded-full">
+                   <Lock size={10} /> Secure Storage
+                </div>
               </div>
               
               <div className="space-y-4">
                 {DOCUMENTS.map((doc, idx) => (
-                  <div key={idx} className="group flex items-center justify-between p-4 rounded-2xl bg-gray-50 hover:bg-brand-50 transition-colors border border-transparent hover:border-brand-900/10 cursor-pointer">
+                  <div 
+                    key={idx} 
+                    onClick={() => handleDocumentClick(doc.name)}
+                    className="group flex items-center justify-between p-4 rounded-2xl bg-gray-50 hover:bg-brand-50 transition-colors border border-transparent hover:border-brand-900/10 cursor-pointer"
+                  >
                     <div className="flex items-center gap-4">
                       <div className="w-10 h-10 rounded-xl bg-white flex items-center justify-center text-brand-900 shadow-sm">
                         <FileText size={20} />
@@ -233,8 +244,13 @@ const UserDashboard: React.FC<UserDashboardProps> = ({ onTriggerAssessment }) =>
                         </p>
                       </div>
                     </div>
-                    <div className="w-8 h-8 rounded-full bg-white flex items-center justify-center text-brand-900 opacity-0 group-hover:opacity-100 transition-opacity shadow-sm">
-                      <Download size={14} />
+                    <div className="flex items-center gap-2">
+                       <span className="text-[10px] font-bold text-brand-gold opacity-0 group-hover:opacity-100 transition-opacity uppercase tracking-widest">
+                          Download
+                       </span>
+                       <div className="w-8 h-8 rounded-full bg-white flex items-center justify-center text-brand-900 opacity-0 group-hover:opacity-100 transition-opacity shadow-sm">
+                         <Download size={14} />
+                       </div>
                     </div>
                   </div>
                 ))}
@@ -281,23 +297,33 @@ const UserDashboard: React.FC<UserDashboardProps> = ({ onTriggerAssessment }) =>
               </div>
             </div>
 
-            {/* 2. Mini Score Widget (Only shows simple score here, detailed view is above) */}
+            {/* 2. Mini Score Widget */}
             <div className="bg-white rounded-[2.5rem] p-8 shadow-sm border border-brand-900/5 text-center">
               <h3 className="text-lg font-black text-brand-900 uppercase tracking-tight mb-2">
                 Operational Pulse
               </h3>
               <p className="text-xs text-gray-500 mb-6">Real-time business vitality</p>
               
-              <div className="inline-flex items-center justify-center p-6 bg-brand-50 rounded-full mb-4">
-                 <CheckCircle2 size={32} className={assessmentHistory?.totalScore >= 80 ? 'text-emerald-600' : 'text-brand-900'} />
+              <div className="flex items-center justify-center py-4">
+                <div className="relative w-24 h-24">
+                  <svg className="w-full h-full" viewBox="0 0 36 36">
+                    <path d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="#f1f5f9" strokeWidth="3" />
+                    <path d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="#d4af37" strokeWidth="3" strokeDasharray={`${assessmentHistory ? assessmentHistory.totalScore : 0}, 100`} />
+                  </svg>
+                  <div className="absolute inset-0 flex flex-col items-center justify-center text-brand-900">
+                    <span className="text-xl font-black">{assessmentHistory ? assessmentHistory.totalScore : 0}</span>
+                    <span className="text-[6px] font-bold uppercase tracking-widest opacity-50">Score</span>
+                  </div>
+                </div>
               </div>
               
               <div className="space-y-2">
+                <p className="text-sm font-bold text-brand-900 mb-2">Optimize Cash Flow</p>
                 <button 
-                  onClick={onTriggerAssessment}
-                  className="w-full py-3 bg-brand-900 text-white rounded-xl text-xs font-bold uppercase tracking-widest hover:bg-brand-gold hover:text-brand-900 transition-all"
+                  onClick={handleAssessmentTrigger}
+                  className="text-[10px] text-brand-gold font-black uppercase tracking-widest hover:underline"
                 >
-                  Recalculate
+                  Recalculate Strategy
                 </button>
               </div>
             </div>
