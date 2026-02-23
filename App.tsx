@@ -27,8 +27,8 @@ import WorkshopPage from './components/pages/WorkshopPage';
 import BlogPage from './components/pages/BlogPage';
 import ContactPage from './components/pages/ContactPage';
 import PrivacyPolicy from './components/PrivacyPolicy';
-import Dashboard from './components/Dashboard'; // Admin Dashboard
-import UserDashboard from './components/UserDashboard'; // NEW: Client Dashboard
+import Dashboard from './components/Dashboard'; 
+import UserDashboard from './components/UserDashboard'; 
 import SummitPage from './components/pages/SummitPage';
 
 // Solution Detail Pages
@@ -58,33 +58,29 @@ const App: React.FC = () => {
     }
 
     const handleHashChange = () => {
-      try {
-        const hash = window.location.hash.replace('#', '');
-        
-        if (hash === 'assessment') {
-          setShowAssessmentModal(true);
-          return;
-        }
+      const hash = window.location.hash.replace('#', '');
+      
+      if (hash === 'assessment') {
+        setShowAssessmentModal(true);
+        return;
+      }
 
-        const validViews = [
-          'home', 'services', 'who-we-help', 'team', 'workshops', 'blog', 'contact', 
-          'privacy', 'startups', 'existing-business', 'npos', 'individuals', 
-          'wellness', 'accountability', 'tracker', 'warroom', 'protocol', 'intel', 'summit', 'my-intel'
-        ];
+      const validViews = [
+        'home', 'services', 'who-we-help', 'team', 'workshops', 'blog', 'contact', 
+        'privacy', 'startups', 'existing-business', 'npos', 'individuals', 
+        'wellness', 'accountability', 'tracker', 'warroom', 'protocol', 'intel', 'summit', 'my-intel'
+      ];
 
-        if (['protocol', 'services'].includes(hash)) {
-           setCurrentView('home');
-           setTimeout(() => {
-             const element = document.getElementById(hash);
-             if (element) element.scrollIntoView({ behavior: 'smooth' });
-           }, 100);
-        } else if (validViews.includes(hash)) {
-          setCurrentView(hash);
-          window.scrollTo({ top: 0, behavior: 'smooth' });
-        } else {
-          setCurrentView('home');
-        }
-      } catch (e) {
+      if (['protocol', 'services'].includes(hash)) {
+         setCurrentView('home');
+         setTimeout(() => {
+           const element = document.getElementById(hash);
+           if (element) element.scrollIntoView({ behavior: 'smooth' });
+         }, 100);
+      } else if (validViews.includes(hash)) {
+        setCurrentView(hash);
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      } else {
         setCurrentView('home');
       }
     };
@@ -100,9 +96,9 @@ const App: React.FC = () => {
   const renderCurrentView = () => {
     try {
       switch (currentView) {
-        case 'my-intel': return <UserDashboard />; // CLIENT VIEW
+        case 'my-intel': return <UserDashboard />;
         case 'summit': return <SummitPage />;
-        case 'intel': return <Dashboard />; // ADMIN VIEW
+        case 'intel': return <Dashboard />;
         case 'services': return <ServicesPage />;
         case 'who-we-help': return <WhoWeHelpPage />;
         case 'team': return <Team />;
