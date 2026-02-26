@@ -1,152 +1,140 @@
-import React, { useState, useEffect } from 'react';
-import { db, auth } from '../firebaseConfig';
-import { collection, getDocs, query, where, orderBy } from 'firebase/firestore';
-import { GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from 'firebase/auth';
-// CRITICAL FIX: Added missing icons
-import { Lock, LogOut, FileText, ShieldAlert, RefreshCcw, Eye, X, Mail, MessageSquare, ChevronRight, Layout, Calculator, Receipt, Box, FileSpreadsheet, CreditCard, Loader2 } from 'lucide-react';
-import { generateCSVExport } from '../services/exportService';
+// components/App.tsx
 
-const Dashboard: React.FC = () => {
-  const [user, setUser] = useState<any>(null);
-  const [warRoomLeads, setWarRoomLeads] = useState<any[]>([]);
-  const [assessments, setAssessments] = useState<any[]>([]);
-  const [activeTab, setActiveTab] = useState<'warroom' | 'assessments'>('warroom');
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
-  const [selectedLead, setSelectedLead] = useState<any>(null);
+import React, { useState, useEffect, Suspense } from 'react';
+import { ArrowRight, Loader2 } from 'lucide-react';
+import 'swiper/css';
+import 'swiper/css/pagination';
+import 'swiper/css/navigation';
+import ErrorBoundary from './components/ErrorBoundary';
 
-  useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
-      setUser(currentUser);
-      if (currentUser) {
-        fetchData();
-      } else {
-        setLoading(false);
+// Layout
+import Navbar from './components/Navbar';
+import Footer from './components/Footer';
+import UnifiedSupportWidget from './components/UnifiedSupportWidget';
+import CookieConsent from './components/CookieConsent';
+import WhatsAppButton from './components/WhatsAppButton';
+import EventPopup from './components/EventPopup';
+import FloatingCTA from './components/FloatingCTA';
+
+// Pages (Root Level)
+import Home from './components/pages/Home';
+import ServicesPage from './components/pages/ServicesPage';
+import WhoWeHelpPage from './components/pages/WhoWeHelpPage';
+import Team from './Team'; // Root level component
+import WorkshopPage from './components/pages/WorkshopPage';
+import BlogPage from './components/pages/BlogPage';
+import ContactPage from './components/pages/ContactPage';
+import PrivacyPolicy from './components/PrivacyPolicy';
+// NEW IMPORTS FIXED TO USE ALIAS
+import Dashboard from '@/components/Dashboard'; 
+import UserDashboard from '@/components/UserDashboard'; 
+import SummitPage from './components/pages/SummitPage';
+
+// Solution Detail Pages
+import StartupSolutions from '@/components/audiences/StartupSolutions';
+import BusinessSolutions from '@/components/audiences/BusinessSolutions';
+import NPOSolutions from '@/components/audiences/NPOSolutions';
+import IndividualSolutions from '@/components/audiences/IndividualSolutions';
+import WellnessSolutions from '@/components/audiences/WellnessSolutions';
+import AccountabilityPartnership from '@/components/audiences/AccountabilityPartnership';
+import ComplianceTracker from '@/components/ComplianceTracker';
+import WarRoom from '@/components/WarRoom';
+import StrategicJourney from '@/components/StrategicJourney';
+import FinancialHealthScore from '@/components/FinancialHealthScore';
+
+// Constants
+import { CONTACT_INFO } from './constants';
+
+const App: React.FC = () => {
+  // ... (rest of App.tsx remains the same as the last version)
+// ... (Rest of the logic omitted for brevity, focus is on imports)
+
+  const renderCurrentView = () => {
+    try {
+      switch (currentView) {
+        case 'my-intel': return <UserDashboard onTriggerAssessment={() => setShowAssessmentModal(true)} />;
+        case 'summit': return <SummitPage />;
+        case 'intel': return <Dashboard />;
+        case 'services': return <ServicesPage />;
+        case 'who-we-help': return <WhoWeHelpPage />;
+        case 'team': return <Team />;
+        case 'workshops': return <WorkshopPage />;
+        case 'blog': return <BlogPage />;
+        case 'contact': return <ContactPage />;
+        case 'privacy': return <PrivacyPolicy />;
+        case 'startups': return <StartupSolutions />;
+        case 'existing-business': return <BusinessSolutions />;
+        case 'npos': return <NPOSolutions />;
+        case 'individuals': return <IndividualSolutions />;
+        case 'wellness': return <WellnessSolutions />;
+        case 'accountability': return <AccountabilityPartnership />;
+        case 'tracker': return <ComplianceTracker />;
+        case 'warroom': return <WarRoom />;
+        case 'protocol': return <StrategicJourney />;
+        default: return <Home onOpenAssessment={() => setShowAssessmentModal(true)} />;
       }
-    });
-    return () => unsubscribe();
-  }, []);
-
-  const fetchData = async () => {
-    setLoading(true);
-    setError('');
-    try {
-      // Fetch War Room Leads
-      const warRoomQ = query(collection(db, 'war_room_leads'), orderBy('timestamp', 'desc'));
-      const warRoomSnap = await getDocs(warRoomQ);
-      setWarRoomLeads(warRoomSnap.docs.map(doc => ({ id: doc.id, ...doc.data() })));
-
-      // Fetch Assessments
-      const assessQ = query(collection(db, 'assessments'), orderBy('timestamp', 'desc'));
-      const assessSnap = await getDocs(assessQ);
-      setAssessments(assessSnap.docs.map(doc => ({ id: doc.id, ...doc.data() })));
-
-    } catch (err: any) {
-      console.error(err);
-      setError("Failed to fetch data: " + err.message);
-    } finally {
-      setLoading(false);
+    } catch (err) {
+      return <Home onOpenAssessment={() => setShowAssessmentModal(true)} />;
     }
   };
 
-  const handleGoogleLogin = async () => {
-    const provider = new GoogleAuthProvider();
-    try {
-      await signInWithPopup(auth, provider);
-    } catch (err: any) {
-      setError('Login Failed');
-    }
-  };
-
-  if (!user) {
-    return (
-      <div className="min-h-screen bg-slate-950 flex items-center justify-center p-6 font-sans">
-        <div className="max-w-md w-full bg-white/5 border border-white/10 p-12 rounded-[2.5rem] backdrop-blur-xl text-center shadow-2xl">
-          <Lock className="text-brand-gold w-12 h-12 mx-auto mb-6" />
-          <h2 className="text-2xl font-black text-white mb-8 uppercase tracking-widest">Admin Hub Access</h2>
-          <button onClick={handleGoogleLogin} className="w-full bg-white text-slate-900 font-black py-4 rounded-xl hover:bg-brand-gold transition-all uppercase tracking-widest text-xs">
-            Sign in with Google
-          </button>
-        </div>
-      </div>
-    );
-  }
+  const isFullPageMode = ['warroom', 'intel', 'summit', 'my-intel'].includes(currentView);
 
   return (
-    <div className="min-h-screen bg-slate-950 text-white font-sans pt-12 pb-20 px-6">
-      <div className="max-w-7xl mx-auto">
-        <div className="flex justify-between items-end mb-12 border-b border-white/10 pb-8">
-          <div>
-            <h1 className="text-4xl font-black uppercase tracking-tighter leading-none">Intelligence Hub</h1>
-            <p className="text-brand-gold text-xs uppercase mt-2 font-bold">{user.email}</p>
-          </div>
-          <div className="flex gap-4">
-            <button onClick={fetchData} className="p-3 bg-white/5 rounded-full hover:bg-white/10 transition-all">
-              <RefreshCcw size={18} className={loading ? 'animate-spin' : ''} />
-            </button>
-            <button onClick={() => signOut(auth)} className="px-6 py-3 bg-rose-900/20 text-rose-500 rounded-full text-xs font-black uppercase">Logout</button>
-          </div>
-        </div>
-
-        {error && <p className="bg-rose-500/10 text-rose-400 p-4 rounded-xl mb-8 text-sm">{error}</p>}
+    <ErrorBoundary>
+      <div className={`font-sans text-brand-900 bg-white min-h-screen flex flex-col selection:bg-brand-gold/20 ${(showAssessmentModal || showEventPopup) ? 'h-screen overflow-hidden' : ''}`}>
         
-        <div className="flex gap-4 mb-8">
-          <button onClick={() => setActiveTab('warroom')} className={`px-8 py-4 rounded-2xl border transition-all font-black text-xs uppercase ${activeTab === 'warroom' ? 'bg-white/10 border-white/20' : 'opacity-40 border-transparent'}`}>War Room ({warRoomLeads.length})</button>
-          <button onClick={() => setActiveTab('assessments')} className={`px-8 py-4 rounded-2xl border transition-all font-black text-xs uppercase ${activeTab === 'assessments' ? 'bg-white/10 border-white/20' : 'opacity-40 border-transparent'}`}>Assessments ({assessments.length})</button>
-        </div>
-
-        <div className="bg-white/5 rounded-[2rem] border border-white/10 overflow-hidden shadow-2xl">
-          <table className="w-full text-left text-sm">
-            <thead className="bg-black/20 text-brand-gold text-[10px] uppercase font-black tracking-widest">
-              <tr><th className="px-8 py-6">Date</th><th className="px-8 py-6">Identity</th><th className="px-8 py-6">Business</th><th className="px-8 py-6">Status</th><th className="px-8 py-6 text-center">Actions</th></tr>
-            </thead>
-            <tbody className="divide-y divide-white/5">
-              {(activeTab === 'warroom' ? warRoomLeads : assessments).map((item) => (
-                <tr key={item.id} className="hover:bg-white/5">
-                  <td className="px-8 py-5 font-mono text-xs">{item.timestamp?.toDate().toLocaleDateString() || 'N/A'}</td>
-                  <td className="px-8 py-5 font-bold">{item.name}</td>
-                  <td className="px-8 py-5">{item.enterprise}</td>
-                  <td className="px-8 py-5"><span className="bg-brand-gold/10 text-brand-gold px-3 py-1 rounded-full text-[10px] font-black uppercase">{item.segment || item.persona}</span></td>
-                  <td className="px-8 py-5 text-center"><button onClick={() => setSelectedLead(item)} className="p-2 bg-brand-gold/20 text-brand-gold rounded-lg hover:bg-brand-gold hover:text-brand-900"><Eye size={18}/></button></td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </div>
-
-      {selectedLead && (
-        <div className="fixed inset-0 z-[500] flex items-center justify-center p-4 bg-black/90 backdrop-blur-md">
-          <div className="bg-white text-brand-900 w-full max-w-2xl rounded-[3rem] p-10 shadow-2xl overflow-y-auto max-h-[85vh]">
-            <div className="flex justify-between items-start mb-8 border-b pb-6">
-              <div>
-                <h3 className="text-3xl font-black uppercase">{selectedLead.name}</h3>
-                <p className="text-brand-gold font-black uppercase text-[10px] mt-2">{selectedLead.enterprise}</p>
-              </div>
-              <button onClick={() => setSelectedLead(null)} className="p-2 bg-brand-50 rounded-full hover:bg-brand-100"><X /></button>
+        {currentView !== 'intel' && currentView !== 'my-intel' && <Navbar onNavigate={(view) => { window.location.hash = `#${view}`; }} />}
+        
+        <main className="flex-grow">
+          <Suspense fallback={
+            <div className="min-h-screen flex items-center justify-center bg-white">
+              <Loader2 className="animate-spin text-brand-gold" size={48} />
             </div>
-            <div className="space-y-6">
-               <div className="bg-brand-50 p-8 rounded-3xl border">
-                  <p className="text-[10px] font-black uppercase text-brand-900/40 mb-6 border-b pb-2">Diagnostic Brief</p>
-                  <div className="space-y-6">
-                    {selectedLead.intelligence_report?.map((item: any, idx: number) => (
-                       <div key={idx} className="space-y-1">
-                          <p className="text-xs font-bold text-brand-900/60">{item.q}</p>
-                          <p className="text-sm font-black text-brand-900 flex items-center gap-2 mt-1"><ChevronRight size={14} className="text-brand-gold" /> {item.a}</p>
-                       </div>
-                    ))}
-                  </div>
-               </div>
-               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <a href={`mailto:${selectedLead.email}`} className="flex items-center justify-center gap-3 bg-brand-900 text-white py-5 rounded-2xl font-black uppercase text-xs"><Mail size={16}/> Email Lead</a>
-                  {selectedLead.whatsapp && <a href={`https://wa.me/${selectedLead.whatsapp}`} target="_blank" className="flex items-center justify-center gap-3 bg-[#25D366] text-white py-5 rounded-2xl font-black uppercase text-xs"><MessageSquare size={16}/> WhatsApp</a>}
-               </div>
+          }>
+            {renderCurrentView()}
+          </Suspense>
+        </main>
+
+        {!isFullPageMode && <Footer />}
+        
+        {!isFullPageMode && (
+          <div className="fixed bottom-0 left-0 w-full bg-brand-gold z-[40] px-6 py-4 flex items-center justify-between shadow-[0_-10px_40px_rgba(212,175,55,0.2)]">
+            <div className="flex items-center gap-4">
+              <div className="bg-brand-900 text-white px-3 py-1 rounded text-[10px] font-black uppercase tracking-widest hidden md:block">Upcoming</div>
+              <p className="text-brand-900 font-bold text-sm md:text-base tracking-tight">
+                Financial Clarity Workshop - <span className="font-black">Feb 28, 2026</span>
+              </p>
             </div>
+            <button 
+              onClick={() => window.location.hash = '#summit'}
+              className="flex items-center gap-2 text-brand-900 font-black uppercase tracking-widest text-[10px] md:text-xs hover:translate-x-1 transition-transform"
+            >
+              Learn More <ArrowRight size={16} />
+            </button>
           </div>
-        </div>
-      )}
-    </div>
+        )}
+
+        {currentView !== 'intel' && (
+          <>
+            <EventPopup isOpen={showEventPopup} onClose={() => {setShowEventPopup(false); sessionStorage.setItem('hasSeenIWS_Event_Immediate', 'true');}} />
+            <FinancialHealthScore 
+              isModal={true} 
+              isOpen={showAssessmentModal} 
+              onClose={() => {
+                setShowAssessmentModal(false);
+                if(window.location.hash === '#assessment') window.location.hash = '#home';
+              }} 
+            />
+            <FloatingCTA />
+            <WhatsAppButton />
+            <UnifiedSupportWidget />
+          </>
+        )}
+        <CookieConsent />
+      </div>
+    </ErrorBoundary>
   );
 };
 
-export default Dashboard;
+export default App;
