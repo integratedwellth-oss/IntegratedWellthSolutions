@@ -1,145 +1,194 @@
 import React, { useState, useEffect } from 'react';
 import { db, auth } from '../firebaseConfig';
-import { collection, getDocs, query, where, orderBy } from 'firebase/firestore';
+import { collection, getDocs, query, where } from 'firebase/firestore';
 import { GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from 'firebase/auth';
-// CRITICAL FIX: Added missing icons
-import { Lock, LogOut, FileText, ShieldAlert, RefreshCcw, Eye, X, Mail, MessageSquare, ChevronRight, Layout, Calculator, Receipt, Box, FileSpreadsheet, CreditCard, Loader2 } from 'lucide-react';
-import { generateCSVExport } from '../services/exportService';
+import { Lock, LogOut, FileText, RefreshCcw, X, ChevronRight, Layout, Calculator, Receipt, Box, FileSpreadsheet, CreditCard, Loader2, Mail, MessageSquare } from 'lucide-react';
 
-const Dashboard: React.FC = () => {
+// CRITICAL FIX: Interface added to correctly receive the prop from App.tsx
+export interface UserDashboardProps {
+  onTriggerAssessment?: () => void;
+}
+
+const UserDashboard: React.FC<UserDashboardProps> = ({ onTriggerAssessment }) => {
   const [user, setUser] = useState<any>(null);
-  const [warRoomLeads, setWarRoomLeads] = useState<any[]>([]);
-  const [assessments, setAssessments] = useState<any[]>([]);
-  const [activeTab, setActiveTab] = useState<'warroom' | 'assessments'>('warroom');
+  const [myAssessments, setMyAssessments] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
-  const [selectedLead, setSelectedLead] = useState<any>(null);
+  const [selectedResult, setSelectedResult] = useState<any>(null);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
       setUser(currentUser);
-      if (currentUser) {
-        fetchData();
-      } else {
-        setLoading(false);
+      if (currentUser && currentUser.email) {
+        fetchMyData(currentUser.email);
       }
     });
     return () => unsubscribe();
   }, []);
 
-  const fetchData = async () => {
+  const fetchMyData = async (email: string) => {
     setLoading(true);
-    setError('');
     try {
-      // Fetch War Room Leads
-      const warRoomQ = query(collection(db, 'war_room_leads'), orderBy('timestamp', 'desc'));
-      const warRoomSnap = await getDocs(warRoomQ);
-      setWarRoomLeads(warRoomSnap.docs.map(doc => ({ id: doc.id, ...doc.data() })));
-
-      // Fetch Assessments
-      const assessQ = query(collection(db, 'assessments'), orderBy('timestamp', 'desc'));
-      const assessSnap = await getDocs(assessQ);
-      setAssessments(assessSnap.docs.map(doc => ({ id: doc.id, ...doc.data() })));
-
-    } catch (err: any) {
-      console.error(err);
-      setError("Failed to fetch data: " + err.message);
-    } finally {
-      setLoading(false);
-    }
+      const q = query(collection(db, 'assessments'), where('email', '==', email));
+      const snap = await getDocs(q);
+      const data = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      setMyAssessments(data.sort((a: any, b: any) => (b.timestamp?.seconds || 0) - (a.timestamp?.seconds || 0)));
+    } catch (err) { console.error(err); }
+    setLoading(false);
   };
 
-  const handleGoogleLogin = async () => {
-    const provider = new GoogleAuthProvider();
-    try {
-      await signInWithPopup(auth, provider);
-    } catch (err: any) {
-      setError('Login Failed');
-    }
-  };
+  const UPCOMING_SERVICES = [
+    { name: "IWS Books", icon: <Calculator size={28} />, desc: "Automated Ledger" },
+    { name: "IWS Expense", icon: <Receipt size={28} />, desc: "Receipt Scanning" },
+    { name: "IWS Inventory", icon: <Box size={28} />, desc: "Stock Control" },
+    { name: "IWS Invoice", icon: <FileSpreadsheet size={28} />, desc: "Client Billing" },
+    { name: "IWS Pay", icon: <CreditCard size={28} />, desc: "Payment Gateway" }
+  ];
 
-  if (!user) {
-    return (
-      <div className="min-h-screen bg-slate-950 flex items-center justify-center p-6 font-sans">
-        <div className="max-w-md w-full bg-white/5 border border-white/10 p-12 rounded-[2.5rem] backdrop-blur-xl text-center shadow-2xl">
-          <Lock className="text-brand-gold w-12 h-12 mx-auto mb-6" />
-          <h2 className="text-2xl font-black text-white mb-8 uppercase tracking-widest">Admin Hub Access</h2>
-          <button onClick={handleGoogleLogin} className="w-full bg-white text-slate-900 font-black py-4 rounded-xl hover:bg-brand-gold transition-all uppercase tracking-widest text-xs">
-            Sign in with Google
-          </button>
+  if (!user) return (
+    <div className="min-h-screen bg-[#f0fdfa] flex items-center justify-center p-6 font-sans">
+      <div className="max-w-md w-full bg-white border border-[#134e4a]/10 p-12 rounded-[3rem] text-center shadow-2xl">
+        <div className="w-20 h-20 bg-[#134e4a] text-[#d4af37] rounded-2xl flex items-center justify-center mx-auto mb-8 shadow-xl">
+           <Lock size={40} />
         </div>
+        <h2 className="text-3xl font-black text-[#134e4a] mb-2 uppercase tracking-tighter">Client Portal</h2>
+        <p className="text-[#134e4a]/60 mb-10 text-xs font-bold uppercase tracking-widest leading-relaxed">Secure access to your Financial Architecture.</p>
+        <button onClick={() => signInWithPopup(auth, new GoogleAuthProvider())} className="w-full bg-[#134e4a] text-white font-black py-5 rounded-2xl hover:bg-[#d4af37] hover:text-[#134e4a] transition-all uppercase tracking-widest text-xs shadow-lg">Sign in with Google</button>
+        <button onClick={() => window.location.hash = '#home'} className="mt-6 text-[10px] font-black uppercase text-[#134e4a]/40 hover:text-[#134e4a] tracking-widest transition-colors">Back to Site</button>
       </div>
-    );
-  }
+    </div>
+  );
 
   return (
-    <div className="min-h-screen bg-slate-950 text-white font-sans pt-12 pb-20 px-6">
+    <div className="min-h-screen bg-[#f0fdfa] text-[#134e4a] font-sans pt-32 pb-20 px-6 text-left">
       <div className="max-w-7xl mx-auto">
-        <div className="flex justify-between items-end mb-12 border-b border-white/10 pb-8">
+        
+        <div className="flex flex-col md:flex-row justify-between items-end mb-12 border-b border-[#134e4a]/10 pb-8 gap-6">
           <div>
-            <h1 className="text-4xl font-black uppercase tracking-tighter leading-none">Intelligence Hub</h1>
-            <p className="text-brand-gold text-xs uppercase mt-2 font-bold">{user.email}</p>
+            <h1 className="text-4xl md:text-5xl font-black uppercase tracking-tighter leading-none font-sora">My Hub</h1>
+            <p className="text-[#d4af37] text-[10px] md:text-xs uppercase mt-3 font-bold tracking-widest flex items-center gap-2">
+              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span> {user.email}
+            </p>
           </div>
           <div className="flex gap-4">
-            <button onClick={fetchData} className="p-3 bg-white/5 rounded-full hover:bg-white/10 transition-all">
-              <RefreshCcw size={18} className={loading ? 'animate-spin' : ''} />
-            </button>
-            <button onClick={() => signOut(auth)} className="px-6 py-3 bg-rose-900/20 text-rose-500 rounded-full text-xs font-black uppercase">Logout</button>
+            <button onClick={() => user?.email && fetchMyData(user.email)} className="p-4 bg-white rounded-2xl shadow-sm border border-[#134e4a]/10 hover:bg-[#134e4a] hover:text-white transition-all"><RefreshCcw size={18} className={loading ? 'animate-spin' : ''} /></button>
+            <button onClick={() => signOut(auth)} className="px-8 py-4 bg-white text-rose-600 rounded-2xl text-xs font-black uppercase border border-rose-600/20 hover:bg-rose-600 hover:text-white transition-all shadow-sm">Logout</button>
           </div>
         </div>
 
-        {error && <p className="bg-rose-500/10 text-rose-400 p-4 rounded-xl mb-8 text-sm">{error}</p>}
-        
-        <div className="flex gap-4 mb-8">
-          <button onClick={() => setActiveTab('warroom')} className={`px-8 py-4 rounded-2xl border transition-all font-black text-xs uppercase ${activeTab === 'warroom' ? 'bg-white/10 border-white/20' : 'opacity-40 border-transparent'}`}>War Room ({warRoomLeads.length})</button>
-          <button onClick={() => setActiveTab('assessments')} className={`px-8 py-4 rounded-2xl border transition-all font-black text-xs uppercase ${activeTab === 'assessments' ? 'bg-white/10 border-white/20' : 'opacity-40 border-transparent'}`}>Assessments ({assessments.length})</button>
-        </div>
+        <div className="grid lg:grid-cols-12 gap-12">
+           
+           <div className="lg:col-span-8 space-y-8">
+              <h3 className="text-2xl font-black uppercase tracking-tighter">My Diagnostics</h3>
+              
+              {loading ? (
+                <div className="bg-white p-20 rounded-[3rem] text-center shadow-sm">
+                   <Loader2 className="animate-spin text-[#d4af37] mx-auto mb-4" size={32} />
+                   <p className="text-[#134e4a]/40 font-black uppercase tracking-[0.3em]">Syncing Records...</p>
+                </div>
+              ) : myAssessments.length === 0 ? (
+                <div className="bg-white p-12 md:p-20 rounded-[3rem] text-center border-2 border-dashed border-[#134e4a]/20 shadow-sm">
+                    <div className="w-16 h-16 bg-[#f0fdfa] text-[#134e4a] rounded-full flex items-center justify-center mx-auto mb-4">
+                      <FileText size={24}/>
+                    </div>
+                    <p className="text-[#134e4a]/60 font-black uppercase tracking-[0.2em] mb-6">No Records Found</p>
+                    <button 
+                      onClick={() => onTriggerAssessment && onTriggerAssessment()} 
+                      className="bg-[#134e4a] text-white px-8 py-4 rounded-xl font-black uppercase tracking-widest text-xs shadow-lg hover:bg-[#d4af37] hover:text-[#134e4a] transition-all"
+                    >
+                      Take Initial Audit
+                    </button>
+                </div>
+              ) : (
+                <div className="grid gap-6">
+                  {myAssessments.map((item) => (
+                    <div key={item.id} className="bg-white p-8 md:p-10 rounded-[2.5rem] border border-[#134e4a]/10 shadow-lg relative overflow-hidden flex flex-col md:flex-row justify-between items-start md:items-center gap-6 hover:shadow-2xl transition-all duration-500">
+                       
+                       <div className="flex items-center gap-6 z-10 relative">
+                         <div className="w-16 h-16 bg-[#f0fdfa] rounded-2xl flex items-center justify-center text-[#134e4a] font-black text-xl shadow-inner border border-[#134e4a]/10">
+                           {item.score}
+                         </div>
+                         <div>
+                            <h4 className="text-xs font-black text-[#d4af37] uppercase tracking-widest mb-1">
+                              {item.timestamp?.toDate ? item.timestamp.toDate().toLocaleDateString() : 'Recent'}
+                            </h4>
+                            <p className="text-xl font-black uppercase text-[#134e4a] leading-none">{item.persona}</p>
+                         </div>
+                       </div>
 
-        <div className="bg-white/5 rounded-[2rem] border border-white/10 overflow-hidden shadow-2xl">
-          <table className="w-full text-left text-sm">
-            <thead className="bg-black/20 text-brand-gold text-[10px] uppercase font-black tracking-widest">
-              <tr><th className="px-8 py-6">Date</th><th className="px-8 py-6">Identity</th><th className="px-8 py-6">Business</th><th className="px-8 py-6">Status</th><th className="px-8 py-6 text-center">Actions</th></tr>
-            </thead>
-            <tbody className="divide-y divide-white/5">
-              {(activeTab === 'warroom' ? warRoomLeads : assessments).map((item) => (
-                <tr key={item.id} className="hover:bg-white/5">
-                  <td className="px-8 py-5 font-mono text-xs">{item.timestamp?.toDate().toLocaleDateString() || 'N/A'}</td>
-                  <td className="px-8 py-5 font-bold">{item.name}</td>
-                  <td className="px-8 py-5">{item.enterprise}</td>
-                  <td className="px-8 py-5"><span className="bg-brand-gold/10 text-brand-gold px-3 py-1 rounded-full text-[10px] font-black uppercase">{item.segment || item.persona}</span></td>
-                  <td className="px-8 py-5 text-center"><button onClick={() => setSelectedLead(item)} className="p-2 bg-brand-gold/20 text-brand-gold rounded-lg hover:bg-brand-gold hover:text-brand-900"><Eye size={18}/></button></td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+                       <button 
+                         onClick={() => setSelectedResult(item)} 
+                         className="w-full md:w-auto px-10 py-4 bg-[#134e4a] text-white rounded-2xl font-black uppercase text-[10px] tracking-widest flex items-center justify-center gap-3 hover:bg-[#d4af37] hover:text-[#134e4a] transition-all shadow-lg z-10 hover:scale-105 transform duration-300"
+                       >
+                         View Full Brief <ChevronRight size={14}/>
+                       </button>
+
+                       <div className="absolute -right-10 -bottom-10 text-[120px] font-black text-[#f0fdfa] opacity-50 pointer-events-none select-none">
+                         {item.score}
+                       </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+           </div>
+
+           <div className="lg:col-span-4 space-y-8">
+              <h3 className="text-2xl font-black uppercase tracking-tighter">Software Ecosystem</h3>
+              <div className="bg-[#3E2723] rounded-[3rem] p-8 shadow-2xl relative overflow-hidden text-white border border-[#d4af37]/20">
+                 <div className="absolute top-0 right-0 w-40 h-40 bg-[#d4af37]/10 blur-3xl rounded-full pointer-events-none"></div>
+                 <p className="text-[10px] font-black uppercase tracking-[0.3em] text-[#d4af37] mb-6">In Development</p>
+                 
+                 <div className="grid grid-cols-1 gap-4">
+                    {UPCOMING_SERVICES.map((srv, i) => (
+                      <div key={i} className="group flex items-center gap-4 p-4 rounded-2xl bg-white/5 hover:bg-white/10 border border-white/5 hover:border-[#d4af37]/50 transition-all cursor-not-allowed">
+                         <div className="w-12 h-12 rounded-xl bg-black/40 flex items-center justify-center text-white group-hover:text-[#d4af37] group-hover:scale-110 transition-all shadow-inner duration-300">
+                            {srv.icon}
+                         </div>
+                         <div>
+                            <h4 className="font-black text-sm uppercase tracking-wider">{srv.name}</h4>
+                            <p className="text-[10px] text-white/50 uppercase tracking-widest">{srv.desc}</p>
+                         </div>
+                      </div>
+                    ))}
+                 </div>
+
+                 <div className="mt-8 p-4 bg-[#134e4a]/50 rounded-2xl border border-[#134e4a] text-center">
+                    <Lock size={16} className="mx-auto text-[#d4af37] mb-2 opacity-50" />
+                    <p className="text-[9px] font-bold text-white/60 uppercase tracking-widest leading-relaxed">Modules will unlock automatically upon release for Sovereign Members.</p>
+                 </div>
+              </div>
+           </div>
+
         </div>
       </div>
 
-      {selectedLead && (
-        <div className="fixed inset-0 z-[500] flex items-center justify-center p-4 bg-black/90 backdrop-blur-md">
-          <div className="bg-white text-brand-900 w-full max-w-2xl rounded-[3rem] p-10 shadow-2xl overflow-y-auto max-h-[85vh]">
-            <div className="flex justify-between items-start mb-8 border-b pb-6">
+      {selectedResult && (
+        <div className="fixed inset-0 z-[500] flex items-center justify-center p-4 bg-[#134e4a]/90 backdrop-blur-md">
+          <div className="bg-white text-[#134e4a] w-full max-w-2xl rounded-[3rem] p-8 md:p-12 shadow-2xl overflow-y-auto max-h-[90vh] animate-fadeIn">
+            <div className="flex justify-between items-start mb-8 border-b border-[#134e4a]/10 pb-6">
               <div>
-                <h3 className="text-3xl font-black uppercase">{selectedLead.name}</h3>
-                <p className="text-brand-gold font-black uppercase text-[10px] mt-2">{selectedLead.enterprise}</p>
+                <h3 className="text-3xl font-black uppercase tracking-tighter leading-none text-[#134e4a]">{selectedResult.persona}</h3>
+                <p className="text-[#d4af37] font-black uppercase text-[10px] mt-2 tracking-widest">Score: {selectedResult.score} / {selectedResult.maxScore}</p>
               </div>
-              <button onClick={() => setSelectedLead(null)} className="p-2 bg-brand-50 rounded-full hover:bg-brand-100"><X /></button>
+              <button onClick={() => setSelectedResult(null)} className="p-2 bg-[#f0fdfa] rounded-full hover:bg-gray-200 transition-all text-[#134e4a] hover:rotate-90 duration-300"><X /></button>
             </div>
             <div className="space-y-6">
-               <div className="bg-brand-50 p-8 rounded-3xl border">
-                  <p className="text-[10px] font-black uppercase text-brand-900/40 mb-6 border-b pb-2">Diagnostic Brief</p>
-                  <div className="space-y-6">
-                    {selectedLead.intelligence_report?.map((item: any, idx: number) => (
+               <div className="bg-[#f0fdfa] p-6 md:p-8 rounded-3xl border border-[#134e4a]/10">
+                  <p className="text-lg font-medium italic text-[#134e4a]/80 mb-6 leading-relaxed">{selectedResult.diagnosis}</p>
+                  
+                  <div className="space-y-6 pt-6 border-t border-[#134e4a]/10">
+                    <p className="text-[10px] font-black uppercase tracking-widest text-[#134e4a]/40 mb-4">Discovery Trail</p>
+                    {selectedResult.intelligence_report?.map((item: any, idx: number) => (
                        <div key={idx} className="space-y-1">
-                          <p className="text-xs font-bold text-brand-900/60">{item.q}</p>
-                          <p className="text-sm font-black text-brand-900 flex items-center gap-2 mt-1"><ChevronRight size={14} className="text-brand-gold" /> {item.a}</p>
+                          <p className="text-xs font-bold text-[#134e4a]/60">{item.q}</p>
+                          <p className="text-sm font-black text-[#134e4a] flex items-center gap-2 mt-1"><ChevronRight size={14} className="text-[#d4af37]" /> {item.a}</p>
                        </div>
                     ))}
                   </div>
                </div>
-               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <a href={`mailto:${selectedLead.email}`} className="flex items-center justify-center gap-3 bg-brand-900 text-white py-5 rounded-2xl font-black uppercase text-xs"><Mail size={16}/> Email Lead</a>
-                  {selectedLead.whatsapp && <a href={`https://wa.me/${selectedLead.whatsapp}`} target="_blank" className="flex items-center justify-center gap-3 bg-[#25D366] text-white py-5 rounded-2xl font-black uppercase text-xs"><MessageSquare size={16}/> WhatsApp</a>}
+               <div className="text-center pt-4 border-t border-[#134e4a]/10">
+                 <button onClick={() => window.open('https://calendly.com/enquiries-integratedwellth/30min', '_blank')} className="w-full bg-[#d4af37] text-[#134e4a] py-6 rounded-2xl font-black uppercase text-sm tracking-widest shadow-xl hover:scale-105 transition-all">
+                   Book Strategy Review Session
+                 </button>
                </div>
             </div>
           </div>
@@ -149,4 +198,4 @@ const Dashboard: React.FC = () => {
   );
 };
 
-export default Dashboard;
+export default UserDashboard;
