@@ -1,5 +1,3 @@
-// components/App.tsx
-
 import React, { useState, useEffect, Suspense } from 'react';
 import { ArrowRight, Loader2 } from 'lucide-react';
 import 'swiper/css';
@@ -16,18 +14,17 @@ import WhatsAppButton from './components/WhatsAppButton';
 import EventPopup from './components/EventPopup';
 import FloatingCTA from './components/FloatingCTA';
 
-// Pages (Root Level)
+// Pages
 import Home from './components/pages/Home';
 import ServicesPage from './components/pages/ServicesPage';
 import WhoWeHelpPage from './components/pages/WhoWeHelpPage';
-import Team from './Team'; // Root level component
+import Team from './Team'; 
 import WorkshopPage from './components/pages/WorkshopPage';
 import BlogPage from './components/pages/BlogPage';
 import ContactPage from './components/pages/ContactPage';
 import PrivacyPolicy from './components/PrivacyPolicy';
-// NEW IMPORTS FIXED TO USE ALIAS
-import Dashboard from '@/components/Dashboard'; 
-import UserDashboard from '@/components/UserDashboard'; 
+import Dashboard from '@/components/Dashboard'; // Alias used here
+import UserDashboard from '@/components/UserDashboard'; // Alias used here
 import SummitPage from './components/pages/SummitPage';
 
 // Solution Detail Pages
@@ -42,12 +39,61 @@ import WarRoom from '@/components/WarRoom';
 import StrategicJourney from '@/components/StrategicJourney';
 import FinancialHealthScore from '@/components/FinancialHealthScore';
 
-// Constants
 import { CONTACT_INFO } from './constants';
 
 const App: React.FC = () => {
-  // ... (rest of App.tsx remains the same as the last version)
-// ... (Rest of the logic omitted for brevity, focus is on imports)
+  const [currentView, setCurrentView] = useState('home');
+  const [showAssessmentModal, setShowAssessmentModal] = useState(false);
+  const [showEventPopup, setShowEventPopup] = useState(false);
+
+  useEffect(() => {
+    let popupTimer: number | undefined;
+    const hasSeenEvent = sessionStorage.getItem('hasSeenIWS_Event_Immediate');
+    const isSpecialPage = ['#warroom', '#intel', '#summit', '#my-intel'].includes(window.location.hash);
+    
+    if (!hasSeenEvent && !isSpecialPage) {
+      popupTimer = window.setTimeout(() => setShowEventPopup(true), 800);
+    }
+
+    const handleHashChange = () => {
+      try {
+        const hash = window.location.hash.replace('#', '');
+        
+        if (hash === 'assessment') {
+          setShowAssessmentModal(true);
+          return;
+        }
+
+        const validViews = [
+          'home', 'services', 'who-we-help', 'team', 'workshops', 'blog', 'contact', 
+          'privacy', 'startups', 'existing-business', 'npos', 'individuals', 
+          'wellness', 'accountability', 'tracker', 'warroom', 'protocol', 'intel', 'summit', 'my-intel'
+        ];
+
+        if (['protocol', 'services'].includes(hash)) {
+           setCurrentView('home');
+           setTimeout(() => {
+             const element = document.getElementById(hash);
+             if (element) element.scrollIntoView({ behavior: 'smooth' });
+           }, 100);
+        } else if (validViews.includes(hash)) {
+          setCurrentView(hash);
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        } else {
+          setCurrentView('home');
+        }
+      } catch (e) {
+        setCurrentView('home');
+      }
+    };
+
+    handleHashChange();
+    window.addEventListener('hashchange', handleHashChange);
+    return () => {
+      window.removeEventListener('hashchange', handleHashChange);
+      if (popupTimer) window.clearTimeout(popupTimer);
+    };
+  }, []);
 
   const renderCurrentView = () => {
     try {
