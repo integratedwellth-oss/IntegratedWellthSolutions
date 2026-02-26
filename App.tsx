@@ -1,98 +1,152 @@
-import React, { useState, useEffect, Suspense } from 'react';
-import { Loader2 } from 'lucide-react';
-import 'swiper/css';
-import 'swiper/css/pagination';
-import 'swiper/css/navigation';
-import ErrorBoundary from './components/ErrorBoundary';
+import React, { useState, useEffect } from 'react';
+import { db, auth } from '../firebaseConfig';
+import { collection, getDocs, query, where, orderBy } from 'firebase/firestore';
+import { GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from 'firebase/auth';
+// CRITICAL FIX: Added missing icons
+import { Lock, LogOut, FileText, ShieldAlert, RefreshCcw, Eye, X, Mail, MessageSquare, ChevronRight, Layout, Calculator, Receipt, Box, FileSpreadsheet, CreditCard, Loader2 } from 'lucide-react';
+import { generateCSVExport } from '../services/exportService';
 
-import Navbar from './components/Navbar';
-import Footer from './components/Footer';
-import UnifiedSupportWidget from './components/UnifiedSupportWidget';
-import CookieConsent from './components/CookieConsent';
-import WhatsAppButton from './components/WhatsAppButton';
-import EventPopup from './components/EventPopup';
-import FloatingCTA from './components/FloatingCTA';
-import FinancialHealthScore from './components/FinancialHealthScore';
-
-import Home from './components/pages/Home';
-import ServicesPage from './components/pages/ServicesPage';
-import WhoWeHelpPage from './components/pages/WhoWeHelpPage';
-import Team from './Team';
-import WorkshopPage from './components/pages/WorkshopPage';
-import BlogPage from './components/pages/BlogPage';
-import ContactPage from './components/pages/ContactPage';
-import PrivacyPolicy from './components/PrivacyPolicy';
-import UserDashboard from './components/UserDashboard';
-import SummitPage from './components/pages/SummitPage';
-
-const App: React.FC = () => {
-  const [currentView, setCurrentView] = useState('home');
-  const [showAssessment, setShowAssessment] = useState(false);
-  const [showEventPopup, setShowEventPopup] = useState(false);
+const Dashboard: React.FC = () => {
+  const [user, setUser] = useState<any>(null);
+  const [warRoomLeads, setWarRoomLeads] = useState<any[]>([]);
+  const [assessments, setAssessments] = useState<any[]>([]);
+  const [activeTab, setActiveTab] = useState<'warroom' | 'assessments'>('warroom');
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+  const [selectedLead, setSelectedLead] = useState<any>(null);
 
   useEffect(() => {
-    const handleHash = () => {
-      const hash = window.location.hash.replace('#', '');
-      if (hash === 'assessment') {
-        setShowAssessment(true);
-      } else if (hash === 'my-intel' || hash === 'home' || hash === 'services' || hash === 'team' || hash === 'workshops' || hash === 'blog' || hash === 'contact') {
-        setCurrentView(hash);
-        window.scrollTo({ top: 0, behavior: 'smooth' });
+    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+      setUser(currentUser);
+      if (currentUser) {
+        fetchData();
+      } else {
+        setLoading(false);
       }
-    };
-    window.addEventListener('hashchange', handleHash);
-    handleHash();
-    return () => window.removeEventListener('hashchange', handleHash);
+    });
+    return () => unsubscribe();
   }, []);
 
-  const renderView = () => {
-    switch (currentView) {
-      case 'my-intel': return <UserDashboard onTriggerAssessment={() => setShowAssessment(true)} />;
-      case 'summit': return <SummitPage />;
-      case 'services': return <ServicesPage />;
-      case 'who-we-help': return <WhoWeHelpPage />;
-      case 'team': return <Team />;
-      case 'workshops': return <WorkshopPage />;
-      case 'blog': return <BlogPage />;
-      case 'contact': return <ContactPage />;
-      case 'privacy': return <PrivacyPolicy />;
-      default: return <Home onOpenAssessment={() => setShowAssessment(true)} />;
+  const fetchData = async () => {
+    setLoading(true);
+    setError('');
+    try {
+      // Fetch War Room Leads
+      const warRoomQ = query(collection(db, 'war_room_leads'), orderBy('timestamp', 'desc'));
+      const warRoomSnap = await getDocs(warRoomQ);
+      setWarRoomLeads(warRoomSnap.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+
+      // Fetch Assessments
+      const assessQ = query(collection(db, 'assessments'), orderBy('timestamp', 'desc'));
+      const assessSnap = await getDocs(assessQ);
+      setAssessments(assessSnap.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+
+    } catch (err: any) {
+      console.error(err);
+      setError("Failed to fetch data: " + err.message);
+    } finally {
+      setLoading(false);
     }
   };
 
-  const isFullPage = ['summit', 'my-intel'].includes(currentView);
+  const handleGoogleLogin = async () => {
+    const provider = new GoogleAuthProvider();
+    try {
+      await signInWithPopup(auth, provider);
+    } catch (err: any) {
+      setError('Login Failed');
+    }
+  };
+
+  if (!user) {
+    return (
+      <div className="min-h-screen bg-slate-950 flex items-center justify-center p-6 font-sans">
+        <div className="max-w-md w-full bg-white/5 border border-white/10 p-12 rounded-[2.5rem] backdrop-blur-xl text-center shadow-2xl">
+          <Lock className="text-brand-gold w-12 h-12 mx-auto mb-6" />
+          <h2 className="text-2xl font-black text-white mb-8 uppercase tracking-widest">Admin Hub Access</h2>
+          <button onClick={handleGoogleLogin} className="w-full bg-white text-slate-900 font-black py-4 rounded-xl hover:bg-brand-gold transition-all uppercase tracking-widest text-xs">
+            Sign in with Google
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <ErrorBoundary>
-      <div className={`min-h-screen flex flex-col ${showAssessment ? 'h-screen overflow-hidden' : ''}`}>
-        {!isFullPage && <Navbar onNavigate={(v) => { window.location.hash = `#${v}`; }} />}
-        
-        <main className="flex-grow">
-          <Suspense fallback={<div className="min-h-screen flex items-center justify-center"><Loader2 className="animate-spin text-brand-gold" size={48} /></div>}>
-            {renderView()}
-          </Suspense>
-        </main>
+    <div className="min-h-screen bg-slate-950 text-white font-sans pt-12 pb-20 px-6">
+      <div className="max-w-7xl mx-auto">
+        <div className="flex justify-between items-end mb-12 border-b border-white/10 pb-8">
+          <div>
+            <h1 className="text-4xl font-black uppercase tracking-tighter leading-none">Intelligence Hub</h1>
+            <p className="text-brand-gold text-xs uppercase mt-2 font-bold">{user.email}</p>
+          </div>
+          <div className="flex gap-4">
+            <button onClick={fetchData} className="p-3 bg-white/5 rounded-full hover:bg-white/10 transition-all">
+              <RefreshCcw size={18} className={loading ? 'animate-spin' : ''} />
+            </button>
+            <button onClick={() => signOut(auth)} className="px-6 py-3 bg-rose-900/20 text-rose-500 rounded-full text-xs font-black uppercase">Logout</button>
+          </div>
+        </div>
 
-        {!isFullPage && <Footer />}
+        {error && <p className="bg-rose-500/10 text-rose-400 p-4 rounded-xl mb-8 text-sm">{error}</p>}
         
-        <EventPopup isOpen={showEventPopup} onClose={() => setShowEventPopup(false)} />
-        
-        {/* OPTIONAL ASSESSMENT - HAS CLOSE BUTTON */}
-        <FinancialHealthScore 
-          isOpen={showAssessment} 
-          onClose={() => {
-            setShowAssessment(false);
-            if (window.location.hash === '#assessment') window.location.hash = '#home';
-          }} 
-        />
+        <div className="flex gap-4 mb-8">
+          <button onClick={() => setActiveTab('warroom')} className={`px-8 py-4 rounded-2xl border transition-all font-black text-xs uppercase ${activeTab === 'warroom' ? 'bg-white/10 border-white/20' : 'opacity-40 border-transparent'}`}>War Room ({warRoomLeads.length})</button>
+          <button onClick={() => setActiveTab('assessments')} className={`px-8 py-4 rounded-2xl border transition-all font-black text-xs uppercase ${activeTab === 'assessments' ? 'bg-white/10 border-white/20' : 'opacity-40 border-transparent'}`}>Assessments ({assessments.length})</button>
+        </div>
 
-        <FloatingCTA />
-        <WhatsAppButton />
-        <UnifiedSupportWidget />
-        <CookieConsent />
+        <div className="bg-white/5 rounded-[2rem] border border-white/10 overflow-hidden shadow-2xl">
+          <table className="w-full text-left text-sm">
+            <thead className="bg-black/20 text-brand-gold text-[10px] uppercase font-black tracking-widest">
+              <tr><th className="px-8 py-6">Date</th><th className="px-8 py-6">Identity</th><th className="px-8 py-6">Business</th><th className="px-8 py-6">Status</th><th className="px-8 py-6 text-center">Actions</th></tr>
+            </thead>
+            <tbody className="divide-y divide-white/5">
+              {(activeTab === 'warroom' ? warRoomLeads : assessments).map((item) => (
+                <tr key={item.id} className="hover:bg-white/5">
+                  <td className="px-8 py-5 font-mono text-xs">{item.timestamp?.toDate().toLocaleDateString() || 'N/A'}</td>
+                  <td className="px-8 py-5 font-bold">{item.name}</td>
+                  <td className="px-8 py-5">{item.enterprise}</td>
+                  <td className="px-8 py-5"><span className="bg-brand-gold/10 text-brand-gold px-3 py-1 rounded-full text-[10px] font-black uppercase">{item.segment || item.persona}</span></td>
+                  <td className="px-8 py-5 text-center"><button onClick={() => setSelectedLead(item)} className="p-2 bg-brand-gold/20 text-brand-gold rounded-lg hover:bg-brand-gold hover:text-brand-900"><Eye size={18}/></button></td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       </div>
-    </ErrorBoundary>
+
+      {selectedLead && (
+        <div className="fixed inset-0 z-[500] flex items-center justify-center p-4 bg-black/90 backdrop-blur-md">
+          <div className="bg-white text-brand-900 w-full max-w-2xl rounded-[3rem] p-10 shadow-2xl overflow-y-auto max-h-[85vh]">
+            <div className="flex justify-between items-start mb-8 border-b pb-6">
+              <div>
+                <h3 className="text-3xl font-black uppercase">{selectedLead.name}</h3>
+                <p className="text-brand-gold font-black uppercase text-[10px] mt-2">{selectedLead.enterprise}</p>
+              </div>
+              <button onClick={() => setSelectedLead(null)} className="p-2 bg-brand-50 rounded-full hover:bg-brand-100"><X /></button>
+            </div>
+            <div className="space-y-6">
+               <div className="bg-brand-50 p-8 rounded-3xl border">
+                  <p className="text-[10px] font-black uppercase text-brand-900/40 mb-6 border-b pb-2">Diagnostic Brief</p>
+                  <div className="space-y-6">
+                    {selectedLead.intelligence_report?.map((item: any, idx: number) => (
+                       <div key={idx} className="space-y-1">
+                          <p className="text-xs font-bold text-brand-900/60">{item.q}</p>
+                          <p className="text-sm font-black text-brand-900 flex items-center gap-2 mt-1"><ChevronRight size={14} className="text-brand-gold" /> {item.a}</p>
+                       </div>
+                    ))}
+                  </div>
+               </div>
+               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <a href={`mailto:${selectedLead.email}`} className="flex items-center justify-center gap-3 bg-brand-900 text-white py-5 rounded-2xl font-black uppercase text-xs"><Mail size={16}/> Email Lead</a>
+                  {selectedLead.whatsapp && <a href={`https://wa.me/${selectedLead.whatsapp}`} target="_blank" className="flex items-center justify-center gap-3 bg-[#25D366] text-white py-5 rounded-2xl font-black uppercase text-xs"><MessageSquare size={16}/> WhatsApp</a>}
+               </div>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
   );
 };
 
-export default App;
+export default Dashboard;
