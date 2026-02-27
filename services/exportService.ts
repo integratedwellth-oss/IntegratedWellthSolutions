@@ -18,14 +18,16 @@ const LOGO_URL = "https://res.cloudinary.com/dka0498ns/image/upload/v1765747786/
 
 export const generatePDFReport = (data: ExportData, filename: string = 'IWS_Strategic_Brief.pdf') => {
   const doc = new jsPDF();
-  const brandGold = [212, 175, 55];
-  const brandDark = [19, 78, 74];
+  
+  // THE FIX: Casting to 'any' to satisfy the strict type checking of the jspdf library.
+  const brandGold: any = [212, 175, 55];
+  const brandDark: any = [19, 78, 74];
 
   // Header Background
   doc.setFillColor(brandDark[0], brandDark[1], brandDark[2]);
   doc.rect(0, 0, 210, 40, 'F');
   
-  // ADD IWS LOGO
+  // IWS LOGO
   doc.addImage(LOGO_URL, 'PNG', 15, 12, 16, 16);
 
   // Title
