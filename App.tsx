@@ -5,7 +5,7 @@ import 'swiper/css/pagination';
 import 'swiper/css/navigation';
 import ErrorBoundary from './components/ErrorBoundary';
 
-// Layout & Components
+// Layout
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
 import UnifiedSupportWidget from './components/UnifiedSupportWidget';
@@ -27,7 +27,7 @@ import Dashboard from './components/Dashboard';
 import UserDashboard from './components/UserDashboard'; 
 import SummitPage from './components/pages/SummitPage';
 
-// Audiences
+// Solution Detail Pages
 import StartupSolutions from './components/audiences/StartupSolutions';
 import BusinessSolutions from './components/audiences/BusinessSolutions';
 import NPOSolutions from './components/audiences/NPOSolutions';
@@ -37,7 +37,10 @@ import AccountabilityPartnership from './components/audiences/AccountabilityPart
 import ComplianceTracker from './components/ComplianceTracker';
 import WarRoom from './components/WarRoom';
 import StrategicJourney from './components/StrategicJourney';
-import FinancialHealthScore from './components/FinancialHealthScore';
+import FinancialHealthScore, { FinancialHealthScoreProps } from './components/FinancialHealthScore'; // <-- IMPORTED THE TYPE HERE
+
+// Constants
+import { CONTACT_INFO } from './constants';
 
 const App: React.FC = () => {
   const [currentView, setCurrentView] = useState('home');
@@ -47,18 +50,21 @@ const App: React.FC = () => {
   useEffect(() => {
     let popupTimer: number | undefined;
     const hasSeenEvent = sessionStorage.getItem('hasSeenIWS_Event_Immediate');
+    const isSpecialPage = ['#warroom', '#intel', '#summit', '#my-intel'].includes(window.location.hash);
     
+    if (!hasSeenEvent && !isSpecialPage) {
+      popupTimer = window.setTimeout(() => setShowEventPopup(true), 800);
+    }
+
     const handleHashChange = () => {
       try {
-        const hash = window.location.hash.replace('#', '');
+        const hash = window.location.hash.replace('#', '') || 'home';
         
         if (hash === 'assessment') {
           setShowAssessmentModal(true);
-          // Do NOT set currentView, as we are inside a modal overlay
           return;
         }
-        
-        // Check if hash matches a known view, or default to home
+
         const validViews = [
           'home', 'services', 'who-we-help', 'team', 'workshops', 'blog', 'contact', 
           'privacy', 'startups', 'existing-business', 'npos', 'individuals', 
@@ -115,24 +121,18 @@ const App: React.FC = () => {
         default: return <Home onOpenAssessment={() => setShowAssessmentModal(true)} />;
       }
     } catch (err) {
-      // CRITICAL: If a view fails, fall back gracefully to Home, don't crash the whole app.
+      console.error("View Render Error:", err);
       return <Home onOpenAssessment={() => setShowAssessmentModal(true)} />;
     }
   };
 
-  // Determine which layout elements to show based on the current view hash
-  const isDashboardView = currentView === 'intel' || currentView === 'my-intel';
-  const isFullPageContent = ['warroom', 'summit'].includes(currentView);
-  const showLayoutElements = !isDashboardView && !showAssessmentModal && !showEventPopup;
+  const isFullPageMode = ['warroom', 'intel', 'summit', 'my-intel'].includes(currentView);
 
   return (
     <ErrorBoundary>
-      <div className={`font-sans text-brand-900 bg-white min-h-screen flex flex-col ${showAssessmentModal || showEventPopup ? 'h-screen overflow-hidden' : ''}`}>
+      <div className={`font-sans text-brand-900 bg-white min-h-screen flex flex-col selection:bg-brand-gold/20 ${(showAssessmentModal || showEventPopup) ? 'h-screen overflow-hidden' : ''}`}>
         
-        {/* Navbar only shows if NOT on Admin/User Dashboard */}
-        {currentView !== 'intel' && currentView !== 'my-intel' && (
-            <Navbar onNavigate={(view) => { window.location.hash = `#${view}`; }} />
-        )}
+        {currentView !== 'intel' && currentView !== 'my-intel' && <Navbar onNavigate={(view) => { window.location.hash = `#${view}`; }} />}
         
         <main className="flex-grow">
           <Suspense fallback={
@@ -144,12 +144,10 @@ const App: React.FC = () => {
           </Suspense>
         </main>
 
-        {/* Footer & Sticky Bar only show if NOT on a full-page section (WarRoom, Dashboard, Summit) */}
-        {(!isFullPageMode && !showAssessmentModal && !showEventPopup) && <Footer />}
+        {!isFullPageMode && <Footer />}
         
-        {/* Sticky Bar */}
-        {(!isFullPageMode && !showAssessmentModal && !showEventPopup) && (
-          <div className="fixed bottom-0 left-0 w-full bg-brand-gold z-[40] px-6 py-4 flex items-center justify-between shadow-[0_-10px_40px_rgba(212,175,55,0.2)] animate-fadeIn">
+        {!isFullPageMode && (
+          <div className="fixed bottom-0 left-0 w-full bg-brand-gold z-[40] px-6 py-4 flex items-center justify-between shadow-[0_-10px_40px_rgba(212,175,55,0.2)]">
             <div className="flex items-center gap-4">
               <div className="bg-brand-900 text-white px-3 py-1 rounded text-[10px] font-black uppercase tracking-widest hidden md:block">Upcoming</div>
               <p className="text-brand-900 font-bold text-sm md:text-base tracking-tight">
@@ -165,20 +163,23 @@ const App: React.FC = () => {
           </div>
         )}
 
-        {/* Overlays */}
-        {showEventPopup && <EventPopup isOpen={showEventPopup} onClose={() => {setShowEventPopup(false); sessionStorage.setItem('hasSeenIWS_Event_Immediate', 'true');}} />}
-        <FinancialHealthScore 
-          isOpen={showAssessmentModal} 
-          onClose={() => {
-            setShowAssessmentModal(false);
-            if(window.location.hash === '#assessment') {
-                window.history.pushState("", document.title, window.location.pathname + window.location.search);
-            }
-          }} 
-        />
-        <FloatingCTA />
-        <WhatsAppButton />
-        <UnifiedSupportWidget />
+        {currentView !== 'intel' && (
+          <>
+            <EventPopup isOpen={showEventPopup} onClose={() => {setShowEventPopup(false); sessionStorage.setItem('hasSeenIWS_Event_Immediate', 'true');}} />
+            <FinancialHealthScore 
+              isOpen={showAssessmentModal} 
+              onClose={() => {
+                setShowAssessmentModal(false);
+                if(window.location.hash === '#assessment') {
+                    window.history.pushState("", document.title, window.location.pathname + window.location.search);
+                }
+              }} 
+            />
+            <FloatingCTA />
+            <WhatsAppButton />
+            <UnifiedSupportWidget />
+          </>
+        )}
         <CookieConsent />
       </div>
     </ErrorBoundary>
