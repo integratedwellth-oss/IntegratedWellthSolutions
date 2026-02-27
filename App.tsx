@@ -15,17 +15,17 @@ import EventPopup from './components/EventPopup';
 import FloatingCTA from './components/FloatingCTA';
 
 // Pages
-import Home from './components/pages/Home';
-import ServicesPage from './components/pages/ServicesPage';
-import WhoWeHelpPage from './components/pages/WhoWeHelpPage';
-import Team from './Team'; 
-import WorkshopPage from './components/pages/WorkshopPage';
-import BlogPage from './components/pages/BlogPage';
-import ContactPage from './components/pages/ContactPage';
-import PrivacyPolicy from './components/PrivacyPolicy';
-import Dashboard from '@/components/Dashboard'; // Alias used here
-import UserDashboard from '@/components/UserDashboard'; // Alias used here
-import SummitPage from './components/pages/SummitPage';
+import Home from '@/components/pages/Home';
+import ServicesPage from '@/components/pages/ServicesPage';
+import WhoWeHelpPage from '@/components/pages/WhoWeHelpPage';
+import Team from '@/Team'; 
+import WorkshopPage from '@/components/pages/WorkshopPage';
+import BlogPage from '@/components/pages/BlogPage';
+import ContactPage from '@/components/pages/ContactPage';
+import PrivacyPolicy from '@/components/PrivacyPolicy';
+import Dashboard from '@/components/Dashboard'; 
+import UserDashboard from '@/components/UserDashboard'; 
+import SummitPage from '@/components/pages/SummitPage';
 
 // Solution Detail Pages
 import StartupSolutions from '@/components/audiences/StartupSolutions';
@@ -38,8 +38,6 @@ import ComplianceTracker from '@/components/ComplianceTracker';
 import WarRoom from '@/components/WarRoom';
 import StrategicJourney from '@/components/StrategicJourney';
 import FinancialHealthScore from '@/components/FinancialHealthScore';
-
-import { CONTACT_INFO } from './constants';
 
 const App: React.FC = () => {
   const [currentView, setCurrentView] = useState('home');
