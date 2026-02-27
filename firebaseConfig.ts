@@ -1,43 +1,21 @@
-import { initializeApp, getApps, FirebaseApp } from "firebase/app";
+import { initializeApp } from "firebase/app";
+import { getFirestore, serverTimestamp } from "firebase/firestore";
 import { getAnalytics } from "firebase/analytics";
-import { getFirestore, Firestore } from "firebase/firestore";
-import { getAuth, Auth } from "firebase/auth";
+import { getAuth } from "firebase/auth";
 
 const firebaseConfig = {
-  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
-  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
-  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
-  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
-  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
-  appId: import.meta.env.VITE_FIREBASE_APP_ID,
-  measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY as string,
+  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN as string,
+  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID as string,
+  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET as string,
+  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID as string,
+  appId: import.meta.env.VITE_FIREBASE_APP_ID as string,
+  measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID as string
 };
 
-// Initialize with dummy values to satisfy the TypeScript compiler (TS2454)
-const dummyApp = { name: 'dummy' } as unknown as FirebaseApp;
-let app: FirebaseApp = dummyApp;
-let db: Firestore | any = null;
-let auth: Auth | any = { onAuthStateChanged: () => () => {}, currentUser: null };
-let analytics: any = null;
-
-try {
-  if (firebaseConfig.apiKey && firebaseConfig.apiKey !== "undefined") {
-    if (!getApps().length) {
-      app = initializeApp(firebaseConfig);
-    } else {
-      app = getApps()[0];
-    }
-    
-    db = getFirestore(app);
-    auth = getAuth(app);
-    
-    if (typeof window !== 'undefined' && firebaseConfig.measurementId) {
-      analytics = getAnalytics(app);
-    }
-  }
-} catch (error) {
-  console.error("Firebase Shield: Initialization suppressed.", error);
-}
-
-export { app, db, auth, analytics };
+const app = initializeApp(firebaseConfig);
+export const db = getFirestore(app);
+export const auth = getAuth(app);
+export const analytics = typeof window !== "undefined" ? getAnalytics(app) : undefined;
+export { serverTimestamp };
 export default app;
