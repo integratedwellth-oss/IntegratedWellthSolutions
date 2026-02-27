@@ -14,8 +14,9 @@ export default defineConfig({
   plugins: [react()],
   resolve: {
     alias: {
-      '@': path.resolve(__dirname, './components'),
-    }
+      // Correct Alias: Maps '@' to the project root
+      '@': path.resolve(__dirname, './'), 
+    },
   },
   build: {
     outDir: 'dist',
@@ -23,7 +24,6 @@ export default defineConfig({
     rollupOptions: {
       input: {
         main: path.resolve(__dirname, 'index.html'),
-        // CRITICAL: Tells Vite to build the summit page too
         summit: path.resolve(__dirname, 'summit.html'), 
       },
     },
