@@ -10,19 +10,24 @@
     "strict": true,
     "forceConsistentCasingInFileNames": true,
     "module": "ESNext",
-    "moduleResolution": "Node",
+    "moduleResolution": "bundler",
     "resolveJsonModule": true,
     "isolatedModules": true,
     "noEmit": true,
     "jsx": "react-jsx",
+    "noUnusedLocals": false,
+    "noUnusedParameters": false,
+    "noFallthroughCasesInSwitch": true,
     
-    // THE FIX: Aligning TypeScript with Vite's path aliases
+    // Path aliases aligned with your Vite config
     "baseUrl": ".",
     "paths": {
       "@/*": ["./*"]
-    }
+    },
+    
+    // CRITICAL: Restores Vite client types for `import.meta.env`
+    "types": ["vite/client"]
   },
-  // Tells TypeScript where to look for files
-  "include": ["**/*.ts", "**/*.tsx"], 
+  "include": ["**/*.ts", "**/*.tsx"],
   "exclude": ["node_modules"]
 }
