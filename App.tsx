@@ -27,15 +27,13 @@ import Dashboard from './components/Dashboard';
 import UserDashboard from './components/UserDashboard'; 
 import SummitPage from './components/pages/SummitPage';
 
-// Audience-Specific Pages
+// Audiences
 import StartupSolutions from './components/audiences/StartupSolutions';
 import BusinessSolutions from './components/audiences/BusinessSolutions';
 import NPOSolutions from './components/audiences/NPOSolutions';
 import IndividualSolutions from './components/audiences/IndividualSolutions';
 import WellnessSolutions from './components/audiences/WellnessSolutions';
 import AccountabilityPartnership from './components/audiences/AccountabilityPartnership';
-
-// Modules
 import ComplianceTracker from './components/ComplianceTracker';
 import WarRoom from './components/WarRoom';
 import StrategicJourney from './components/StrategicJourney';
@@ -49,21 +47,18 @@ const App: React.FC = () => {
   useEffect(() => {
     let popupTimer: number | undefined;
     const hasSeenEvent = sessionStorage.getItem('hasSeenIWS_Event_Immediate');
-    const isSpecialPage = ['#warroom', '#intel', '#summit', '#my-intel'].includes(window.location.hash);
     
-    if (!hasSeenEvent && !isSpecialPage) {
-      popupTimer = window.setTimeout(() => setShowEventPopup(true), 800);
-    }
-
     const handleHashChange = () => {
       try {
-        const hash = window.location.hash.replace('#', '') || 'home';
+        const hash = window.location.hash.replace('#', '');
         
         if (hash === 'assessment') {
           setShowAssessmentModal(true);
+          // Do NOT set currentView, as we are inside a modal overlay
           return;
         }
-
+        
+        // Check if hash matches a known view, or default to home
         const validViews = [
           'home', 'services', 'who-we-help', 'team', 'workshops', 'blog', 'contact', 
           'privacy', 'startups', 'existing-business', 'npos', 'individuals', 
@@ -120,20 +115,24 @@ const App: React.FC = () => {
         default: return <Home onOpenAssessment={() => setShowAssessmentModal(true)} />;
       }
     } catch (err) {
-      console.error("View Render Error:", err);
-      // Fallback to Home if a specific view crashes
+      // CRITICAL: If a view fails, fall back gracefully to Home, don't crash the whole app.
       return <Home onOpenAssessment={() => setShowAssessmentModal(true)} />;
     }
   };
 
-  const isFullPageMode = ['warroom', 'intel', 'summit', 'my-intel'].includes(currentView);
+  // Determine which layout elements to show based on the current view hash
+  const isDashboardView = currentView === 'intel' || currentView === 'my-intel';
+  const isFullPageContent = ['warroom', 'summit'].includes(currentView);
+  const showLayoutElements = !isDashboardView && !showAssessmentModal && !showEventPopup;
 
   return (
     <ErrorBoundary>
-      <div className={`font-sans text-brand-900 bg-white min-h-screen flex flex-col selection:bg-brand-gold/20 ${(showAssessmentModal || showEventPopup) ? 'h-screen overflow-hidden' : ''}`}>
+      <div className={`font-sans text-brand-900 bg-white min-h-screen flex flex-col ${showAssessmentModal || showEventPopup ? 'h-screen overflow-hidden' : ''}`}>
         
-        {/* Hide Navbar on special full-screen pages */}
-        {currentView !== 'intel' && currentView !== 'my-intel' && <Navbar onNavigate={(view) => { window.location.hash = `#${view}`; }} />}
+        {/* Navbar only shows if NOT on Admin/User Dashboard */}
+        {currentView !== 'intel' && currentView !== 'my-intel' && (
+            <Navbar onNavigate={(view) => { window.location.hash = `#${view}`; }} />
+        )}
         
         <main className="flex-grow">
           <Suspense fallback={
@@ -145,10 +144,12 @@ const App: React.FC = () => {
           </Suspense>
         </main>
 
-        {!isFullPageMode && <Footer />}
+        {/* Footer & Sticky Bar only show if NOT on a full-page section (WarRoom, Dashboard, Summit) */}
+        {(!isFullPageMode && !showAssessmentModal && !showEventPopup) && <Footer />}
         
-        {!isFullPageMode && (
-          <div className="fixed bottom-0 left-0 w-full bg-brand-gold z-[40] px-6 py-4 flex items-center justify-between shadow-[0_-10px_40px_rgba(212,175,55,0.2)]">
+        {/* Sticky Bar */}
+        {(!isFullPageMode && !showAssessmentModal && !showEventPopup) && (
+          <div className="fixed bottom-0 left-0 w-full bg-brand-gold z-[40] px-6 py-4 flex items-center justify-between shadow-[0_-10px_40px_rgba(212,175,55,0.2)] animate-fadeIn">
             <div className="flex items-center gap-4">
               <div className="bg-brand-900 text-white px-3 py-1 rounded text-[10px] font-black uppercase tracking-widest hidden md:block">Upcoming</div>
               <p className="text-brand-900 font-bold text-sm md:text-base tracking-tight">
@@ -164,24 +165,20 @@ const App: React.FC = () => {
           </div>
         )}
 
-        {currentView !== 'intel' && (
-          <>
-            <EventPopup isOpen={showEventPopup} onClose={() => {setShowEventPopup(false); sessionStorage.setItem('hasSeenIWS_Event_Immediate', 'true');}} />
-            <FinancialHealthScore 
-              isOpen={showAssessmentModal} 
-              onClose={() => {
-                setShowAssessmentModal(false);
-                if(window.location.hash === '#assessment') {
-                  // Clean up URL without reloading
-                  window.history.pushState("", document.title, window.location.pathname + window.location.search);
-                }
-              }} 
-            />
-            <FloatingCTA />
-            <WhatsAppButton />
-            <UnifiedSupportWidget />
-          </>
-        )}
+        {/* Overlays */}
+        {showEventPopup && <EventPopup isOpen={showEventPopup} onClose={() => {setShowEventPopup(false); sessionStorage.setItem('hasSeenIWS_Event_Immediate', 'true');}} />}
+        <FinancialHealthScore 
+          isOpen={showAssessmentModal} 
+          onClose={() => {
+            setShowAssessmentModal(false);
+            if(window.location.hash === '#assessment') {
+                window.history.pushState("", document.title, window.location.pathname + window.location.search);
+            }
+          }} 
+        />
+        <FloatingCTA />
+        <WhatsAppButton />
+        <UnifiedSupportWidget />
         <CookieConsent />
       </div>
     </ErrorBoundary>
