@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { db, auth } from '../firebaseConfig';
-import { collection, getDocs, query, orderBy } from 'firebase/firestore';
+import { collection, getDocs, query, where, orderBy } from 'firebase/firestore';
 import { GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from 'firebase/auth';
-import { Lock, LogOut, FileText, ShieldAlert, RefreshCcw, Eye, X, Mail, MessageSquare, ChevronRight, Loader2 } from 'lucide-react';
-import { generateCSVExport } from '../services/exportService';
+import { Lock, LogOut, FileText, ShieldAlert, RefreshCcw, Eye, X, Mail, MessageSquare, ChevronRight, Loader2, Download } from 'lucide-react';
+import { generatePDFReport, generateCSVExport } from '../services/exportService';
 
 const Dashboard: React.FC = () => {
   const [user, setUser] = useState<any>(null);
@@ -39,6 +39,39 @@ const Dashboard: React.FC = () => {
     setLoading(false);
   };
 
+  const handleDownloadBrief = (lead: any) => {
+    let reportData = [];
+    
+    if(lead.intelligence_report && Array.isArray(lead.intelligence_report)) {
+      reportData = lead.intelligence_report.map((item: any) => [item.q, item.a]);
+    } else if (lead.data) {
+      reportData = [
+        ["Risk Status", lead.data.risk_level],
+        ["Immediate Threat", lead.data.pain_point],
+        ["Required Solution", lead.data.recommended_solution],
+      ];
+    }
+    
+    generatePDFReport({
+      title: "INTELLIGENCE BRIEF",
+      subtitle: `Client: ${lead.name} | Enterprise: ${lead.enterprise}`,
+      sections: [
+        {
+          heading: "Diagnostic Summary",
+          content: `Persona: ${lead.persona || lead.segment} | Score: ${lead.score || 'N/A'}`
+        },
+        {
+          heading: "Discovery Trail",
+          content: "Full Q&A from the client's assessment.",
+          table: {
+            headers: ["Question / Metric", "Client Response"],
+            rows: reportData
+          }
+        }
+      ]
+    }, `IWS_Brief_${lead.enterprise}.pdf`);
+  };
+
   if (!user) {
     return (
       <div className="min-h-screen bg-slate-950 flex items-center justify-center p-6 text-center font-sans">
@@ -64,7 +97,7 @@ const Dashboard: React.FC = () => {
 
         <div className="flex gap-4 mb-8">
           <button onClick={() => setActiveTab('warroom')} className={`flex items-center gap-3 px-6 py-3 rounded-full text-xs font-bold uppercase transition-all ${activeTab === 'warroom' ? 'bg-white/10 text-white' : 'bg-transparent text-white/50'}`}>
-            <ShieldAlert size={16} /> War Room Leads ({warRoomLeads.length})
+            <ShieldAlert size={16} /> War Room ({warRoomLeads.length})
           </button>
           <button onClick={() => setActiveTab('assessments')} className={`flex items-center gap-3 px-6 py-3 rounded-full text-xs font-bold uppercase transition-all ${activeTab === 'assessments' ? 'bg-white/10 text-white' : 'bg-transparent text-white/50'}`}>
             <FileText size={16} /> Assessments ({assessments.length})
@@ -83,12 +116,12 @@ const Dashboard: React.FC = () => {
                 ) : (activeTab === 'warroom' ? warRoomLeads : assessments).length === 0 ? (
                   <tr><td colSpan={5} className="text-center py-20 text-white/30 uppercase text-xs font-bold">No Data Streams for this Segment</td></tr>
                 ) : (activeTab === 'warroom' ? warRoomLeads : assessments).map((item) => (
-                  <tr key={item.id} className="hover:bg-white/5 transition-colors">
+                  <tr key={item.id} className="hover:bg-white/5">
                     <td className="px-8 py-5 font-mono text-xs text-white/40">{item.timestamp?.toDate ? item.timestamp.toDate().toLocaleDateString() : 'N/A'}</td>
                     <td className="px-8 py-5 font-bold text-white">{item.name}</td>
                     <td className="px-8 py-5 text-white/60">{item.enterprise}</td>
                     <td className="px-8 py-5"><span className="bg-brand-gold/10 text-brand-gold px-3 py-1 rounded-full text-[10px] font-black uppercase border border-brand-gold/20">{item.segment || item.persona}</span></td>
-                    <td className="px-8 py-5 text-center"><button onClick={() => setSelectedLead(item)} className="p-2 bg-brand-gold/20 text-brand-gold rounded-lg hover:bg-brand-gold hover:text-brand-900 transition-all"><Eye size={18}/></button></td>
+                    <td className="px-8 py-5 text-center"><button onClick={() => setSelectedLead(item)} className="p-2 bg-brand-gold/20 text-brand-gold rounded-lg hover:bg-brand-gold hover:text-brand-900"><Eye size={18}/></button></td>
                   </tr>
                 ))}
               </tbody>
@@ -110,8 +143,6 @@ const Dashboard: React.FC = () => {
             <div className="space-y-6">
                <div className="bg-brand-50 p-8 rounded-3xl border border-brand-900/5">
                   <p className="text-[10px] font-black uppercase tracking-widest text-brand-900/40 mb-6 border-b border-brand-900/5 pb-2">Full Discovery Brief</p>
-                  
-                  {/* DYNAMICALLY RENDER BRIEF BASED ON TYPE */}
                   <div className="space-y-6">
                     {selectedLead.intelligence_report && Array.isArray(selectedLead.intelligence_report) ? (
                         selectedLead.intelligence_report.map((item: any, idx: number) => (
@@ -120,19 +151,17 @@ const Dashboard: React.FC = () => {
                               <p className="text-sm font-black text-brand-900 flex items-center gap-2 mt-1"><ChevronRight size={14} className="text-brand-gold" /> {item.a}</p>
                            </div>
                         ))
-                    ) : selectedLead.data ? (
-                           <div className="space-y-4">
-                              <div className="p-4 bg-white rounded-2xl shadow-sm border border-brand-900/5"><p className="text-[10px] font-black text-brand-900/30 uppercase mb-1">Risk Status</p><p className="font-black text-brand-900">{selectedLead.data.risk_level}</p></div>
-                              <div className="p-4 bg-white rounded-2xl shadow-sm border border-brand-900/5"><p className="text-[10px] font-black text-brand-900/30 uppercase mb-1">Critical Threat</p><p className="font-bold text-rose-600">{selectedLead.data.pain_point}</p></div>
-                              <div className="p-4 bg-brand-900 rounded-2xl shadow-sm"><p className="text-[10px] font-black text-white/30 uppercase mb-1">Required Solution</p><p className="font-black text-brand-gold uppercase">{selectedLead.data.recommended_solution}</p></div>
-                           </div>
-                        ) : <p className="text-xs italic text-brand-900/40 text-center">No detailed data stream available for this entry.</p>
-                    }
+                    ) : (
+                        <p className="text-xs italic text-brand-900/40 text-center">No detailed data stream available for this entry.</p>
+                    )}
                   </div>
                </div>
-               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <a href={`mailto:${selectedLead.email}`} className="flex items-center justify-center gap-3 bg-brand-900 text-white py-5 rounded-2xl font-black uppercase text-xs tracking-widest hover:bg-brand-gold hover:text-brand-900 transition-all"><Mail size={16}/> Email Lead</a>
-                  {selectedLead.whatsapp && <a href={`https://wa.me/${selectedLead.whatsapp.replace(/[^0-9]/g, '')}`} target="_blank" className="flex items-center justify-center gap-3 bg-[#25D366] text-white py-5 rounded-2xl font-black uppercase text-xs tracking-widest hover:opacity-90 transition-all"><MessageSquare size={16}/> WhatsApp</a>}
+               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <a href={`mailto:${selectedLead.email}`} className="md:col-span-1 flex items-center justify-center gap-3 bg-brand-900 text-white py-5 rounded-2xl font-black uppercase text-xs tracking-widest"><Mail size={16}/> Email</a>
+                  {selectedLead.whatsapp && <a href={`https://wa.me/${selectedLead.whatsapp.replace(/[^0-9]/g, '')}`} target="_blank" className="md:col-span-1 flex items-center justify-center gap-3 bg-[#25D366] text-white py-5 rounded-2xl font-black uppercase text-xs"><MessageSquare size={16}/> WhatsApp</a>}
+                  <button onClick={() => handleDownloadBrief(selectedLead)} className="md:col-span-1 flex items-center justify-center gap-3 bg-brand-gold text-brand-900 py-5 rounded-2xl font-black uppercase text-xs tracking-widest">
+                     <Download size={16}/> Download
+                  </button>
                </div>
             </div>
           </div>
