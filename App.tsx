@@ -5,7 +5,7 @@ import 'swiper/css/pagination';
 import 'swiper/css/navigation';
 import ErrorBoundary from './components/ErrorBoundary';
 
-// Layout
+// Layout & Components
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
 import UnifiedSupportWidget from './components/UnifiedSupportWidget';
@@ -27,13 +27,15 @@ import Dashboard from './components/Dashboard';
 import UserDashboard from './components/UserDashboard'; 
 import SummitPage from './components/pages/SummitPage';
 
-// Audiences
+// Audience-Specific Pages
 import StartupSolutions from './components/audiences/StartupSolutions';
 import BusinessSolutions from './components/audiences/BusinessSolutions';
 import NPOSolutions from './components/audiences/NPOSolutions';
 import IndividualSolutions from './components/audiences/IndividualSolutions';
 import WellnessSolutions from './components/audiences/WellnessSolutions';
 import AccountabilityPartnership from './components/audiences/AccountabilityPartnership';
+
+// Modules
 import ComplianceTracker from './components/ComplianceTracker';
 import WarRoom from './components/WarRoom';
 import StrategicJourney from './components/StrategicJourney';
@@ -55,7 +57,7 @@ const App: React.FC = () => {
 
     const handleHashChange = () => {
       try {
-        const hash = window.location.hash.replace('#', '');
+        const hash = window.location.hash.replace('#', '') || 'home';
         
         if (hash === 'assessment') {
           setShowAssessmentModal(true);
@@ -112,4 +114,78 @@ const App: React.FC = () => {
         case 'individuals': return <IndividualSolutions />;
         case 'wellness': return <WellnessSolutions />;
         case 'accountability': return <AccountabilityPartnership />;
-        case 'tracker': return <ComplianceTracker
+        case 'tracker': return <ComplianceTracker />;
+        case 'warroom': return <WarRoom />;
+        case 'protocol': return <StrategicJourney />;
+        default: return <Home onOpenAssessment={() => setShowAssessmentModal(true)} />;
+      }
+    } catch (err) {
+      console.error("View Render Error:", err);
+      // Fallback to Home if a specific view crashes
+      return <Home onOpenAssessment={() => setShowAssessmentModal(true)} />;
+    }
+  };
+
+  const isFullPageMode = ['warroom', 'intel', 'summit', 'my-intel'].includes(currentView);
+
+  return (
+    <ErrorBoundary>
+      <div className={`font-sans text-brand-900 bg-white min-h-screen flex flex-col selection:bg-brand-gold/20 ${(showAssessmentModal || showEventPopup) ? 'h-screen overflow-hidden' : ''}`}>
+        
+        {/* Hide Navbar on special full-screen pages */}
+        {currentView !== 'intel' && currentView !== 'my-intel' && <Navbar onNavigate={(view) => { window.location.hash = `#${view}`; }} />}
+        
+        <main className="flex-grow">
+          <Suspense fallback={
+            <div className="min-h-screen flex items-center justify-center bg-white">
+              <Loader2 className="animate-spin text-brand-gold" size={48} />
+            </div>
+          }>
+            {renderCurrentView()}
+          </Suspense>
+        </main>
+
+        {!isFullPageMode && <Footer />}
+        
+        {!isFullPageMode && (
+          <div className="fixed bottom-0 left-0 w-full bg-brand-gold z-[40] px-6 py-4 flex items-center justify-between shadow-[0_-10px_40px_rgba(212,175,55,0.2)]">
+            <div className="flex items-center gap-4">
+              <div className="bg-brand-900 text-white px-3 py-1 rounded text-[10px] font-black uppercase tracking-widest hidden md:block">Upcoming</div>
+              <p className="text-brand-900 font-bold text-sm md:text-base tracking-tight">
+                Financial Clarity Workshop - <span className="font-black">Feb 28, 2026</span>
+              </p>
+            </div>
+            <button 
+              onClick={() => window.location.hash = '#summit'}
+              className="flex items-center gap-2 text-brand-900 font-black uppercase tracking-widest text-[10px] md:text-xs hover:translate-x-1 transition-transform"
+            >
+              Learn More <ArrowRight size={16} />
+            </button>
+          </div>
+        )}
+
+        {currentView !== 'intel' && (
+          <>
+            <EventPopup isOpen={showEventPopup} onClose={() => {setShowEventPopup(false); sessionStorage.setItem('hasSeenIWS_Event_Immediate', 'true');}} />
+            <FinancialHealthScore 
+              isOpen={showAssessmentModal} 
+              onClose={() => {
+                setShowAssessmentModal(false);
+                if(window.location.hash === '#assessment') {
+                  // Clean up URL without reloading
+                  window.history.pushState("", document.title, window.location.pathname + window.location.search);
+                }
+              }} 
+            />
+            <FloatingCTA />
+            <WhatsAppButton />
+            <UnifiedSupportWidget />
+          </>
+        )}
+        <CookieConsent />
+      </div>
+    </ErrorBoundary>
+  );
+};
+
+export default App;
