@@ -1,8 +1,6 @@
 import { GoogleGenerativeAI, ChatSession } from "@google/generative-ai";
 import { COMPANY_CONTEXT } from "../constants";
 
-let chatSession: ChatSession | null = null;
-
 export const createChatSession = (): any => {
   const apiKey = import.meta.env.VITE_GEMINI_API_KEY || '';
 
@@ -14,20 +12,11 @@ export const createChatSession = (): any => {
   const genAI = new GoogleGenerativeAI(apiKey);
   const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
-  chatSession = model.startChat({
+  const chatSession = model.startChat({
     history: [
-      {
-        role: "user",
-        parts: [{ text: "System Context: " + COMPANY_CONTEXT }],
-      },
-      {
-        role: "model",
-        parts: [{ text: "Understood. I am the Integrated Wellth Advisor. I am ready to assist." }],
-      },
+      { role: "user", parts: [{ text: "System Context: " + COMPANY_CONTEXT }] },
+      { role: "model", parts: [{ text: "Understood. I am the Integrated Wellth Advisor. I am ready to assist." }] },
     ],
-    generationConfig: {
-      maxOutputTokens: 1000,
-    },
   });
 
   return chatSession;
