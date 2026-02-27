@@ -14,26 +14,29 @@ interface ExportData {
   }[];
 }
 
+const LOGO_URL = "https://res.cloudinary.com/dka0498ns/image/upload/v1765747786/favicon_ofkkb1.png";
+
 export const generatePDFReport = (data: ExportData, filename: string = 'IWS_Strategic_Brief.pdf') => {
   const doc = new jsPDF();
-  
-  // Cast to 'any' to resolve strict Tuple type errors in jspdf-autotable
-  const brandGold: any = [212, 175, 55];
-  const brandDark: any = [19, 78, 74];
+  const brandGold = [212, 175, 55];
+  const brandDark = [19, 78, 74];
 
   // Header Background
   doc.setFillColor(brandDark[0], brandDark[1], brandDark[2]);
   doc.rect(0, 0, 210, 40, 'F');
+  
+  // ADD IWS LOGO
+  doc.addImage(LOGO_URL, 'PNG', 15, 12, 16, 16);
 
   // Title
   doc.setTextColor(255, 255, 255);
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(22);
-  doc.text('INTEGRATED WELLTH SOLUTIONS', 15, 20);
+  doc.text('INTEGRATED WELLTH SOLUTIONS', 38, 20);
   
   doc.setTextColor(brandGold[0], brandGold[1], brandGold[2]);
   doc.setFontSize(10);
-  doc.text('SOVEREIGNTY PROTOCOL ALPHA-1', 15, 28);
+  doc.text('SOVEREIGNTY PROTOCOL ALPHA-1', 38, 28);
 
   // Subtitle
   doc.setTextColor(brandDark[0], brandDark[1], brandDark[2]);
@@ -47,16 +50,12 @@ export const generatePDFReport = (data: ExportData, filename: string = 'IWS_Stra
 
   let currentY = 75;
 
-  // Add Confidentiality Stamp
   doc.setFontSize(8);
   doc.setTextColor(150, 150, 150);
-  doc.text('HIGHLY CONFIDENTIAL | SOVEREIGN INTEL HUB', 150, 55);
+  doc.text('HIGHLY CONFIDENTIAL', 150, 55);
 
   data.sections.forEach((section) => {
-    if (currentY > 250) {
-      doc.addPage();
-      currentY = 20;
-    }
+    if (currentY > 250) { doc.addPage(); currentY = 20; }
 
     doc.setFont('helvetica', 'bold');
     doc.setFontSize(12);
@@ -87,9 +86,6 @@ export const generatePDFReport = (data: ExportData, filename: string = 'IWS_Stra
         body: section.table.rows,
         theme: 'striped',
         headStyles: { fillColor: brandDark },
-        alternateRowStyles: { fillColor: [245, 250, 250] },
-        styles: { fontSize: 8, cellPadding: 3 },
-        margin: { left: 15, right: 15 }
       });
       currentY = (doc as any).lastAutoTable.finalY + 15;
     }
@@ -102,7 +98,7 @@ export const generatePDFReport = (data: ExportData, filename: string = 'IWS_Stra
     doc.setPage(i);
     doc.setFontSize(8);
     doc.setTextColor(150, 150, 150);
-    doc.text(`© 2026 Integrated Wellth Solutions | Page ${i} of ${pageCount}`, 105, 290, { align: 'center' });
+    doc.text(`© ${new Date().getFullYear()} Integrated Wellth Solutions | Page ${i} of ${pageCount}`, 105, 290, { align: 'center' });
   }
 
   doc.save(filename);
