@@ -26,8 +26,8 @@ import ContactPage from './components/pages/ContactPage';
 import PrivacyPolicy from './components/PrivacyPolicy';
 import Dashboard from './components/Dashboard';
 import UserDashboard from './components/UserDashboard';
-import SummitPage from './components/pages/SummitPage';
-import ComplianceCalendarPage from './components/pages/ComplianceCalendarPage';
+// Removed SummitPage import
+import ComplianceCalendarPage from './components/pages/ComplianceCalendarPage'; // NEW
 
 // Solution Detail Pages
 import StartupSolutions from './components/audiences/StartupSolutions';
@@ -41,6 +41,9 @@ import WarRoom from './components/WarRoom';
 import StrategicJourney from './components/StrategicJourney';
 import FinancialHealthScore from './components/FinancialHealthScore';
 
+// Constants
+import { CONTACT_INFO } from './constants';
+
 const App: React.FC = () => {
   const [currentView, setCurrentView] = useState('home');
   const [showAssessmentModal, setShowAssessmentModal] = useState(false);
@@ -49,28 +52,46 @@ const App: React.FC = () => {
   useEffect(() => {
     let popupTimer: number | undefined;
     const hasSeenEvent = sessionStorage.getItem('hasSeenIWS_Event_Immediate');
-    const isSpecialPage = ['#warroom', '#intel', '#summit', '#my-intel', '#landing', '#compliance-calendar'].includes(window.location.hash);
-    if (!hasSeenEvent && !isSpecialPage) { popupTimer = window.setTimeout(() => setShowEventPopup(true), 800); }
+    // Exclude landing page and calendar from event popup check
+    const isSpecialPage = ['#warroom', '#intel', '#my-intel', '#landing', '#compliance-calendar'].includes(window.location.hash);
+    
+    if (!hasSeenEvent && !isSpecialPage) {
+      popupTimer = window.setTimeout(() => setShowEventPopup(true), 800);
+    }
 
     const handleHashChange = () => {
       try {
         const hash = window.location.hash.replace('#', '') || 'home';
-        if (hash === 'assessment') { setShowAssessmentModal(true); return; }
-        const validViews = ['home', 'landing', 'services', 'who-we-help', 'team', 'workshops', 'blog', 'contact', 'privacy', 'startups', 'existing-business', 'npos', 'individuals', 'wellness', 'accountability', 'tracker', 'warroom', 'protocol', 'intel', 'summit', 'my-intel', 'compliance-calendar'];
+        if (hash === 'assessment') {
+          setShowAssessmentModal(true);
+          return;
+        }
+        const validViews = ['home', 'landing', 'services', 'who-we-help', 'team', 'workshops', 'blog', 'contact', 'privacy', 'startups', 'existing-business', 'npos', 'individuals', 'wellness', 'accountability', 'tracker', 'warroom', 'protocol', 'intel', 'my-intel', 'compliance-calendar'];
 
         if (['protocol', 'services'].includes(hash)) {
           setCurrentView('home');
-          setTimeout(() => { const element = document.getElementById(hash); if (element) element.scrollIntoView({ behavior: 'smooth' }); }, 100);
+          setTimeout(() => {
+            const element = document.getElementById(hash);
+            if (element) element.scrollIntoView({ behavior: 'smooth' });
+          }, 100);
         } else if (validViews.includes(hash)) {
           setCurrentView(hash);
           window.scrollTo({ top: 0, behavior: 'smooth' });
-        } else { setCurrentView('home'); }
-      } catch (e) { setCurrentView('home'); }
+        } else {
+          setCurrentView('home');
+        }
+      } catch (e) {
+        setCurrentView('home');
+      }
     };
 
     handleHashChange();
     window.addEventListener('hashchange', handleHashChange);
-    return () => { window.removeEventListener('hashchange', handleHashChange); if (popupTimer) window.clearTimeout(popupTimer); };
+    
+    return () => {
+      window.removeEventListener('hashchange', handleHashChange);
+      if (popupTimer) window.clearTimeout(popupTimer);
+    };
   }, []);
 
   const renderCurrentView = () => {
@@ -78,8 +99,7 @@ const App: React.FC = () => {
       switch (currentView) {
         case 'landing': return <LandingPage />;
         case 'my-intel': return <UserDashboard onTriggerAssessment={() => setShowAssessmentModal(true)} />;
-        case 'compliance-calendar': return <ComplianceCalendarPage />;
-        case 'summit': return <SummitPage />;
+        case 'compliance-calendar': return <ComplianceCalendarPage />; // NEW ROUTE
         case 'intel': return <Dashboard />;
         case 'services': return <ServicesPage />;
         case 'who-we-help': return <WhoWeHelpPage />;
@@ -99,34 +119,74 @@ const App: React.FC = () => {
         case 'protocol': return <StrategicJourney />;
         default: return <Home onOpenAssessment={() => setShowAssessmentModal(true)} />;
       }
-    } catch (err) { return <Home onOpenAssessment={() => setShowAssessmentModal(true)} />; }
+    } catch (err) {
+      console.error("View Render Error:", err);
+      return <Home onOpenAssessment={() => setShowAssessmentModal(true)} />;
+    }
   };
 
-  const isFullPageMode = ['warroom', 'intel', 'summit', 'my-intel'].includes(currentView);
+  const isFullPageMode = ['warroom', 'intel', 'my-intel'].includes(currentView);
   const shouldHideNavbar = ['intel', 'my-intel', 'landing'].includes(currentView);
   const shouldHideFloatingBar = isFullPageMode || currentView === 'landing' || currentView === 'compliance-calendar';
 
   return (
     <ErrorBoundary>
       <div className={`font-sans text-brand-900 bg-white min-h-screen flex flex-col selection:bg-brand-gold/20 ${(showAssessmentModal || showEventPopup) ? 'h-screen overflow-hidden' : ''}`}>
-        {!shouldHideNavbar && <Navbar onNavigate={(view) => { window.location.hash = `#${view}`; }} />}
+        
+        {!shouldHideNavbar && (
+          <Navbar onNavigate={(view) => { window.location.hash = `#${view}`; }} />
+        )}
+
         <main className="flex-grow">
-          <Suspense fallback={<div className="min-h-screen flex items-center justify-center bg-white"><Loader2 className="animate-spin text-brand-gold" size={48} /></div>}>
+          <Suspense fallback={
+            <div className="min-h-screen flex items-center justify-center bg-white">
+              <Loader2 className="animate-spin text-brand-gold" size={48} />
+            </div>
+          }>
             {renderCurrentView()}
           </Suspense>
         </main>
+
         {!isFullPageMode && <Footer />}
+
         {!shouldHideFloatingBar && (
           <div className="fixed bottom-0 left-0 w-full bg-brand-gold z-[40] px-6 py-4 flex items-center justify-between shadow-[0_-10px_40px_rgba(212,175,55,0.2)]">
-            <div className="flex items-center gap-4"><div className="bg-brand-900 text-white px-3 py-1 rounded text-[10px] font-black uppercase tracking-widest hidden md:block">Regulatory Alert</div><p className="text-brand-900 font-bold text-sm md:text-base tracking-tight">2026 Compliance Season has started.</p></div>
-            <button onClick={() => window.location.hash = '#compliance-calendar'} className="flex items-center gap-2 text-brand-900 font-black uppercase tracking-widest text-[10px] md:text-xs hover:translate-x-1 transition-transform">View Calendar <ArrowRight size={16} /></button>
+            <div className="flex items-center gap-4">
+              <div className="bg-brand-900 text-white px-3 py-1 rounded text-[10px] font-black uppercase tracking-widest hidden md:block">Compliance Alert</div>
+              <p className="text-brand-900 font-bold text-sm md:text-base tracking-tight">
+                2026 Statutory Deadlines are active.
+              </p>
+            </div>
+            <button 
+              onClick={() => window.location.hash = '#compliance-calendar'}
+              className="flex items-center gap-2 text-brand-900 font-black uppercase tracking-widest text-[10px] md:text-xs hover:translate-x-1 transition-transform"
+            >
+              View Schedule <ArrowRight size={16} />
+            </button>
           </div>
         )}
+
         {currentView !== 'intel' && (
           <>
-            <EventPopup isOpen={showEventPopup} onClose={() => { setShowEventPopup(false); sessionStorage.setItem('hasSeenIWS_Event_Immediate', 'true'); }} />
-            <FinancialHealthScore isOpen={showAssessmentModal} onClose={() => { setShowAssessmentModal(false); if(window.location.hash === '#assessment') { window.history.pushState("", document.title, window.location.pathname + window.location.search); } }} />
-            <FloatingCTA /><WhatsAppButton /><UnifiedSupportWidget />
+            <EventPopup 
+              isOpen={showEventPopup} 
+              onClose={() => {
+                setShowEventPopup(false);
+                sessionStorage.setItem('hasSeenIWS_Event_Immediate', 'true');
+              }} 
+            />
+            <FinancialHealthScore 
+              isOpen={showAssessmentModal} 
+              onClose={() => { 
+                setShowAssessmentModal(false);
+                if(window.location.hash === '#assessment') {
+                   window.history.pushState("", document.title, window.location.pathname + window.location.search);
+                }
+              }}
+            />
+            <FloatingCTA />
+            <WhatsAppButton />
+            <UnifiedSupportWidget />
           </>
         )}
         <CookieConsent />
