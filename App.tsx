@@ -1,10 +1,11 @@
 import React, { useState, useEffect, Suspense } from 'react';
-import { Loader2 } from 'lucide-react';
+import { ArrowRight, Loader2 } from 'lucide-react';
 import 'swiper/css';
 import 'swiper/css/pagination';
 import 'swiper/css/navigation';
 import ErrorBoundary from './components/ErrorBoundary';
 
+// Layout
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
 import UnifiedSupportWidget from './components/UnifiedSupportWidget';
@@ -12,8 +13,8 @@ import CookieConsent from './components/CookieConsent';
 import WhatsAppButton from './components/WhatsAppButton';
 import EventPopup from './components/EventPopup';
 import FloatingCTA from './components/FloatingCTA';
-import FinancialHealthScore from './components/FinancialHealthScore';
 
+// Pages
 import Home from './components/pages/Home';
 import ServicesPage from './components/pages/ServicesPage';
 import WhoWeHelpPage from './components/pages/WhoWeHelpPage';
@@ -25,49 +26,100 @@ import PrivacyPolicy from './components/PrivacyPolicy';
 import UserDashboard from './components/UserDashboard';
 import SummitPage from './components/pages/SummitPage';
 
+// Components
+import FinancialHealthScore from './components/FinancialHealthScore';
+
 const App: React.FC = () => {
   const [currentView, setCurrentView] = useState('home');
-  const [showAssessment, setShowAssessment] = useState(false);
+  const [showAssessmentModal, setShowAssessmentModal] = useState(false);
   const [showEventPopup, setShowEventPopup] = useState(false);
 
   useEffect(() => {
-    const handleHash = () => {
-      const hash = window.location.hash.replace('#', '');
-      if (hash === 'assessment') {
-        setShowAssessment(true);
-      } else if (['my-intel', 'home', 'services', 'team', 'workshops', 'blog', 'contact', 'privacy', 'summit'].includes(hash)) {
-        setCurrentView(hash);
-        window.scrollTo({ top: 0, behavior: 'smooth' });
+    let popupTimer: number | undefined;
+    const hasSeenEvent = sessionStorage.getItem('hasSeenIWS_Event_Immediate');
+    const isSpecialPage = ['#summit', '#my-intel'].includes(window.location.hash);
+    
+    if (!hasSeenEvent && !isSpecialPage) {
+      popupTimer = window.setTimeout(() => setShowEventPopup(true), 800);
+    }
+
+    const handleHashChange = () => {
+      try {
+        const hash = window.location.hash.replace('#', '');
+        
+        if (hash === 'assessment') {
+          setShowAssessmentModal(true);
+          return;
+        }
+
+        const validViews = [
+          'home', 'services', 'who-we-help', 'team', 'workshops', 'blog', 'contact',
+          'privacy', 'my-intel', 'summit', 'protocol'
+        ];
+
+        if (['protocol', 'services-anchor'].includes(hash)) {
+          setCurrentView('home');
+          setTimeout(() => {
+            const element = document.getElementById(hash);
+            if (element) element.scrollIntoView({ behavior: 'smooth' });
+          }, 100);
+        } else if (validViews.includes(hash)) {
+          setCurrentView(hash);
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        } else {
+          setCurrentView('home');
+        }
+      } catch (e) {
+        setCurrentView('home');
       }
     };
-    window.addEventListener('hashchange', handleHash);
-    handleHash();
-    return () => window.removeEventListener('hashchange', handleHash);
+
+    handleHashChange();
+    window.addEventListener('hashchange', handleHashChange);
+    return () => {
+      window.removeEventListener('hashchange', handleHashChange);
+      if (popupTimer) window.clearTimeout(popupTimer);
+    };
   }, []);
 
-  const triggerAssessment = () => setShowAssessment(true);
+  const openAssessment = () => setShowAssessmentModal(true);
 
-  const renderView = () => {
-    switch (currentView) {
-      case 'my-intel': return <UserDashboard onTriggerAssessment={triggerAssessment} />;
-      case 'services': return <ServicesPage />;
-      case 'who-we-help': return <WhoWeHelpPage />;
-      case 'team': return <Team />;
-      case 'workshops': return <WorkshopPage />;
-      case 'blog': return <BlogPage />;
-      case 'contact': return <ContactPage />;
-      case 'privacy': return <PrivacyPolicy />;
-      case 'summit': return <SummitPage />;
-      default: return <Home onOpenAssessment={triggerAssessment} />;
+  const renderCurrentView = () => {
+    try {
+      switch (currentView) {
+        case 'my-intel': 
+          return <UserDashboard onTriggerAssessment={openAssessment} />;
+        case 'summit': 
+          return <SummitPage />;
+        case 'services': 
+          return <ServicesPage />;
+        case 'who-we-help': 
+          return <WhoWeHelpPage />;
+        case 'team': 
+          return <Team />;
+        case 'workshops': 
+          return <WorkshopPage />;
+        case 'blog': 
+          return <BlogPage />;
+        case 'contact': 
+          return <ContactPage />;
+        case 'privacy': 
+          return <PrivacyPolicy />;
+        default: 
+          return <Home onOpenAssessment={openAssessment} />;
+      }
+    } catch (err) {
+      return <Home onOpenAssessment={openAssessment} />;
     }
   };
 
-  const isFullPage = ['summit', 'my-intel'].includes(currentView);
+  const isFullPageMode = ['summit', 'my-intel'].includes(currentView);
 
   return (
     <ErrorBoundary>
-      <div className={`min-h-screen flex flex-col ${showAssessment ? 'h-screen overflow-hidden' : ''}`}>
-        {!isFullPage && <Navbar onNavigate={(v) => { window.location.hash = `#${v}`; }} />}
+      <div className={`font-sans text-brand-900 bg-white min-h-screen flex flex-col selection:bg-brand-gold/20 ${(showAssessmentModal || showEventPopup) ? 'h-screen overflow-hidden' : ''}`}>
+        
+        {!isFullPageMode && <Navbar onNavigate={(view) => { window.location.hash = `#${view}`; }} />}
         
         <main className="flex-grow">
           <Suspense fallback={
@@ -75,23 +127,46 @@ const App: React.FC = () => {
               <Loader2 className="animate-spin text-brand-gold" size={48} />
             </div>
           }>
-            {renderView()}
+            {renderCurrentView()}
           </Suspense>
         </main>
 
-        {!isFullPage && <Footer />}
+        {!isFullPageMode && <Footer />}
         
-        <EventPopup isOpen={showEventPopup} onClose={() => setShowEventPopup(false)} />
-        
-        {/* Assessment Logic */}
-        <FinancialHealthScore 
-          isOpen={showAssessment} 
+        {/* Floating Components & Overlays */}
+        {!isFullPageMode && (
+          <div className="fixed bottom-0 left-0 w-full bg-brand-gold z-[40] px-6 py-4 flex items-center justify-between shadow-[0_-10px_40px_rgba(212,175,55,0.2)]">
+            <div className="flex items-center gap-4">
+              <div className="bg-brand-900 text-white px-3 py-1 rounded text-[10px] font-black uppercase tracking-widest hidden md:block">Upcoming</div>
+              <p className="text-brand-900 font-bold text-sm md:text-base tracking-tight">
+                Financial Clarity Workshop - <span className="font-black">Feb 28, 2026</span>
+              </p>
+            </div>
+            <button
+              onClick={() => window.location.hash = '#summit'}
+              className="flex items-center gap-2 text-brand-900 font-black uppercase tracking-widest text-[10px] md:text-xs hover:translate-x-1 transition-transform"
+            >
+              Learn More <ArrowRight size={16} />
+            </button>
+          </div>
+        )}
+
+        <EventPopup 
+          isOpen={showEventPopup} 
           onClose={() => {
-            setShowAssessment(false);
-            if (window.location.hash === '#assessment') window.location.hash = `#${currentView}`;
+            setShowEventPopup(false); 
+            sessionStorage.setItem('hasSeenIWS_Event_Immediate', 'true');
           }} 
         />
-
+        
+        <FinancialHealthScore
+          isOpen={showAssessmentModal}
+          onClose={() => {
+            setShowAssessmentModal(false);
+            if(window.location.hash === '#assessment') window.location.hash = '#home';
+          }}
+        />
+        
         <FloatingCTA />
         <WhatsAppButton />
         <UnifiedSupportWidget />
