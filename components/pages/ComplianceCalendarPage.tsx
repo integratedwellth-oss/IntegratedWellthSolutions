@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
 import RevealOnScroll from '../RevealOnScroll';
-import { Calendar, ShieldCheck, AlertTriangle, Clock, Building2, User, Landmark, HelpCircle, ChevronDown, ChevronUp, ArrowRight } from 'lucide-react';
+import { Calendar, ShieldCheck, AlertTriangle, Clock, Building2, User, Landmark, HelpCircle, ChevronDown, ChevronUp } from 'lucide-react';
 import Button from '../Button';
 
 const ComplianceCalendarPage: React.FC = () => {
-  const TREE_HERO_URL = "https://res.cloudinary.com/dka0498ns/image/upload/f_auto ,q_auto/v1772373342/Profuse_Beauty_Logo_Tree_z1nc3c.png";
+  const TREE_HERO_URL = "https://res.cloudinary.com/dka0498ns/image/upload/f_auto,q_auto/v1772373342/Profuse_Beauty_Logo_Tree_z1nc3c.png";
   const [openFaq, setOpenFaq] = useState<number | null>(null);
 
   // Schedule data for the summary view (used in Dashboard/WarRoom)
