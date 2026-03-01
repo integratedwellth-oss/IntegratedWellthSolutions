@@ -4,7 +4,7 @@ import { Calendar, ShieldCheck, AlertTriangle, Clock, Building2, User, Landmark,
 import Button from '../Button';
 
 const ComplianceCalendarPage: React.FC = () => {
-  const TREE_HERO_URL = "https://res.cloudinary.com/dka0498ns/image/upload/f_auto,q_auto/v1772373342/Profuse_Beauty_Logo_Tree_z1nc3c.png";
+  const TREE_HERO_URL = "https://res.cloudinary.com/dka0498ns/image/upload/f_auto ,q_auto/v1772373342/Profuse_Beauty_Logo_Tree_z1nc3c.png";
   const [openFaq, setOpenFaq] = useState<number | null>(null);
 
   // Schedule data for the summary view (used in Dashboard/WarRoom)
@@ -179,7 +179,8 @@ const ComplianceCalendarPage: React.FC = () => {
   );
   
   const FaqSection = () => (
-    <section className="py-24 px-6 max-w-5xl mx-auto">
+    <>
+      <section className="py-24 px-6 max-w-5xl mx-auto">
         <RevealOnScroll>
           <div className="text-center mb-16">
             <div className="inline-flex items-center justify-center w-12 h-12 bg-brand-50 rounded-full text-brand-900 mb-4 border border-brand-900/10"><HelpCircle size={24} /></div>
@@ -223,7 +224,78 @@ const ComplianceCalendarPage: React.FC = () => {
           </div>
         </RevealOnScroll>
       </section>
+    </>
+  );
 
+  return (
+    <div className="min-h-screen bg-brand-50">
+      {/* Hero Section */}
+      <section className="relative py-24 px-6 overflow-hidden">
+        <div className="absolute inset-0 opacity-5">
+          <img src={TREE_HERO_URL} alt="" className="w-full h-full object-cover" />
+        </div>
+        <div className="relative max-w-7xl mx-auto">
+          <RevealOnScroll>
+            <div className="text-center mb-16">
+              <div className="inline-flex items-center gap-2 px-4 py-2 bg-brand-gold/10 rounded-full text-brand-gold text-sm font-bold uppercase tracking-wider mb-6">
+                <Calendar size={16} />
+                2026/2027 Tax Year
+              </div>
+              <h1 className="text-5xl md:text-7xl font-black text-brand-900 uppercase tracking-tighter mb-6">
+                Compliance<br />
+                <span className="text-brand-gold">Calendar</span>
+              </h1>
+              <p className="text-xl text-brand-900/60 max-w-2xl mx-auto leading-relaxed">
+                Navigate South Africa's complex regulatory landscape with precision. 
+                Never miss a deadline again.
+              </p>
+            </div>
+          </RevealOnScroll>
+
+          {/* Schedule Overview */}
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mb-24">
+            {SCHEDULE.map((month, idx) => (
+              <RevealOnScroll key={idx} delay={idx * 100}>
+                <div className="bg-white rounded-2xl p-6 shadow-lg border border-brand-900/5 hover:shadow-xl transition-shadow">
+                  <h3 className="text-lg font-bold text-brand-900 mb-4 flex items-center gap-2">
+                    <Clock size={18} className="text-brand-gold" />
+                    {month.month}
+                  </h3>
+                  <div className="space-y-3">
+                    {month.deadlines.map((deadline, dIdx) => (
+                      <div key={dIdx} className="flex items-start gap-3 text-sm">
+                        <span className={`flex-shrink-0 w-8 h-8 rounded-lg flex items-center justify-center font-bold text-xs ${
+                          deadline.risk === 'Critical' ? 'bg-red-100 text-red-700' :
+                          deadline.risk === 'High' ? 'bg-orange-100 text-orange-700' :
+                          deadline.risk === 'Medium' ? 'bg-yellow-100 text-yellow-700' :
+                          'bg-green-100 text-green-700'
+                        }`}>
+                          {deadline.day}
+                        </span>
+                        <div>
+                          <p className="font-semibold text-brand-900">{deadline.task}</p>
+                          <p className="text-brand-900/50 text-xs">{deadline.entity}</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </RevealOnScroll>
+            ))}
+          </div>
+
+          {/* Detailed Content Sections */}
+          <div className="space-y-12">
+            <IntroToRegTech />
+            <FiscalAdjustments />
+            <StatutoryDeadlineEngine />
+            <CipcProtocols />
+          </div>
+
+          {/* FAQ Section */}
+          <FaqSection />
+        </div>
+      </section>
     </div>
   );
 };
