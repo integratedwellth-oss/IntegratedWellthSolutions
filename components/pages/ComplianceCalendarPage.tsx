@@ -7,7 +7,6 @@ const ComplianceCalendarPage: React.FC = () => {
   const TREE_HERO_URL = "https://res.cloudinary.com/dka0498ns/image/upload/f_auto,q_auto/v1772373342/Profuse_Beauty_Logo_Tree_z1nc3c.png";
   const [openFaq, setOpenFaq] = useState<number | null>(null);
 
-  // SCHEDULE data remains the same for the summary view
   const SCHEDULE = [
     { month: "February 2026", deadlines: [{ day: "28", entity: "All Entities", task: "Provisional Tax (IRP6) - 2nd Period", risk: "High", desc: "Mandatory payment to avoid 10% penalty + interest." }, { day: "28", entity: "Individuals", task: "IT3(b) & IT3(c) Data Prep", risk: "Medium", desc: "Gather investment and interest certificates." }] },
     { month: "March 2026", deadlines: [{ day: "31", entity: "Corporate", task: "CIPC Annual Returns", risk: "Critical", desc: "Hard deadline to prevent deregistration process initiation." }, { day: "25", entity: "VAT Vendors", task: "VAT 201 Submission & Payment", risk: "High", desc: "Category B vendors (periods ending Feb)." }] },
@@ -19,26 +18,11 @@ const ComplianceCalendarPage: React.FC = () => {
   ];
 
   const FAQS = [
-    {
-      q: "How will the 2026 VAT threshold increase affect my small business?",
-      a: "Effective 1 April 2026, the compulsory VAT registration threshold significantly increases from R1 million to R2.3 million. If turnover sits below this, you can apply for VAT deregistration."
-    },
-    {
-      q: "Why is my SARS eFiling status showing 'Pending' or 'Processing'?",
-      a: "Pending usually means SARS is verifying registration details. Processing indicates the return is flagged for audit or verification (up to 21-90 business days)."
-    },
-    {
-      q: "Why was a portion of my Two-Pot Retirement System savings withdrawal taken by SARS?",
-      a: "Withdrawals from the 'savings pot' are taxed at your marginal income tax rate. SARS also instructs deductions for any outstanding tax debt before releasing funds."
-    },
-    {
-      q: "I am a social media influencer. Does SARS track my income?",
-      a: "Yes. SARS uses data-driven profiling for the gig and social media economy, treating influencers as independent contractors who must declare earnings."
-    },
-    {
-      q: "Can I file my CIPC Annual Return without submitting a Beneficial Ownership (BO) declaration?",
-      a: "No. CIPC enforces a 'hard-stop'. Filing is blocked until the BO declaration is up to date."
-    }
+    { q: "How will the 2026 VAT threshold increase affect my small business?", a: "Effective 1 April 2026, the compulsory VAT registration threshold significantly increases from R1 million to R2.3 million. If turnover sits below this, you can apply for VAT deregistration." },
+    { q: "Why is my SARS eFiling status showing 'Pending' or 'Processing'?", a: "Pending usually means SARS is verifying registration details. Processing indicates the return is flagged for audit or verification (up to 21-90 business days)." },
+    { q: "Why was a portion of my Two-Pot Retirement System savings withdrawal taken by SARS?", a: "Withdrawals from the 'savings pot' are taxed at your marginal income tax rate. SARS also instructs deductions for any outstanding tax debt before releasing funds." },
+    { q: "I am a social media influencer. Does SARS track my income?", a: "Yes. SARS uses data-driven profiling for the gig and social media economy, treating influencers as independent contractors who must declare earnings." },
+    { q: "Can I file my CIPC Annual Return without submitting a Beneficial Ownership (BO) declaration?", a: "No. CIPC enforces a 'hard-stop'. Filing is blocked until the BO declaration is up to date." }
   ];
 
   const DetailSection = ({ title, children }: { title: string; children: React.ReactNode }) => (
@@ -58,7 +42,6 @@ const ComplianceCalendarPage: React.FC = () => {
   
   const IntroToRegTech = () => (
     <DetailSection title="Introduction to the Regulatory Technology Paradigm">
-      {/* Content cleaned: Removed asterisks/dashes, bolded key terms */}
       <p>The South African regulatory and fiscal landscape in 2026 presents an inherently complex, interconnected matrix of compliance obligations that span corporate governance, direct and indirect taxation, and labour statutory requirements. For corporate entities, fiduciary agents, and independent tax practitioners, the margin for administrative error has been systematically eradicated through the aggressive digitization of government service portals. Entities must now navigate a rapidly evolving technological ecosystem that encompasses the modernized South African Revenue Service (SARS) eFiling platform, the Companies and Intellectual Property Commission (CIPC) BizPortal, and the Department of Employment and Labour's digital reporting systems.</p>
       <p>To effectively mitigate the risks of administrative penalties, operational paralysis, and deregistration, the deployment of a dedicated "Compliance Calendar" widget represents a critical evolution in Regulatory Technology (RegTech) design. The theoretical widget proposed in this report relies on two foundational pillars to keep clients perpetually ahead of their obligations. The first pillar is the "Upcoming Deadlines" module, which utilizes clear, color-coded alerts to flag immediate, statutory tasks such as Value-Added Tax (VAT) submissions, provisional tax payments, and annual corporate returns. The second pillar is the "Filing Status" taxonomy, which programmatically translates highly opaque backend government application programming interface (API) response codes into intuitive "Pending," "Processing," and "Submitted" badges, thereby providing clients with absolute certainty regarding the lifecycle of their statutory submissions.</p>
       <p>By synthesizing official 2026 data, including the February 2026 National Budget Speech adjustments, updated CIPC Beneficial Ownership regulations, and newly implemented Independent Software Vendor (ISV) technical interface specifications, this comprehensive research report provides an authoritative framework for understanding and automating South African compliance.</p>
