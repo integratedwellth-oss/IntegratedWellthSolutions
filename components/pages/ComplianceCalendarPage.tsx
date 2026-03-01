@@ -7,6 +7,7 @@ const ComplianceCalendarPage: React.FC = () => {
   const TREE_HERO_URL = "https://res.cloudinary.com/dka0498ns/image/upload/f_auto,q_auto/v1772373342/Profuse_Beauty_Logo_Tree_z1nc3c.png";
   const [openFaq, setOpenFaq] = useState<number | null>(null);
 
+  // Schedule data for the summary view (used in Dashboard/WarRoom)
   const SCHEDULE = [
     { month: "February 2026", deadlines: [{ day: "28", entity: "All Entities", task: "Provisional Tax (IRP6) - 2nd Period", risk: "High", desc: "Mandatory payment to avoid 10% penalty + interest." }, { day: "28", entity: "Individuals", task: "IT3(b) & IT3(c) Data Prep", risk: "Medium", desc: "Gather investment and interest certificates." }] },
     { month: "March 2026", deadlines: [{ day: "31", entity: "Corporate", task: "CIPC Annual Returns", risk: "Critical", desc: "Hard deadline to prevent deregistration process initiation." }, { day: "25", entity: "VAT Vendors", task: "VAT 201 Submission & Payment", risk: "High", desc: "Category B vendors (periods ending Feb)." }] },
@@ -25,6 +26,7 @@ const ComplianceCalendarPage: React.FC = () => {
     { q: "Can I file my CIPC Annual Return without submitting a Beneficial Ownership (BO) declaration?", a: "No. CIPC enforces a 'hard-stop'. Filing is blocked until the BO declaration is up to date." }
   ];
 
+  // Helper component for styled sections - THIS IS A FUNCTION RETURNING JSX
   const DetailSection = ({ title, children }: { title: string; children: React.ReactNode }) => (
     <RevealOnScroll>
       <div className="bg-white rounded-[2.5rem] p-10 md:p-16 shadow-xl border border-brand-900/10">
@@ -38,7 +40,7 @@ const ComplianceCalendarPage: React.FC = () => {
     </RevealOnScroll>
   );
 
-  // --- GUIDE CONTENT COMPONENTS (JSX returned directly, with markdown removed and replaced with <strong>) ---
+  // --- GUIDE CONTENT COMPONENTS (MUST RETURN VALID JSX) ---
   
   const IntroToRegTech = () => (
     <DetailSection title="Introduction to the Regulatory Technology Paradigm">
