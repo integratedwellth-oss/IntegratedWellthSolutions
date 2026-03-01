@@ -1,22 +1,21 @@
-
 import React from 'react';
 import { Zap, Calendar } from 'lucide-react';
 
 const NewsTicker: React.FC = () => {
+  // Critical deadlines pulled from Compliance Calendar (Updated for Ticker Style)
   const feedItems = [
-    "IRP6 PROVISIONAL TAX DEADLINE: FEB 28, 2026",
-    "CIPC ANNUAL RENEWAL PROTOCOL ACTIVE: MAR 31, 2026",
-    "EMP501 RECON PULSE: MAY 31, 2026",
-    "VAT PERIOD 02/2026 SUBMISSION: MAR 25",
-    "ITR12T TRUST TAX RETURNS FINAL CALL: JAN 19",
-    "MARCIA KGAPHOLA LIVE @ MUNYAKA ESTATE",
-    "FINANCIAL CLARITY SUMMIT • FEB 28, 2026",
-    "STRATEGIC AUDITS OPEN FOR Q3 PIPELINE"
+    "DEADLINE: FEB 28 | IRP6 2ND PERIOD PAYMENT DUE",
+    "ALERT: MAR 31 | CIPC ANNUAL RETURNS MANDATORY",
+    "APR 07: EMP201 PAYROLL SUBMISSION",
+    "MAY 31: EMP501 RECONCILIATION DUE (AUDIT SENSITIVE)",
+    "JUN 30: VOLUNTARY IRP6 TOP-UP WINDOW",
+    "JUL 01: INDIVIDUAL TAX FILING OPENS",
+    "VAT THRESHOLD INCREASED TO R2.3M - REVIEW NOW"
   ];
 
   return (
     <div className="bg-brand-900 text-white overflow-hidden py-5 border-y border-white/10 relative z-20 shadow-2xl">
-      {/* Edge Fades for Seamless Flow */}
+      {/* Edge Fades */}
       <div className="absolute left-0 top-0 h-full w-40 bg-gradient-to-r from-brand-900 via-brand-900/80 to-transparent z-10"></div>
       <div className="absolute right-0 top-0 h-full w-40 bg-gradient-to-l from-brand-900 via-brand-900/80 to-transparent z-10"></div>
       
@@ -28,17 +27,22 @@ const NewsTicker: React.FC = () => {
                 {idx === 0 && (
                   <div className="flex items-center gap-4 text-brand-gold shrink-0">
                     <Zap size={14} className="animate-pulse fill-brand-gold" />
-                    <span className="tracking-[0.6em]">SYSTEM FEED:</span>
+                    <span className="tracking-[0.6em]">COMPLIANCE FEED:</span>
                   </div>
                 )}
                 <span className="flex items-center gap-8">
-                  {/* Highlight compliance items with a specific icon color or prefix if needed */}
-                  {item.includes('DEADLINE') || item.includes('DUE') || item.includes('RECON') ? (
-                    <span className="flex items-center gap-3">
+                  {/* Logic to highlight high-urgency items */}
+                  {item.includes('DEADLINE') || item.includes('DUE') || item.includes('CRITICAL') ? (
+                    <span className="flex items-center gap-3 text-rose-400">
+                      <Calendar size={12} className="text-rose-400" />
+                      {item}
+                    </span>
+                  ) : (
+                    <span className="flex items-center gap-3 text-white/90">
                       <Calendar size={12} className="text-brand-gold" />
                       {item}
                     </span>
-                  ) : item}
+                  )}
                   <div className="w-1.5 h-1.5 rounded-full bg-brand-gold/30"></div>
                 </span>
               </div>
@@ -46,15 +50,13 @@ const NewsTicker: React.FC = () => {
           </div>
         ))}
       </div>
-
       <style>{`
         @keyframes marquee {
           0% { transform: translateX(0); }
           100% { transform: translateX(-25%); }
         }
         .animate-marquee {
-          /* Speed increased from 40s to 20s (2X faster) */
-          animation: marquee 20s linear infinite;
+          animation: marquee 25s linear infinite; /* Adjusted speed slightly */
         }
         .animate-marquee:hover {
           animation-play-state: paused;
