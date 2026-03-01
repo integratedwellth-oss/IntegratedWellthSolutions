@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { db, auth } from '../firebaseConfig';
 import { collection, onSnapshot, query, where, doc, setDoc } from 'firebase/firestore';
 import { GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from 'firebase/auth';
-import { Lock, Calculator, Receipt, Box, FileSpreadsheet, CreditCard, Loader2, CheckSquare, Square, TrendingUp, TrendingDown, Zap, Eye, ShieldCheck, Calendar, ArrowRight, ChevronRight } from 'lucide-react';
+import { Lock, Calculator, Receipt, Box, FileSpreadsheet, CreditCard, Loader2, CheckSquare, Square, TrendingUp, TrendingDown, Zap, Eye, ShieldCheck, Calendar, ArrowRight, ChevronRight, X } from 'lucide-react';
 
 export interface UserDashboardProps {
   onTriggerAssessment?: () => void;
@@ -33,7 +33,6 @@ const UserDashboard: React.FC<UserDashboardProps> = ({ onTriggerAssessment }) =>
     const unsubscribeAuth = onAuthStateChanged(auth, (currentUser) => {
       setUser(currentUser);
       if (currentUser && currentUser.uid) {
-        // 1. Listen for Assessment History
         const qAssessments = query(collection(db, 'assessments'), where('userId', '==', currentUser.uid));
         const unsubAssessments = onSnapshot(qAssessments, (snap) => {
           const data = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
@@ -41,13 +40,11 @@ const UserDashboard: React.FC<UserDashboardProps> = ({ onTriggerAssessment }) =>
           setLoading(false);
         });
 
-        // 2. Listen for Compliance Checklist State
         const complianceDocRef = doc(db, 'compliance_states', currentUser.uid);
         const unsubCompliance = onSnapshot(complianceDocRef, (docSnap) => {
           if (docSnap.exists()) {
             setComplianceState(docSnap.data());
           } else {
-            // Initialize if first time
             setComplianceState(COMPLIANCE_CHECKLIST_ITEMS.reduce((acc, item) => ({ ...acc, [item.id]: false }), {}));
           }
         });
@@ -64,30 +61,17 @@ const UserDashboard: React.FC<UserDashboardProps> = ({ onTriggerAssessment }) =>
     };
   }, []);
 
-  // OPTIMISTIC UI UPDATE FOR CHECKLIST
   const handleToggleCompliance = async (itemId: string) => {
     if (!user) return;
-    
-    // 1. Instantly update the UI
     const currentVal = !!complianceState[itemId];
     const newVal = !currentVal;
-    
-    setComplianceState(prev => ({ 
-      ...prev, 
-      [itemId]: newVal 
-    }));
+    setComplianceState(prev => ({ ...prev, [itemId]: newVal }));
 
     try {
-      // 2. Sync with database
       const complianceDocRef = doc(db, 'compliance_states', user.uid);
       await setDoc(complianceDocRef, { [itemId]: newVal }, { merge: true });
     } catch (error) {
-      console.error("Failed to sync compliance state:", error);
-      // 3. Revert on failure
-      setComplianceState(prev => ({ 
-        ...prev, 
-        [itemId]: currentVal 
-      }));
+      setComplianceState(prev => ({ ...prev, [itemId]: currentVal }));
     }
   };
 
@@ -122,8 +106,6 @@ const UserDashboard: React.FC<UserDashboardProps> = ({ onTriggerAssessment }) =>
   return (
     <div className="min-h-screen bg-[#f0fdfa] text-[#134e4a] font-sans pt-32 pb-20 px-6">
       <div className="max-w-7xl mx-auto">
-        
-        {/* HEADER */}
         <header className="flex flex-col md:flex-row justify-between items-start md:items-center mb-16 gap-6">
           <div>
             <div className="flex items-center gap-2 mb-2">
@@ -138,14 +120,9 @@ const UserDashboard: React.FC<UserDashboardProps> = ({ onTriggerAssessment }) =>
         </header>
 
         <div className="grid lg:grid-cols-12 gap-12">
-          
-          {/* LEFT COLUMN: PROGRESS & COMPLIANCE */}
           <div className="lg:col-span-7 space-y-12">
-            
-            {/* PROGRESS TRACKING */}
             <div className="bg-white p-8 rounded-[3rem] shadow-lg border border-[#134e4a]/10 relative overflow-hidden">
               <h3 className="text-2xl font-black uppercase tracking-tighter mb-8">Strategic Progress</h3>
-              
               {loading ? <div className="flex justify-center py-10"><Loader2 className="animate-spin text-[#d4af37]" size={32}/></div> : myAssessments.length === 0 ? (
                 <div className="text-center p-10 border-2 border-dashed border-[#134e4a]/20 rounded-3xl bg-[#f0fdfa]/50">
                   <ShieldCheck size={40} className="mx-auto text-[#134e4a]/30 mb-4" />
@@ -154,8 +131,6 @@ const UserDashboard: React.FC<UserDashboardProps> = ({ onTriggerAssessment }) =>
                 </div>
               ) : (
                 <div className="grid md:grid-cols-2 gap-8 relative z-10">
-                  
-                  {/* PREVIOUS REPORT */}
                   {previousAssessment ? (
                     <div className="opacity-60 hover:opacity-100 transition-opacity flex flex-col h-full">
                       <h4 className="text-xs font-black uppercase tracking-widest mb-3 text-[#134e4a]/60">Previous Quarter</h4>
@@ -173,8 +148,6 @@ const UserDashboard: React.FC<UserDashboardProps> = ({ onTriggerAssessment }) =>
                       <p className="text-sm font-bold text-[#134e4a] uppercase tracking-widest">Initial Audit Baseline Set</p>
                     </div>
                   )}
-
-                  {/* LATEST REPORT */}
                   <div className={`p-6 rounded-3xl shadow-xl border-2 flex flex-col h-full ${latestAssessment.score > (previousAssessment?.score || 0) ? 'border-emerald-500 bg-emerald-50/30' : latestAssessment.score < (previousAssessment?.score || 0) ? 'border-rose-500 bg-rose-50/30' : 'border-[#d4af37] bg-white'} transition-all duration-500`}>
                     <div className="flex justify-between items-start mb-2">
                       <h4 className="text-xs font-black uppercase tracking-widest text-[#134e4a]">Current Status</h4>
@@ -192,33 +165,21 @@ const UserDashboard: React.FC<UserDashboardProps> = ({ onTriggerAssessment }) =>
                       <Eye size={14} /> View Full Brief
                     </button>
                   </div>
-
                 </div>
               )}
             </div>
 
-            {/* COMPLIANCE & CALENDAR SUMMARY */}
             <div className="bg-white p-8 rounded-[3rem] shadow-lg border border-[#134e4a]/10">
               <div className="flex justify-between items-end mb-8">
                 <h3 className="text-2xl font-black uppercase tracking-tighter">Compliance Hub</h3>
-                <button 
-                  onClick={() => window.location.hash = '#compliance-calendar'}
-                  className="text-[10px] font-black uppercase tracking-widest text-[#d4af37] hover:text-[#134e4a] flex items-center gap-1 transition-colors"
-                >
+                <button onClick={() => window.location.hash = '#compliance-calendar'} className="text-[10px] font-black uppercase tracking-widest text-[#d4af37] hover:text-[#134e4a] flex items-center gap-1 transition-colors">
                   View Full Calendar <ArrowRight size={12} />
                 </button>
               </div>
-              
-              {/* Interactive Checklist */}
               <div className="space-y-3 mb-8">
                 <p className="text-xs font-bold text-[#134e4a]/60 uppercase tracking-widest mb-2">My Task List</p>
                 {COMPLIANCE_CHECKLIST_ITEMS.map(item => (
-                  <button 
-                    key={item.id} 
-                    onClick={() => handleToggleCompliance(item.id)} 
-                    type="button" 
-                    className={`w-full flex items-center gap-4 p-4 rounded-2xl border-2 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-[#d4af37]/50 ${complianceState[item.id] ? 'bg-emerald-50 border-emerald-500/20' : 'bg-gray-50 hover:border-[#d4af37]/50 border-transparent'}`}
-                  >
+                  <button key={item.id} onClick={() => handleToggleCompliance(item.id)} type="button" className={`w-full flex items-center gap-4 p-4 rounded-2xl border-2 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-[#d4af37]/50 ${complianceState[item.id] ? 'bg-emerald-50 border-emerald-500/20' : 'bg-gray-50 hover:border-[#d4af37]/50 border-transparent'}`}>
                     <div className={`w-8 h-8 rounded-xl flex items-center justify-center transition-colors shrink-0 shadow-sm ${complianceState[item.id] ? 'bg-emerald-500 text-white' : 'bg-white border border-gray-200 text-gray-400'}`}>
                       {complianceState[item.id] ? <CheckSquare size={16}/> : <Square size={16}/>}
                     </div>
@@ -226,8 +187,6 @@ const UserDashboard: React.FC<UserDashboardProps> = ({ onTriggerAssessment }) =>
                   </button>
                 ))}
               </div>
-
-              {/* Operational Health Bar */}
               <div className="mb-8">
                 <div className="flex justify-between items-center mb-2">
                   <p className="text-[10px] font-black uppercase tracking-widest text-[#134e4a]/40">Task Completion</p>
@@ -237,8 +196,6 @@ const UserDashboard: React.FC<UserDashboardProps> = ({ onTriggerAssessment }) =>
                   <div className={`h-full rounded-full transition-all duration-1000 ease-out ${complianceProgress === 100 ? 'bg-emerald-500' : 'bg-[#d4af37]'}`} style={{width: `${complianceProgress}%`}}></div>
                 </div>
               </div>
-
-              {/* Calendar Summary */}
               <div className="bg-brand-900/5 rounded-2xl p-6 border border-brand-900/5">
                 <div className="flex justify-between items-center mb-4">
                   <p className="text-[10px] font-black uppercase tracking-widest text-brand-900/40">Upcoming Deadlines</p>
@@ -256,38 +213,27 @@ const UserDashboard: React.FC<UserDashboardProps> = ({ onTriggerAssessment }) =>
                   ))}
                 </div>
               </div>
-
             </div>
           </div>
 
-          {/* RIGHT COLUMN: SHOWCASE FUTURE VALUE (SOFTWARE ECOSYSTEM) */}
           <div className="lg:col-span-5">
             <div className="bg-[#134e4a] p-8 md:p-10 rounded-[3rem] shadow-2xl text-white border-4 border-[#d4af37]/20 sticky top-32">
               <h2 className="text-2xl font-black uppercase tracking-tighter mb-2">Finance OS Roadmap</h2>
               <p className="text-white/60 text-sm font-medium leading-relaxed mb-8">Features unlocked as your Sovereign Membership scales.</p>
-              
               <div className="grid grid-cols-1 gap-4">
                 {IWS_OS_APPS.map((srv, i) => (
                   <div key={i} className="group relative flex items-center justify-between p-5 rounded-2xl bg-white/5 border border-white/10 hover:bg-white/10 transition-all cursor-not-allowed overflow-hidden">
                     <div className="flex items-center gap-4 relative z-10">
-                      <div className="w-12 h-12 rounded-xl bg-black/40 flex items-center justify-center text-white shadow-inner">
-                        {srv.icon}
-                      </div>
+                      <div className="w-12 h-12 rounded-xl bg-black/40 flex items-center justify-center text-white shadow-inner">{srv.icon}</div>
                       <div>
                         <h4 className="font-black text-sm uppercase tracking-wider text-white/80">{srv.name}</h4>
                         <p className="text-[10px] text-[#d4af37] uppercase tracking-widest">{srv.desc}</p>
                       </div>
                     </div>
-                    {/* Lock Icon representing Upsell/Future state */}
-                    {srv.locked && (
-                      <div className="relative z-10 bg-black/30 p-2 rounded-lg text-white/40">
-                         <Lock size={16} />
-                      </div>
-                    )}
+                    {srv.locked && <div className="relative z-10 bg-black/30 p-2 rounded-lg text-white/40"><Lock size={16} /></div>}
                   </div>
                 ))}
               </div>
-
               <div className="mt-8 p-6 bg-gradient-to-br from-[#d4af37]/20 to-transparent rounded-2xl border border-[#d4af37]/30 text-center relative overflow-hidden">
                 <Zap size={24} className="absolute -right-2 -top-2 text-[#d4af37] opacity-20" />
                 <p className="text-[10px] font-black text-white uppercase tracking-widest leading-relaxed">Upgrade to automate <br/><span className="text-[#d4af37]">Sovereign State</span></p>
@@ -297,11 +243,9 @@ const UserDashboard: React.FC<UserDashboardProps> = ({ onTriggerAssessment }) =>
           </div>
         </div>
 
-        {/* DEEP DIVE INTELLIGENCE (MODAL) */}
         {selectedResult && (
           <div className="fixed inset-0 z-[500] flex items-center justify-center p-4 bg-black/90 backdrop-blur-md animate-fadeIn">
             <div className="bg-white text-[#134e4a] w-full max-w-2xl rounded-[3rem] p-8 md:p-12 shadow-2xl overflow-y-auto max-h-[90vh] relative">
-              
               <div className="flex justify-between items-start mb-8 border-b border-[#134e4a]/10 pb-6 pr-10">
                 <div>
                   <p className="text-[#d4af37] font-black uppercase text-[10px] mb-2 tracking-[0.3em]">Historical Record: {selectedResult.timestamp?.toDate().toLocaleDateString()}</p>
@@ -315,13 +259,11 @@ const UserDashboard: React.FC<UserDashboardProps> = ({ onTriggerAssessment }) =>
                   <X size={20} />
                 </button>
               </div>
-
               <div className="space-y-6">
                 <div className="bg-[#134e4a] p-6 md:p-8 rounded-3xl border border-[#134e4a]/10 text-white shadow-inner">
                   <p className="text-[10px] font-black uppercase tracking-[0.3em] text-[#d4af37] mb-2">Strategic Diagnosis</p>
                   <p className="text-base font-medium leading-relaxed">{selectedResult.diagnosis}</p>
                 </div>
-
                 <div className="space-y-4 pt-4">
                   <p className="text-[10px] font-black uppercase tracking-widest text-[#134e4a]/50 px-2">Raw Assessment Data (Q&A)</p>
                   <div className="grid gap-3">
@@ -334,12 +276,8 @@ const UserDashboard: React.FC<UserDashboardProps> = ({ onTriggerAssessment }) =>
                         </div>
                       </div>
                     ))}
-                    {!selectedResult.intelligence_report && (
-                       <p className="text-sm italic text-gray-500 text-center p-4">Detailed answers not recorded for this legacy entry.</p>
-                    )}
                   </div>
                 </div>
-
                 <div className="pt-6 mt-6 border-t border-[#134e4a]/10 text-center">
                    <button onClick={() => setSelectedResult(null)} className="text-[10px] font-black uppercase tracking-widest text-[#134e4a]/50 hover:text-[#134e4a] transition-colors">Close Record</button>
                 </div>
