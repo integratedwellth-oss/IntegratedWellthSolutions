@@ -16,7 +16,7 @@ import FloatingCTA from './components/FloatingCTA';
 
 // Pages
 import Home from './components/pages/Home';
-import LandingPage from './components/pages/LandingPage'; // <--- NEW IMPORT
+import LandingPage from './components/pages/LandingPage';
 import ServicesPage from './components/pages/ServicesPage';
 import WhoWeHelpPage from './components/pages/WhoWeHelpPage';
 import Team from './Team';
@@ -27,6 +27,7 @@ import PrivacyPolicy from './components/PrivacyPolicy';
 import Dashboard from './components/Dashboard';
 import UserDashboard from './components/UserDashboard';
 import SummitPage from './components/pages/SummitPage';
+import ComplianceCalendarPage from './components/pages/ComplianceCalendarPage'; // <--- NEW
 
 // Solution Detail Pages
 import StartupSolutions from './components/audiences/StartupSolutions';
@@ -52,8 +53,8 @@ const App: React.FC = () => {
     let popupTimer: number | undefined;
     const hasSeenEvent = sessionStorage.getItem('hasSeenIWS_Event_Immediate');
     
-    // Don't show popup on special immersive pages or the landing page
-    const isSpecialPage = ['#warroom', '#intel', '#summit', '#my-intel', '#landing'].includes(window.location.hash);
+    // Don't show popup on special immersive pages, the landing page, or the calendar
+    const isSpecialPage = ['#warroom', '#intel', '#summit', '#my-intel', '#landing', '#compliance-calendar'].includes(window.location.hash);
     
     if (!hasSeenEvent && !isSpecialPage) {
       popupTimer = window.setTimeout(() => setShowEventPopup(true), 800);
@@ -72,7 +73,8 @@ const App: React.FC = () => {
         const validViews = [
           'home', 'landing', 'services', 'who-we-help', 'team', 'workshops', 'blog', 'contact',
           'privacy', 'startups', 'existing-business', 'npos', 'individuals', 
-          'wellness', 'accountability', 'tracker', 'warroom', 'protocol', 'intel', 'summit', 'my-intel'
+          'wellness', 'accountability', 'tracker', 'warroom', 'protocol', 'intel', 
+          'summit', 'my-intel', 'compliance-calendar'
         ];
 
         // Handle scrolling anchor links on Home page
@@ -114,6 +116,7 @@ const App: React.FC = () => {
       switch (currentView) {
         case 'landing': return <LandingPage />;
         case 'my-intel': return <UserDashboard onTriggerAssessment={() => setShowAssessmentModal(true)} />;
+        case 'compliance-calendar': return <ComplianceCalendarPage />;
         case 'summit': return <SummitPage />;
         case 'intel': return <Dashboard />;
         case 'services': return <ServicesPage />;
@@ -153,7 +156,7 @@ const App: React.FC = () => {
   const shouldHideNavbar = ['intel', 'my-intel', 'landing'].includes(currentView);
 
   // Views that hide the Floating Event Bar at bottom
-  const shouldHideFloatingBar = isFullPageMode || currentView === 'landing';
+  const shouldHideFloatingBar = isFullPageMode || currentView === 'landing' || currentView === 'compliance-calendar';
 
   return (
     <ErrorBoundary>
@@ -178,20 +181,20 @@ const App: React.FC = () => {
         {/* Footer */}
         {!isFullPageMode && <Footer />}
 
-        {/* Sticky Bottom Event Bar */}
+        {/* Sticky Bottom Event Bar - Updated to point to new Calendar */}
         {!shouldHideFloatingBar && (
           <div className="fixed bottom-0 left-0 w-full bg-brand-gold z-[40] px-6 py-4 flex items-center justify-between shadow-[0_-10px_40px_rgba(212,175,55,0.2)]">
             <div className="flex items-center gap-4">
-              <div className="bg-brand-900 text-white px-3 py-1 rounded text-[10px] font-black uppercase tracking-widest hidden md:block">Upcoming</div>
+              <div className="bg-brand-900 text-white px-3 py-1 rounded text-[10px] font-black uppercase tracking-widest hidden md:block">Regulatory Alert</div>
               <p className="text-brand-900 font-bold text-sm md:text-base tracking-tight">
-                Financial Clarity Workshop - <span className="font-black">Feb 28, 2026</span>
+                2026 Compliance Season has started.
               </p>
             </div>
             <button 
-              onClick={() => window.location.hash = '#summit'}
+              onClick={() => window.location.hash = '#compliance-calendar'}
               className="flex items-center gap-2 text-brand-900 font-black uppercase tracking-widest text-[10px] md:text-xs hover:translate-x-1 transition-transform"
             >
-              Learn More <ArrowRight size={16} />
+              View Calendar <ArrowRight size={16} />
             </button>
           </div>
         )}
