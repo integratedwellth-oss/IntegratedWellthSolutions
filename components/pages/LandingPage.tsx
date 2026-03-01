@@ -1,13 +1,13 @@
 import React from 'react';
 import RevealOnScroll from '../RevealOnScroll';
 import { ShieldCheck, Settings, PieChart, Zap, ArrowRight, Quote } from 'lucide-react';
-import Button from '../Button';
 
 interface HomeProps {
   onOpenAssessment: () => void;
 }
 
 const LandingPage: React.FC<HomeProps> = ({ onOpenAssessment }) => {
+  
   const handleCta = (e: React.FormEvent) => {
     e.preventDefault();
     window.location.hash = '#warroom';
@@ -17,82 +17,207 @@ const LandingPage: React.FC<HomeProps> = ({ onOpenAssessment }) => {
   const FOUNDER_URL = "https://res.cloudinary.com/dka0498ns/image/upload/f_auto,q_auto/v1768022744/Marcia_Kgaphola._The_founder_of_Integrated_Wellth_Solution_giving_a_keynote_speech_at_a_women_business_conference_rr55ol.jpg";
 
   return (
-    <div className="bg-slate-950 font-sans text-white selection:bg-brand-gold overflow-x-hidden">
+    <div className="bg-slate-950 font-sans text-white selection:bg-brand-gold selection:text-brand-900 overflow-x-hidden">
       
-      {/* HERO */}
+      {/* 1. HERO SECTION */}
       <section className="relative min-h-screen flex flex-col justify-center items-center text-center px-6 pt-20">
         <div className="absolute inset-0 z-0">
-          <img src={TREE_HERO_URL} alt="IWS" className="w-full h-full object-cover opacity-30 mix-blend-screen scale-110 animate-pulse-slow" />
-          <div className="absolute inset-0 bg-gradient-to-b from-slate-950/90 to-slate-950"></div>
+          <img 
+            src={TREE_HERO_URL} 
+            alt="Growth Ecosystem" 
+            className="w-full h-full object-cover opacity-35 mix-blend-screen scale-110 animate-pulse-slow"
+            loading="eager"
+          />
+          <div className="absolute inset-0 bg-gradient-to-b from-slate-950/90 via-slate-950/80 to-slate-950 z-0"></div>
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_transparent_0%,_#020617_100%)]"></div>
         </div>
 
         <RevealOnScroll>
           <div className="max-w-5xl mx-auto z-10 relative">
-            <div className="inline-flex items-center gap-3 px-6 py-2 rounded-full border border-brand-gold/30 bg-brand-gold/5 mb-10 backdrop-blur-xl">
+            <div className="inline-flex items-center gap-3 px-6 py-2 rounded-full border border-brand-gold/30 bg-brand-gold/5 mb-10 backdrop-blur-xl shadow-[0_0_30px_rgba(212,175,55,0.1)]">
               <Zap size={14} className="text-brand-gold animate-pulse" />
-              <span className="text-[10px] font-black uppercase tracking-[0.3em] text-brand-gold">Strategic Growth Partnership</span>
+              <span className="text-[10px] md:text-xs font-black uppercase tracking-[0.3em] text-brand-gold">IWS Growth Partnership</span>
             </div>
-            <h1 className="text-5xl md:text-7xl lg:text-[6rem] font-sora font-extrabold tracking-tighter mb-8 leading-none">
-              Master compliance. <br/><span className="text-brand-gold">Optimize wealth.</span>
+
+            <h1 className="text-5xl md:text-7xl lg:text-[6rem] font-sora font-extrabold tracking-tighter mb-8 leading-[1] text-transparent bg-clip-text bg-gradient-to-b from-white to-white/60">
+              Master compliance. <br/>
+              <span className="text-brand-gold">Optimize wealth.</span>
             </h1>
-            <p className="text-xl text-white/80 mb-12 max-w-3xl mx-auto font-light leading-relaxed">
-              Integrated Wellth Solutions provides tailored personal and professional growth support, combining high-precision financial management with emotional resilience.
+            
+            <p className="text-xl text-white/80 mb-12 max-w-3xl mx-auto font-light leading-relaxed drop-shadow-lg">
+                Integrated Wellth Solutions offers comprehensive personal and professional growth support, integrating financial, emotional, and empowerment services for diverse clients, from entrepreneurs to teens.
             </p>
-            <div className="flex flex-col sm:flex-row gap-6 justify-center">
-              <Button onClick={onOpenAssessment} className="rounded-full px-12 py-8 text-lg">Find My Cash Leaks</Button>
-              <Button variant="outline" onClick={() => window.location.hash = '#contact'} className="rounded-full px-12 py-8 text-lg border-white/20 text-white hover:bg-white/5">Talk To An Expert</Button>
+            
+            <div className="flex flex-col sm:flex-row gap-6 justify-center items-center mb-16">
+              <button 
+                onClick={onOpenAssessment}
+                className="group relative bg-brand-gold text-brand-900 font-black uppercase tracking-widest text-sm md:text-base px-12 py-6 rounded-full transition-all duration-300 w-full sm:w-auto hover:scale-105 hover:bg-white hover:shadow-[0_0_40px_rgba(212,175,55,0.6)]"
+              >
+                Find My Cash Leaks & Fix Them
+              </button>
+              <button 
+                onClick={() => window.location.hash = '#contact'}
+                className="group relative bg-white/5 border border-white/20 text-white font-black uppercase tracking-widest text-sm px-12 py-6 rounded-full transition-all duration-300 w-full sm:w-auto hover:bg-white/10 hover:border-brand-gold/50"
+              >
+                Talk To An Expert
+              </button>
+            </div>
+
+            <div className="flex flex-wrap items-center justify-center gap-6 md:gap-16 text-xs text-brand-100/50 font-bold uppercase tracking-widest border-t border-white/5 pt-10">
+              <span className="flex items-center gap-3 hover:text-white transition-colors cursor-default">
+                <ShieldCheck className="w-5 h-5 text-emerald-500" /> SARS Authorized
+              </span>
+              <span className="flex items-center gap-3 hover:text-white transition-colors cursor-default">
+                <ShieldCheck className="w-5 h-5 text-emerald-500" /> CIPC Compliant
+              </span>
+              <span className="flex items-center gap-3 hover:text-white transition-colors cursor-default">
+                <ShieldCheck className="w-5 h-5 text-emerald-500" /> CIBA Registered
+              </span>
             </div>
           </div>
         </RevealOnScroll>
       </section>
 
-      {/* FOUNDER MISSION */}
-      <section className="py-32 bg-white text-brand-900">
-        <div className="max-w-7xl mx-auto px-6 flex flex-col lg:flex-row items-center gap-16">
-          <div className="lg:w-1/2 relative">
-            <RevealOnScroll>
-              <div className="rounded-[3rem] overflow-hidden shadow-2xl border-8 border-slate-50 rotate-2"><img src={FOUNDER_URL} alt="Marcia" className="w-full grayscale hover:grayscale-0 transition-all duration-700" /></div>
-            </RevealOnScroll>
-          </div>
-          <div className="lg:w-1/2">
-            <RevealOnScroll delay={0.2}>
-              <h2 className="text-4xl md:text-6xl font-sora font-black mb-8 tracking-tighter">The Vision is <br/><span className="text-brand-gold italic">Structural Integrity.</span></h2>
-              <p className="text-lg opacity-70 mb-6 italic leading-relaxed">"We act as the strategic anchor for your business, combining high-precision systems with the resilience you need to lead."</p>
-              <div className="flex gap-4">
-                <div className="px-6 py-4 bg-brand-50 rounded-2xl border border-brand-900/5"><p className="text-3xl font-black">100%</p><p className="text-[10px] font-bold uppercase tracking-widest opacity-40">Compliance Rate</p></div>
-                <div className="px-6 py-4 bg-brand-50 rounded-2xl border border-brand-900/5"><p className="text-3xl font-black">15+</p><p className="text-[10px] font-bold uppercase tracking-widest opacity-40">Years Experience</p></div>
-              </div>
-            </RevealOnScroll>
+      {/* 2. THE ANCHOR: Founder Mission */}
+      <section className="py-24 bg-white relative overflow-hidden">
+        <div className="max-w-7xl mx-auto px-6">
+          <div className="flex flex-col lg:flex-row items-center gap-16">
+            <div className="lg:w-1/2 relative">
+              <RevealOnScroll>
+                <div className="relative z-10 rounded-[3rem] overflow-hidden shadow-2xl border-8 border-slate-50 rotate-2 hover:rotate-0 transition-all duration-700">
+                  <img 
+                    src={FOUNDER_URL} 
+                    alt="Marcia Kgaphola" 
+                    className="w-full h-auto object-cover grayscale hover:grayscale-0 transition-all duration-700"
+                    loading="lazy"
+                  />
+                  <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-brand-900/90 to-transparent p-8 text-white">
+                    <p className="font-black uppercase tracking-widest text-lg">Marcia Kgaphola</p>
+                    <p className="text-brand-gold text-xs font-bold uppercase tracking-widest">Founder & Principal Architect</p>
+                  </div>
+                </div>
+              </RevealOnScroll>
+            </div>
+
+            <div className="lg:w-1/2">
+              <RevealOnScroll delay={0.2}>
+                <div className="inline-flex items-center gap-2 text-brand-900/40 font-black uppercase tracking-[0.4em] text-xs mb-6">
+                  <Quote size={16} /> The Founder's Mission
+                </div>
+                <h2 className="text-4xl md:text-6xl font-sora font-black text-brand-900 mb-8 tracking-tighter leading-tight text-left">
+                  The Vision is <br/> <span className="text-brand-gold italic">Structural Integrity.</span>
+                </h2>
+                <div className="space-y-6 text-lg text-brand-900/70 font-medium leading-relaxed text-left text-brand-900">
+                  <p>
+                    "I built Integrated Wellth Solutions because I saw too many brilliant South African businesses fail—not from a lack of talent, but from a lack of <strong>structural integrity</strong>."
+                  </p>
+                  <p>
+                    We act as the <strong>strategic anchor</strong> for your business, combining high-precision financial systems with the psychological resilience you need to lead.
+                  </p>
+                </div>
+                <div className="mt-10 flex gap-4">
+                  <div className="px-6 py-4 bg-brand-50 rounded-2xl border border-brand-900/5 text-brand-900">
+                    <p className="text-3xl font-black">100%</p>
+                    <p className="text-[10px] font-bold uppercase tracking-widest opacity-40">Compliance Rate</p>
+                  </div>
+                  <div className="px-6 py-4 bg-brand-50 rounded-2xl border border-brand-900/5 text-brand-900">
+                    <p className="text-3xl font-black">15+</p>
+                    <p className="text-[10px] font-bold uppercase tracking-widest opacity-40">Years Experience</p>
+                  </div>
+                </div>
+              </RevealOnScroll>
+            </div>
           </div>
         </div>
       </section>
 
-      {/* PRICING - "FROM" IMPLEMENTED */}
+      {/* 3. THE OFFER: Updated Pricing - "from" prefix and no discounts */}
       <section className="py-32 px-6 bg-slate-950 relative border-t border-brand-gold/20">
-        <div className="max-w-7xl mx-auto relative z-10">
-          <div className="text-center mb-20">
-            <h2 className="text-5xl font-sora font-black tracking-tighter uppercase mb-6">Strategic Solutions</h2>
-            <p className="text-brand-100/60 font-medium uppercase tracking-[0.2em]">Fixed Rate Professional Infrastructure</p>
-          </div>
+        <div className="absolute inset-0 opacity-5" style={{ backgroundImage: 'radial-gradient(#d4af37 1px, transparent 1px)', backgroundSize: '40px 40px' }}></div>
+        
+        <div className="max-w-7xl mx-auto relative z-10 text-left">
+          <RevealOnScroll>
+            <div className="text-center mb-20">
+              <span className="bg-brand-gold text-brand-900 text-xs font-black px-6 py-2 rounded-full uppercase tracking-widest shadow-xl">Strategic Solutions</span>
+              <h2 className="text-5xl md:text-7xl font-sora font-black mt-8 mb-6 tracking-tighter uppercase text-white">
+                FIXED RATE <span className="text-brand-gold">RETAINERS</span>
+              </h2>
+              <p className="text-brand-100/60 font-medium tracking-wide text-sm max-w-2xl mx-auto uppercase tracking-widest">
+                Professional financial infrastructure for South African SMEs.
+              </p>
+            </div>
+          </RevealOnScroll>
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            {[
-              { title: "System Configuration", price: "R2 500", icon: <Settings className="text-brand-gold" /> },
-              { title: "Monthly Review", price: "R999", icon: <PieChart className="text-brand-gold" /> }
-            ].map((card, i) => (
-              <div key={i} className="bg-white/5 border border-white/10 rounded-[2.5rem] p-10 hover:border-brand-gold transition-all">
-                <div className="flex items-center gap-4 mb-8">
-                  <div className="w-14 h-14 bg-white/5 rounded-2xl flex items-center justify-center">{card.icon}</div>
-                  <h3 className="text-2xl font-black uppercase">{card.title}</h3>
+            
+            {/* Card 1 */}
+            <RevealOnScroll delay={0.1}>
+              <div className="bg-white/5 border border-white/10 rounded-[2.5rem] p-8 md:p-10 flex flex-col justify-between h-full hover:border-brand-gold transition-all duration-300 hover:bg-white/10 group relative overflow-hidden text-left">
+                <div>
+                  <h3 className="text-2xl font-black text-white mb-6 flex items-center gap-3 uppercase tracking-tight"><Settings className="text-brand-gold" size={32} /> System Configuration</h3>
+                  <div className="grid grid-cols-2 gap-y-4 gap-x-8 text-xs text-brand-100/70 mb-10 font-bold uppercase tracking-wider">
+                    <p className="flex items-center gap-2">• Chart of Accounts</p>
+                    <p className="flex items-center gap-2">• Invoices Setup</p>
+                    <p className="flex items-center gap-2">• Bank integration</p>
+                    <p className="flex items-center gap-2">• Open balances</p>
+                  </div>
                 </div>
-                <div className="flex items-baseline gap-2">
-                  <span className="text-brand-gold font-bold text-lg uppercase tracking-widest">from</span>
-                  <p className="text-6xl font-black font-sora">{card.price}</p>
+                <div className="flex items-baseline gap-2 border-t border-dashed border-white/10 pt-8">
+                  <span className="text-brand-gold font-bold text-lg uppercase tracking-widest opacity-60">from</span>
+                  <p className="text-6xl font-black text-white font-sora tracking-tighter">R2 500</p>
                 </div>
               </div>
-            ))}
+            </RevealOnScroll>
+
+            {/* Card 2 */}
+            <RevealOnScroll delay={0.2}>
+              <div className="bg-white/5 border border-white/10 rounded-[2.5rem] p-8 md:p-10 flex flex-col justify-between h-full hover:border-brand-gold transition-all duration-300 hover:bg-white/10 group relative overflow-hidden text-left">
+                <div>
+                  <h3 className="text-2xl font-black text-white mb-6 flex items-center gap-3 uppercase tracking-tight"><PieChart className="text-brand-gold" size={32} /> Monthly Review</h3>
+                  <div className="grid grid-cols-2 gap-y-4 gap-x-8 text-xs text-brand-100/70 mb-10 font-bold uppercase tracking-wider">
+                    <p className="flex items-center gap-2">• Expense Review</p>
+                    <p className="flex items-center gap-2">• Journal Entries</p>
+                    <p className="flex items-center gap-2">• Reconciliations</p>
+                    <p className="flex items-center gap-2">• Management Acc.</p>
+                  </div>
+                </div>
+                <div className="flex items-baseline gap-2 border-t border-dashed border-white/10 pt-8">
+                  <span className="text-brand-gold font-bold text-lg uppercase tracking-widest opacity-60">from</span>
+                  <p className="text-6xl font-black text-white font-sora tracking-tighter">R999</p>
+                </div>
+              </div>
+            </RevealOnScroll>
+
           </div>
         </div>
       </section>
+
+      {/* 4. AI CHAT CTA */}
+      <section className="py-32 px-6 max-w-4xl mx-auto">
+        <RevealOnScroll>
+          <div className="bg-white rounded-[3rem] p-10 md:p-16 text-center border-t-8 border-brand-gold shadow-2xl relative overflow-hidden">
+            <h2 className="text-4xl md:text-5xl font-sora font-black mb-6 tracking-tighter uppercase text-brand-900">Talk to us.</h2>
+            <p className="text-brand-900/60 mb-10 font-medium text-lg leading-relaxed max-w-2xl mx-auto">Tell us what you're trying to build. Our AI Advisor will match you with the right specialist.</p>
+            
+            <form onSubmit={handleCta} className="bg-brand-50 rounded-2xl p-2 flex items-center border-2 border-brand-900/10 focus-within:border-brand-gold transition-colors max-w-2xl mx-auto">
+              <input 
+                type="text" 
+                placeholder="E.g., I'd like to book a strategy session..." 
+                className="bg-transparent w-full text-brand-900 px-6 py-4 outline-none placeholder-brand-900/30 font-bold"
+                required
+              />
+              <button 
+                type="submit"
+                className="bg-brand-900 text-white font-black uppercase tracking-widest text-xs px-8 py-4 rounded-xl hover:bg-brand-gold hover:text-brand-900 transition-all flex items-center gap-2"
+              >
+                Execute <ArrowRight size={14} />
+              </button>
+            </form>
+            <p className="text-[10px] font-bold text-brand-900/30 uppercase tracking-widest mt-6">Secure, autonomous matching. No spam, ever.</p>
+          </div>
+        </RevealOnScroll>
+      </section>
+
     </div>
   );
 };
