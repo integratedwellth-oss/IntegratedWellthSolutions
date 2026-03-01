@@ -15,7 +15,7 @@ import EventPopup from './components/EventPopup';
 import FloatingCTA from './components/FloatingCTA';
 
 // Pages
-import Home from './components/pages/Home';
+import LandingPage from './components/pages/LandingPage';
 import ServicesPage from './components/pages/ServicesPage';
 import WhoWeHelpPage from './components/pages/WhoWeHelpPage';
 import Team from './Team';
@@ -24,128 +24,67 @@ import BlogPage from './components/pages/BlogPage';
 import ContactPage from './components/pages/ContactPage';
 import PrivacyPolicy from './components/PrivacyPolicy';
 import UserDashboard from './components/UserDashboard';
+import WarRoom from './components/WarRoom';
+import ComplianceCalendar from './components/ComplianceTracker'; // The Calendar
 
 // Components
 import FinancialHealthScore from './components/FinancialHealthScore';
 
 const App: React.FC = () => {
   const [currentView, setCurrentView] = useState('home');
-  const [showAssessmentModal, setShowAssessmentModal] = useState(false);
+  const [showAssessment, setShowAssessment] = useState(false);
   const [showEventPopup, setShowEventPopup] = useState(false);
 
   useEffect(() => {
-    let popupTimer: number | undefined;
-    const hasSeenEvent = sessionStorage.getItem('hasSeenIWS_Event_Immediate');
-    const isSpecialPage = window.location.hash === '#my-intel';
-    
-    if (!hasSeenEvent && !isSpecialPage) {
-      popupTimer = window.setTimeout(() => setShowEventPopup(true), 800);
-    }
-
-    const handleHashChange = () => {
-      try {
-        const hash = window.location.hash.replace('#', '');
-        
-        if (hash === 'assessment') {
-          setShowAssessmentModal(true);
-          return;
-        }
-
-        const validViews = [
-          'home', 'services', 'who-we-help', 'team', 'workshops', 'blog', 'contact',
-          'privacy', 'my-intel', 'protocol'
-        ];
-
-        if (['protocol', 'services-anchor'].includes(hash)) {
-          setCurrentView('home');
-          setTimeout(() => {
-            const element = document.getElementById(hash);
-            if (element) element.scrollIntoView({ behavior: 'smooth' });
-          }, 100);
-        } else if (validViews.includes(hash)) {
-          setCurrentView(hash);
-          window.scrollTo({ top: 0, behavior: 'smooth' });
-        } else {
-          setCurrentView('home');
-        }
-      } catch (e) {
-        setCurrentView('home');
+    const handleHash = () => {
+      const hash = window.location.hash.replace('#', '') || 'home';
+      if (hash === 'assessment') {
+        setShowAssessment(true);
+      } else {
+        setCurrentView(hash);
+        window.scrollTo({ top: 0, behavior: 'smooth' });
       }
     };
-
-    handleHashChange();
-    window.addEventListener('hashchange', handleHashChange);
-    return () => {
-      window.removeEventListener('hashchange', handleHashChange);
-      if (popupTimer) window.clearTimeout(popupTimer);
-    };
+    window.addEventListener('hashchange', handleHash);
+    handleHash();
+    return () => window.removeEventListener('hashchange', handleHash);
   }, []);
 
-  const openAssessment = () => setShowAssessmentModal(true);
+  const triggerAssessment = () => setShowAssessment(true);
 
-  const renderCurrentView = () => {
-    try {
-      switch (currentView) {
-        case 'my-intel': 
-          return <UserDashboard onTriggerAssessment={openAssessment} />;
-        case 'services': 
-          return <ServicesPage />;
-        case 'who-we-help': 
-          return <WhoWeHelpPage />;
-        case 'team': 
-          return <Team />;
-        case 'workshops': 
-          return <WorkshopPage />;
-        case 'blog': 
-          return <BlogPage />;
-        case 'contact': 
-          return <ContactPage />;
-        case 'privacy': 
-          return <PrivacyPolicy />;
-        default: 
-          return <Home onOpenAssessment={openAssessment} />;
-      }
-    } catch (err) {
-      return <Home onOpenAssessment={openAssessment} />;
+  const renderView = () => {
+    switch (currentView) {
+      case 'my-intel': return <UserDashboard onTriggerAssessment={triggerAssessment} />;
+      case 'warroom': return <WarRoom />;
+      case 'calendar': return <ComplianceCalendar />;
+      case 'services': return <ServicesPage />;
+      case 'who-we-help': return <WhoWeHelpPage />;
+      case 'team': return <Team />;
+      case 'workshops': return <WorkshopPage />;
+      case 'blog': return <BlogPage />;
+      case 'contact': return <ContactPage />;
+      case 'privacy': return <PrivacyPolicy />;
+      default: return <LandingPage onOpenAssessment={triggerAssessment} />;
     }
   };
 
-  const isFullPageMode = currentView === 'my-intel';
+  const isFullPage = ['my-intel', 'warroom'].includes(currentView);
 
   return (
     <ErrorBoundary>
-      <div className={`font-sans text-brand-900 bg-white min-h-screen flex flex-col selection:bg-brand-gold/20 ${(showAssessmentModal || showEventPopup) ? 'h-screen overflow-hidden' : ''}`}>
-        
-        {!isFullPageMode && <Navbar onNavigate={(view) => { window.location.hash = `#${view}`; }} />}
+      <div className={`min-h-screen flex flex-col ${showAssessment ? 'h-screen overflow-hidden' : ''}`}>
+        {!isFullPage && <Navbar onNavigate={(v) => { window.location.hash = `#${v}`; }} />}
         
         <main className="flex-grow">
-          <Suspense fallback={
-            <div className="min-h-screen flex items-center justify-center bg-white">
-              <Loader2 className="animate-spin text-brand-gold" size={48} />
-            </div>
-          }>
-            {renderCurrentView()}
+          <Suspense fallback={<div className="min-h-screen flex items-center justify-center"><Loader2 className="animate-spin text-brand-gold" size={48} /></div>}>
+            {renderView()}
           </Suspense>
         </main>
 
-        {!isFullPageMode && <Footer />}
-
-        <EventPopup 
-          isOpen={showEventPopup} 
-          onClose={() => {
-            setShowEventPopup(false); 
-            sessionStorage.setItem('hasSeenIWS_Event_Immediate', 'true');
-          }} 
-        />
+        {!isFullPage && <Footer />}
         
-        <FinancialHealthScore
-          isOpen={showAssessmentModal}
-          onClose={() => {
-            setShowAssessmentModal(false);
-            if(window.location.hash === '#assessment') window.location.hash = `#${currentView}`;
-          }}
-        />
-        
+        <EventPopup isOpen={showEventPopup} onClose={() => setShowEventPopup(false)} />
+        <FinancialHealthScore isOpen={showAssessment} onClose={() => { setShowAssessment(false); window.location.hash = `#${currentView}`; }} />
         <FloatingCTA />
         <WhatsAppButton />
         <UnifiedSupportWidget />
