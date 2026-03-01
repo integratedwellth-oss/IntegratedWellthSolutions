@@ -1,179 +1,74 @@
-import React, { useState, useEffect, Suspense } from 'react';
-import { ArrowRight, Loader2 } from 'lucide-react';
-import 'swiper/css';
-import 'swiper/css/pagination';
-import 'swiper/css/navigation';
-import ErrorBoundary from './components/ErrorBoundary';
+import React, { useState, useEffect } from 'react';
+import { ArrowRight, MapPin, Calendar, Clock, CheckCircle2, Shield, Zap, Radio, Lock, Target, Database, Users, Flame } from 'lucide-react';
 
-// Layout
-import Navbar from './components/Navbar';
-import Footer from './components/Footer';
-import UnifiedSupportWidget from './components/UnifiedSupportWidget';
-import CookieConsent from './components/CookieConsent';
-import WhatsAppButton from './components/WhatsAppButton';
-import EventPopup from './components/EventPopup';
-import FloatingCTA from './components/FloatingCTA';
-
-// Pages
-import Home from './components/pages/Home';
-import ServicesPage from './components/pages/ServicesPage';
-import WhoWeHelpPage from './components/pages/WhoWeHelpPage';
-import Team from './Team';
-import WorkshopPage from './components/pages/WorkshopPage';
-import BlogPage from './components/pages/BlogPage';
-import ContactPage from './components/pages/ContactPage';
-import PrivacyPolicy from './components/PrivacyPolicy';
-import UserDashboard from './components/UserDashboard';
-import SummitPage from './components/pages/SummitPage';
-
-// Components
-import FinancialHealthScore from './components/FinancialHealthScore';
-
-const App: React.FC = () => {
-  const [currentView, setCurrentView] = useState('home');
-  const [showAssessmentModal, setShowAssessmentModal] = useState(false);
-  const [showEventPopup, setShowEventPopup] = useState(false);
+export default function SummitPage() {
+  const [timeLeft, setTimeLeft] = useState({ days: 0, hours: 0, mins: 0, secs: 0 });
+  const [isVisible, setIsVisible] = useState(false);
 
   useEffect(() => {
-    let popupTimer: number | undefined;
-    const hasSeenEvent = sessionStorage.getItem('hasSeenIWS_Event_Immediate');
-    const isSpecialPage = ['#summit', '#my-intel'].includes(window.location.hash);
-    
-    if (!hasSeenEvent && !isSpecialPage) {
-      popupTimer = window.setTimeout(() => setShowEventPopup(true), 800);
-    }
-
-    const handleHashChange = () => {
-      try {
-        const hash = window.location.hash.replace('#', '');
-        
-        if (hash === 'assessment') {
-          setShowAssessmentModal(true);
-          return;
-        }
-
-        const validViews = [
-          'home', 'services', 'who-we-help', 'team', 'workshops', 'blog', 'contact',
-          'privacy', 'my-intel', 'summit', 'protocol'
-        ];
-
-        if (['protocol', 'services-anchor'].includes(hash)) {
-          setCurrentView('home');
-          setTimeout(() => {
-            const element = document.getElementById(hash);
-            if (element) element.scrollIntoView({ behavior: 'smooth' });
-          }, 100);
-        } else if (validViews.includes(hash)) {
-          setCurrentView(hash);
-          window.scrollTo({ top: 0, behavior: 'smooth' });
-        } else {
-          setCurrentView('home');
-        }
-      } catch (e) {
-        setCurrentView('home');
+    setIsVisible(true);
+    const target = new Date("February 28, 2026 09:00:00").getTime();
+    const interval = setInterval(() => {
+      const now = new Date().getTime();
+      const diff = target - now;
+      if (diff > 0) {
+        setTimeLeft({
+          days: Math.floor(diff / (1000 * 60 * 60 * 24)),
+          hours: Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)),
+          mins: Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60)),
+          secs: Math.floor((diff % (1000 * 60)) / 1000),
+        });
       }
-    };
-
-    handleHashChange();
-    window.addEventListener('hashchange', handleHashChange);
-    return () => {
-      window.removeEventListener('hashchange', handleHashChange);
-      if (popupTimer) window.clearTimeout(popupTimer);
-    };
+    }, 1000);
+    return () => clearInterval(interval);
   }, []);
 
-  const openAssessment = () => setShowAssessmentModal(true);
-
-  const renderCurrentView = () => {
-    try {
-      switch (currentView) {
-        case 'my-intel': 
-          return <UserDashboard onTriggerAssessment={openAssessment} />;
-        case 'summit': 
-          return <SummitPage />;
-        case 'services': 
-          return <ServicesPage />;
-        case 'who-we-help': 
-          return <WhoWeHelpPage />;
-        case 'team': 
-          return <Team />;
-        case 'workshops': 
-          return <WorkshopPage />;
-        case 'blog': 
-          return <BlogPage />;
-        case 'contact': 
-          return <ContactPage />;
-        case 'privacy': 
-          return <PrivacyPolicy />;
-        default: 
-          return <Home onOpenAssessment={openAssessment} />;
-      }
-    } catch (err) {
-      return <Home onOpenAssessment={openAssessment} />;
-    }
-  };
-
-  const isFullPageMode = ['summit', 'my-intel'].includes(currentView);
-
   return (
-    <ErrorBoundary>
-      <div className={`font-sans text-brand-900 bg-white min-h-screen flex flex-col selection:bg-brand-gold/20 ${(showAssessmentModal || showEventPopup) ? 'h-screen overflow-hidden' : ''}`}>
-        
-        {!isFullPageMode && <Navbar onNavigate={(view) => { window.location.hash = `#${view}`; }} />}
-        
-        <main className="flex-grow">
-          <Suspense fallback={
-            <div className="min-h-screen flex items-center justify-center bg-white">
-              <Loader2 className="animate-spin text-brand-gold" size={48} />
-            </div>
-          }>
-            {renderCurrentView()}
-          </Suspense>
-        </main>
-
-        {!isFullPageMode && <Footer />}
-        
-        {/* Floating Components & Overlays */}
-        {!isFullPageMode && (
-          <div className="fixed bottom-0 left-0 w-full bg-brand-gold z-[40] px-6 py-4 flex items-center justify-between shadow-[0_-10px_40px_rgba(212,175,55,0.2)]">
-            <div className="flex items-center gap-4">
-              <div className="bg-brand-900 text-white px-3 py-1 rounded text-[10px] font-black uppercase tracking-widest hidden md:block">Upcoming</div>
-              <p className="text-brand-900 font-bold text-sm md:text-base tracking-tight">
-                Financial Clarity Workshop - <span className="font-black">Feb 28, 2026</span>
-              </p>
-            </div>
-            <button
-              onClick={() => window.location.hash = '#summit'}
-              className="flex items-center gap-2 text-brand-900 font-black uppercase tracking-widest text-[10px] md:text-xs hover:translate-x-1 transition-transform"
-            >
-              Learn More <ArrowRight size={16} />
-            </button>
+    <div className="min-h-screen bg-[#f0fdfa] font-sans text-brand-900 pt-20">
+      {/* HERO SECTION */}
+      <section className="relative min-h-[80vh] flex items-center justify-center overflow-hidden">
+        <div className="absolute inset-0 bg-[#134e4a] opacity-5"></div>
+        <div className="relative z-10 max-w-7xl mx-auto px-6 py-20 text-center">
+          <div className={`inline-flex items-center gap-2 px-4 py-2 rounded-full border border-[#d4af37]/30 bg-[#d4af37]/10 mb-8 transition-all duration-1000 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}>
+            <Radio size={14} className="text-[#d4af37] animate-pulse" />
+            <span className="text-[10px] font-black uppercase tracking-[0.3em] text-[#134e4a]">Confidential Briefing</span>
           </div>
-        )}
+          <h1 className="text-5xl md:text-7xl lg:text-8xl font-black uppercase tracking-tighter leading-[0.9] mb-8 text-[#134e4a]">
+            Financial <span className="text-[#d4af37]">Clarity</span><br />
+            Summit 2026
+          </h1>
+          <p className="text-lg md:text-xl text-[#64748b] max-w-2xl mx-auto mb-12 leading-relaxed">
+            Stop fearing the numbers. Join us at Munyaka Estate for a tactical briefing on business architecture and digital sovereignty.
+          </p>
+          
+          <div className="flex flex-col md:flex-row items-center justify-center gap-6">
+             <a href="https://www.quicket.co.za/events/352598-financial-clarity-for-non-financial-business-owners/#/" target="_blank" rel="noreferrer" className="px-8 py-4 bg-[#134e4a] text-white rounded-full font-black uppercase tracking-widest hover:bg-[#d4af37] hover:text-[#134e4a] transition-all shadow-xl flex items-center gap-2">
+                Secure Seat <ArrowRight size={18} />
+             </a>
+          </div>
+        </div>
+      </section>
 
-        <EventPopup 
-          isOpen={showEventPopup} 
-          onClose={() => {
-            setShowEventPopup(false); 
-            sessionStorage.setItem('hasSeenIWS_Event_Immediate', 'true');
-          }} 
-        />
-        
-        <FinancialHealthScore
-          isOpen={showAssessmentModal}
-          onClose={() => {
-            setShowAssessmentModal(false);
-            if(window.location.hash === '#assessment') window.location.hash = '#home';
-          }}
-        />
-        
-        <FloatingCTA />
-        <WhatsAppButton />
-        <UnifiedSupportWidget />
-        <CookieConsent />
-      </div>
-    </ErrorBoundary>
+      {/* DETAILS GRID */}
+      <section className="py-24 bg-white">
+         <div className="max-w-6xl mx-auto px-6 grid md:grid-cols-3 gap-8">
+            <div className="p-8 rounded-3xl bg-[#f0fdfa] border border-[#134e4a]/10">
+               <Calendar size={32} className="text-[#134e4a] mb-4" />
+               <h3 className="text-xl font-black uppercase mb-2">28 February 2026</h3>
+               <p className="text-sm opacity-60">09:00 - 16:00 SAST</p>
+            </div>
+            <div className="p-8 rounded-3xl bg-[#f0fdfa] border border-[#134e4a]/10">
+               <MapPin size={32} className="text-[#134e4a] mb-4" />
+               <h3 className="text-xl font-black uppercase mb-2">Munyaka Estate</h3>
+               <p className="text-sm opacity-60">Waterfall City, Midrand</p>
+            </div>
+            <div className="p-8 rounded-3xl bg-[#f0fdfa] border border-[#134e4a]/10">
+               <Users size={32} className="text-[#134e4a] mb-4" />
+               <h3 className="text-xl font-black uppercase mb-2">Limited Capacity</h3>
+               <p className="text-sm opacity-60">50 Seats Only (20 Remaining)</p>
+            </div>
+         </div>
+      </section>
+    </div>
   );
-};
-
-export default App;
+}
