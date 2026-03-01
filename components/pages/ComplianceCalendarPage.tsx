@@ -4,10 +4,10 @@ import { Calendar, ShieldCheck, AlertTriangle, Clock, Building2, User, Landmark,
 import Button from '../Button';
 
 const ComplianceCalendarPage: React.FC = () => {
-  const TREE_HERO_URL = "https://res.cloudinary.com/dka0498ns/image/upload/f_auto,q_auto/v1772373342/Profuse_Beauty_Logo_Tree_z1nc3c.png";
+  const TREE_HERO_URL = "https://res.cloudinary.com/dka0498ns/image/upload/f_auto ,q_auto/v1772373342/Profuse_Beauty_Logo_Tree_z1nc3c.png";
   const [openFaq, setOpenFaq] = useState<number | null>(null);
 
-  // --- DATA: SCHEDULE (For Summary/Ticker) ---
+  // Schedule data for the summary view (used in Dashboard/WarRoom)
   const SCHEDULE = [
     { month: "February 2026", deadlines: [{ day: "28", entity: "All Entities", task: "Provisional Tax (IRP6) - 2nd Period", risk: "High", desc: "Mandatory payment to avoid 10% penalty + interest." }, { day: "28", entity: "Individuals", task: "IT3(b) & IT3(c) Data Prep", risk: "Medium", desc: "Gather investment and interest certificates." }] },
     { month: "March 2026", deadlines: [{ day: "31", entity: "Corporate", task: "CIPC Annual Returns", risk: "Critical", desc: "Hard deadline to prevent deregistration process initiation." }, { day: "25", entity: "VAT Vendors", task: "VAT 201 Submission & Payment", risk: "High", desc: "Category B vendors (periods ending Feb)." }] },
@@ -26,7 +26,7 @@ const ComplianceCalendarPage: React.FC = () => {
     { q: "Can I file my CIPC Annual Return without submitting a Beneficial Ownership (BO) declaration?", a: "No. CIPC enforces a 'hard-stop'. Filing is blocked until the BO declaration is up to date." }
   ];
 
-  // Helper component for styled sections - MUST RETURN VALID JSX
+  // Helper component for styled sections - THIS IS A FUNCTION RETURNING JSX
   const DetailSection = ({ title, children }: { title: string; children: React.ReactNode }) => (
     <RevealOnScroll>
       <div className="bg-white rounded-[2.5rem] p-10 md:p-16 shadow-xl border border-brand-900/10">
@@ -40,7 +40,7 @@ const ComplianceCalendarPage: React.FC = () => {
     </RevealOnScroll>
   );
 
-  // --- CONTENT FUNCTIONS (Returning JSX) ---
+  // --- GUIDE CONTENT COMPONENTS (MUST RETURN VALID JSX) ---
   
   const IntroToRegTech = () => (
     <DetailSection title="Introduction to the Regulatory Technology Paradigm">
@@ -179,7 +179,8 @@ const ComplianceCalendarPage: React.FC = () => {
   );
   
   const FaqSection = () => (
-    <section className="py-24 px-6 max-w-5xl mx-auto">
+    <>
+      <section className="py-24 px-6 max-w-5xl mx-auto">
         <RevealOnScroll>
           <div className="text-center mb-16">
             <div className="inline-flex items-center justify-center w-12 h-12 bg-brand-50 rounded-full text-brand-900 mb-4 border border-brand-900/10"><HelpCircle size={24} /></div>
@@ -203,13 +204,33 @@ const ComplianceCalendarPage: React.FC = () => {
           </div>
         </RevealOnScroll>
       </section>
+
+      {/* 4. FINAL CTA */}
+      <section className="py-24 bg-white text-center px-6 border-t border-brand-900/5">
+        <RevealOnScroll>
+          <div className="max-w-3xl mx-auto">
+            <AlertTriangle className="mx-auto text-brand-gold mb-6" size={48} />
+            <h2 className="text-4xl font-black text-brand-900 mb-6 uppercase tracking-tighter">Need to Build Your Sovereign Timeline?</h2>
+            <p className="text-xl text-brand-900/60 mb-10 leading-relaxed">
+              Integrate the full Compliance Calendar logic into your real-time monitoring system today.
+            </p>
+            <Button 
+              onClick={() => window.location.hash = '#assessment'}
+              size="lg" 
+              className="bg-brand-900 text-white hover:bg-brand-gold hover:text-brand-900 shadow-2xl uppercase"
+            >
+              Start Strategic Compliance Assessment
+            </Button>
+          </div>
+        </RevealOnScroll>
+      </section>
     </>
   );
 
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div className="min-h-screen bg-brand-50">
       {/* Hero Section */}
-      <section className="relative py-24 px-6 overflow-hidden bg-white border-b border-brand-900/5">
+      <section className="relative py-24 px-6 overflow-hidden">
         <div className="absolute inset-0 opacity-5">
           <img src={TREE_HERO_URL} alt="" className="w-full h-full object-cover" />
         </div>
@@ -232,7 +253,7 @@ const ComplianceCalendarPage: React.FC = () => {
           </RevealOnScroll>
 
           {/* Schedule Overview */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-24">
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mb-24">
             {SCHEDULE.map((month, idx) => (
               <RevealOnScroll key={idx} delay={idx * 100}>
                 <div className="bg-white rounded-2xl p-6 shadow-lg border border-brand-900/5 hover:shadow-xl transition-shadow">
@@ -243,14 +264,13 @@ const ComplianceCalendarPage: React.FC = () => {
                   <div className="space-y-3">
                     {month.deadlines.map((deadline, dIdx) => (
                       <div key={dIdx} className="flex items-start gap-3 text-sm">
-                        <span className={`flex-shrink-0 w-8 h-8 rounded-lg flex flex-col items-center justify-center font-bold text-xs ${
+                        <span className={`flex-shrink-0 w-8 h-8 rounded-lg flex items-center justify-center font-bold text-xs ${
                           deadline.risk === 'Critical' ? 'bg-red-100 text-red-700' :
                           deadline.risk === 'High' ? 'bg-orange-100 text-orange-700' :
                           deadline.risk === 'Medium' ? 'bg-yellow-100 text-yellow-700' :
                           'bg-green-100 text-green-700'
                         }`}>
                           {deadline.day}
-                          <span className="text-[8px] font-bold">D</span>
                         </span>
                         <div>
                           <p className="font-semibold text-brand-900">{deadline.task}</p>
@@ -265,38 +285,17 @@ const ComplianceCalendarPage: React.FC = () => {
           </div>
 
           {/* Detailed Content Sections */}
-          <div className="space-y-16">
-            {IntroToRegTech()}
-            {FiscalAdjustments()}
-            {StatutoryDeadlineEngine()}
-            {CipcProtocols()}
+          <div className="space-y-12">
+            <IntroToRegTech />
+            <FiscalAdjustments />
+            <StatutoryDeadlineEngine />
+            <CipcProtocols />
           </div>
 
           {/* FAQ Section */}
           <FaqSection />
         </div>
       </section>
-
-      {/* 5. FINAL CTA */}
-      <section className="py-24 bg-white text-center px-6 border-t border-brand-900/5">
-        <RevealOnScroll>
-          <div className="max-w-3xl mx-auto">
-            <AlertTriangle className="mx-auto text-brand-gold mb-6" size={48} />
-            <h2 className="text-4xl font-black text-brand-900 mb-6 uppercase tracking-tighter">Need to Build Your Sovereign Timeline?</h2>
-            <p className="text-xl text-brand-900/60 mb-10 leading-relaxed">
-              Integrate the full Compliance Calendar logic into your real-time monitoring system today.
-            </p>
-            <Button 
-              onClick={() => window.location.hash = '#assessment'}
-              size="lg" 
-              className="bg-brand-900 text-white hover:bg-brand-gold hover:text-brand-900 shadow-2xl uppercase"
-            >
-              Start Strategic Compliance Assessment
-            </Button>
-          </div>
-        </RevealOnScroll>
-      </section>
-
     </div>
   );
 };
