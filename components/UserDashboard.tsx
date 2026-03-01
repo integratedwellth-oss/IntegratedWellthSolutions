@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { db, auth } from '../firebaseConfig';
-import { collection, onSnapshot, query, where, doc, setDoc } from 'firebase/firestore';
+import { collection, onSnapshot, query, where, doc, setDoc } from 'firebase/firestore'; // Replaced updateDoc with setDoc
 import { GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from 'firebase/auth';
-import { Lock, LogOut, FileText, RefreshCcw, X, ChevronRight, Layout, Calculator, Receipt, Box, FileSpreadsheet, CreditCard, Loader2, Calendar, CheckSquare, Square, TrendingUp, TrendingDown, Star } from 'lucide-react';
+import { Lock, LogOut, FileText, RefreshCcw, X, ChevronRight, Layout, Calculator, Receipt, Box, FileSpreadsheet, CreditCard, Loader2, Calendar, CheckSquare, Square, TrendingUp, TrendingDown } from 'lucide-react';
 
 export interface UserDashboardProps {
   onTriggerAssessment?: () => void;
@@ -20,7 +20,6 @@ const UserDashboard: React.FC<UserDashboardProps> = ({ onTriggerAssessment }) =>
   const [myAssessments, setMyAssessments] = useState<any[]>([]);
   const [complianceState, setComplianceState] = useState<Record<string, boolean>>({});
   const [loading, setLoading] = useState(true);
-  const [selectedResult, setSelectedResult] = useState<any>(null);
 
   useEffect(() => {
     let unsubscribe: () => void = () => {};
@@ -66,18 +65,11 @@ const UserDashboard: React.FC<UserDashboardProps> = ({ onTriggerAssessment }) =>
     if (!user) return;
     const newState = { ...complianceState, [itemId]: !complianceState[itemId] };
     const complianceDocRef = doc(db, 'compliance_states', user.uid);
+    // THE FIX: Use setDoc with merge option, which is the correct syntax
     await setDoc(complianceDocRef, newState, { merge: true });
   };
 
   const complianceProgress = (Object.values(complianceState).filter(Boolean).length / COMPLIANCE_CHECKLIST_ITEMS.length) * 100;
-
-  const UPCOMING_SERVICES = [
-    { name: "IWS Books", icon: <Calculator size={28} />, desc: "Automated Ledger" },
-    { name: "IWS Expense", icon: <Receipt size={28} />, desc: "Receipt Scanning" },
-    { name: "IWS Inventory", icon: <Box size={28} />, desc: "Stock Control" },
-    { name: "IWS Invoice", icon: <FileSpreadsheet size={28} />, desc: "Client Billing" },
-    { name: "IWS Pay", icon: <CreditCard size={28} />, desc: "Payment Gateway" }
-  ];
 
   if (!user) {
     return (
@@ -96,42 +88,20 @@ const UserDashboard: React.FC<UserDashboardProps> = ({ onTriggerAssessment }) =>
       <div className="max-w-7xl mx-auto">
         <header className="flex flex-col md:flex-row justify-between items-start md:items-center mb-16 gap-6">
           <div>
-            <div className="flex items-center gap-2 mb-2"><span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span><p className="text-[#d4af37] text-xs uppercase font-bold tracking-widest">Sovereignty Hub Active</p></div>
+            <div className="flex items-center gap-2 mb-2"><span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span><p className="text-[#d4af37] text-xs uppercase font-bold tracking-widest">Client Hub Active</p></div>
             <h1 className="text-4xl md:text-5xl font-black uppercase tracking-tighter leading-none font-sora">Command Center</h1>
-            <p className="text-[#134e4a]/60 text-sm mt-2 font-medium">POPIA Compliant Environment.</p>
+            <p className="text-[#134e4a]/60 text-sm mt-2 font-medium">{user.displayName || user.email}</p>
           </div>
-          <div className="flex gap-4">
-            <button onClick={() => window.open('https://calendly.com/enquiries-integratedwellth/30min', '_blank')} className="px-6 py-4 bg-white rounded-2xl shadow-sm border border-[#134e4a]/10 text-xs font-black uppercase tracking-widest hover:bg-[#134e4a] hover:text-white transition-all flex items-center gap-2"><Calendar size={16}/> Book Strategy</button>
-            <button onClick={() => signOut(auth)} className="px-6 py-4 bg-white text-rose-600 rounded-2xl text-xs font-black uppercase border border-rose-600/20 hover:bg-rose-600 hover:text-white transition-all shadow-sm">Logout</button>
-          </div>
+          <button onClick={() => signOut(auth)} className="px-8 py-4 bg-white text-rose-600 rounded-2xl text-xs font-black uppercase border border-rose-600/20 hover:bg-rose-600 hover:text-white transition-all shadow-sm">Logout</button>
         </header>
 
         <div className="grid lg:grid-cols-12 gap-12">
            
-           {/* LEFT COLUMN: FINANCE OS & JOURNEY */}
-           <div className="lg:col-span-8 space-y-12">
-              
-              {/* IWS FINANCE OS - RESTORED */}
+           <div className="lg:col-span-7 space-y-12">
               <div className="bg-white p-8 rounded-[3rem] shadow-lg border border-[#134e4a]/10">
-                <h2 className="text-2xl font-black uppercase tracking-tighter mb-6">IWS Finance OS</h2>
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-                  {UPCOMING_SERVICES.map(app => (
-                    <button key={app.name} className="p-4 rounded-2xl border-2 bg-brand-50/50 border-transparent hover:border-[#134e4a]/20 text-center">
-                      <div className="w-12 h-12 rounded-lg flex items-center justify-center mx-auto mb-2 bg-white text-[#134e4a]">{app.icon}</div>
-                      <p className="text-[10px] font-black uppercase tracking-widest text-[#134e4a]/60">{app.name}</p>
-                    </button>
-                  ))}
-                </div>
-                <div className="bg-brand-50/50 p-6 rounded-2xl flex items-center justify-between shadow-inner">
-                  <p className="text-sm font-bold text-[#134e4a]/70">Ready for IWS Invoice Action.</p>
-                  <button className="px-6 py-3 bg-[#134e4a] text-white rounded-xl font-black uppercase text-[10px] tracking-widest">Launch Dashboard</button>
-                </div>
-              </div>
-
-              {/* SOVEREIGNTY JOURNEY TIMELINE - NEW */}
-              <div className="bg-white p-8 rounded-[3rem] shadow-lg border border-[#134e4a]/10">
-                <h3 className="text-2xl font-black uppercase tracking-tighter mb-8">Sovereignty Journey</h3>
-                {loading ? <Loader2 className="animate-spin text-brand-gold"/> : myAssessments.length > 0 ? (
+                {/* RENAMED to "My Progress" */}
+                <h3 className="text-2xl font-black uppercase tracking-tighter mb-8">My Progress</h3>
+                {loading ? <div className="flex justify-center py-10"><Loader2 className="animate-spin text-brand-gold"/></div> : myAssessments.length > 0 ? (
                   <div className="relative pt-10">
                     <div className="absolute left-4 top-[58px] bottom-0 w-1 bg-[#134e4a]/5 rounded-full"></div>
                     <div className="space-y-8">
@@ -159,10 +129,8 @@ const UserDashboard: React.FC<UserDashboardProps> = ({ onTriggerAssessment }) =>
                   </div>
                 )}
               </div>
-
            </div>
            
-           {/* RIGHT COLUMN: COMPLIANCE MATRIX */}
            <div className="lg:col-span-5">
             <div className="bg-[#134e4a] p-8 rounded-[3rem] shadow-2xl text-white border-4 border-[#d4af37]/20 sticky top-32">
               <h2 className="text-2xl font-black uppercase tracking-tighter mb-8">Compliance Matrix</h2>
