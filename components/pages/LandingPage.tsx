@@ -20,7 +20,7 @@ const LandingPage: React.FC<HomeProps> = ({ onOpenAssessment }) => {
   return (
     <div className="bg-slate-950 font-sans text-white selection:bg-brand-gold selection:text-brand-900 overflow-x-hidden">
       
-      {/* 1. HERO SECTION: High Conversion, Low Noise */}
+      {/* 1. HERO SECTION */}
       <section className="relative min-h-screen flex flex-col justify-center items-center text-center px-6 pt-20">
         
         {/* Background Visuals */}
@@ -48,7 +48,6 @@ const LandingPage: React.FC<HomeProps> = ({ onOpenAssessment }) => {
               <span className="text-brand-gold">Optimize wealth.</span>
             </h1>
             
-            {/* UPDATED COPY: Replaced generic description with specific mission statement */}
             <p className="text-xl text-white/80 mb-12 max-w-3xl mx-auto font-light leading-relaxed drop-shadow-lg">
                 Integrated Wellth Solutions offers comprehensive personal and professional growth support, integrating financial, emotional, and empowerment services for diverse clients, from entrepreneurs to teens. Their team of experts provides tailored solutions, encompassing financial planning, accounting, financial management, organizational development, and digital marketing, ensuring holistic support.
             </p>
@@ -98,7 +97,7 @@ const LandingPage: React.FC<HomeProps> = ({ onOpenAssessment }) => {
                 <div className="relative z-10 rounded-[3rem] overflow-hidden shadow-2xl border-8 border-slate-50 rotate-2 hover:rotate-0 transition-all duration-700">
                   <img 
                     src={FOUNDER_URL} 
-                    alt="Marcia Kgaphola Keynote" 
+                    alt="Marcia Kgaphola" 
                     className="w-full h-auto object-cover grayscale hover:grayscale-0 transition-all duration-700"
                     loading="lazy"
                   />
@@ -107,7 +106,6 @@ const LandingPage: React.FC<HomeProps> = ({ onOpenAssessment }) => {
                     <p className="text-brand-gold text-xs font-bold uppercase tracking-widest">Founder & Principal Architect</p>
                   </div>
                 </div>
-                {/* Decorative Elements */}
                 <div className="absolute -top-10 -right-10 w-40 h-40 bg-brand-gold/20 rounded-full blur-3xl -z-0"></div>
                 <div className="absolute -bottom-10 -left-10 w-40 h-40 bg-brand-900/20 rounded-full blur-3xl -z-0"></div>
               </RevealOnScroll>
@@ -120,8 +118,7 @@ const LandingPage: React.FC<HomeProps> = ({ onOpenAssessment }) => {
                   <Quote size={16} /> The Founder's Mission
                 </div>
                 <h2 className="text-4xl md:text-6xl font-sora font-black text-brand-900 mb-8 tracking-tighter leading-tight">
-                  {/* Updated Heading */}
-                  The Vision is <br/> <span className="text-brand-gold italic">Exhausted Servant.</span>
+                  The Vision is <br/> <span className="text-brand-gold italic">Structural Integrity.</span>
                 </h2>
                 <div className="space-y-6 text-lg text-brand-900/70 font-medium leading-relaxed">
                   <p>
@@ -149,31 +146,31 @@ const LandingPage: React.FC<HomeProps> = ({ onOpenAssessment }) => {
         </div>
       </section>
 
-      {/* 3. THE OFFER: Pricing Cards */}
+      {/* 3. THE OFFER: Adjusted Pricing Cards */}
       <section className="py-32 px-6 bg-slate-950 relative border-t border-brand-gold/20">
         <div className="absolute inset-0 opacity-5" style={{ backgroundImage: 'radial-gradient(#d4af37 1px, transparent 1px)', backgroundSize: '40px 40px' }}></div>
         
         <div className="max-w-7xl mx-auto relative z-10">
           <RevealOnScroll>
             <div className="text-center mb-20">
-              <span className="bg-rose-600 text-white text-xs font-black px-6 py-2 rounded-full uppercase tracking-widest shadow-xl animate-pulse">Limited Time Offer</span>
+              <span className="bg-brand-gold text-brand-900 text-xs font-black px-6 py-2 rounded-full uppercase tracking-widest shadow-xl">Strategic Pricing</span>
               <h2 className="text-5xl md:text-7xl font-sora font-black mt-8 mb-6 tracking-tighter uppercase text-white">
-                25% OFF <span className="text-transparent bg-clip-text bg-gradient-to-r from-brand-gold to-yellow-200">RETAINERS</span>
+                FIXED RATE <span className="text-transparent bg-clip-text bg-gradient-to-r from-brand-gold to-yellow-200">SOLUTIONS</span>
               </h2>
-              <p className="text-brand-100/60 font-medium tracking-wide text-sm max-w-2xl mx-auto">
-                Secure professional financial infrastructure for your SME. Valid for new retainer agreements signed this month.
+              <p className="text-brand-100/60 font-medium tracking-wide text-sm max-w-2xl mx-auto uppercase tracking-widest">
+                Professional financial infrastructure for South African SMEs.
               </p>
             </div>
           </RevealOnScroll>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 text-left">
             
-            {/* Promo Card 1 */}
+            {/* Price Card 1 */}
             <RevealOnScroll delay={0.1}>
               <div className="bg-white/5 border border-white/10 rounded-[2.5rem] p-8 md:p-10 flex flex-col justify-between h-full hover:border-brand-gold transition-all duration-300 hover:bg-white/10 group relative overflow-hidden">
-                <div className="absolute top-0 right-0 p-3 bg-brand-gold text-brand-900 font-black text-[10px] uppercase tracking-widest rounded-bl-2xl">Most Popular</div>
+                <div className="absolute top-0 right-0 p-3 bg-brand-gold text-brand-900 font-black text-[10px] uppercase tracking-widest rounded-bl-2xl">Foundational</div>
                 <div>
-                  <h3 className="text-2xl font-black text-white mb-6 flex items-center gap-3 uppercase tracking-tight"><Settings className="text-emerald-400" size={32} /> System Configuration</h3>
+                  <h3 className="text-2xl font-black text-white mb-6 flex items-center gap-3 uppercase tracking-tight"><Settings className="text-brand-gold" size={32} /> System Configuration</h3>
                   <div className="grid grid-cols-2 gap-y-4 gap-x-8 text-xs text-brand-100/70 mb-10 font-bold uppercase tracking-wider">
                     <p className="flex items-center gap-2"><div className="w-1 h-1 bg-brand-gold rounded-full"></div> Chart of Accounts</p>
                     <p className="flex items-center gap-2"><div className="w-1 h-1 bg-brand-gold rounded-full"></div> Invoices Setup</p>
@@ -181,24 +178,22 @@ const LandingPage: React.FC<HomeProps> = ({ onOpenAssessment }) => {
                     <p className="flex items-center gap-2"><div className="w-1 h-1 bg-brand-gold rounded-full"></div> Open balances</p>
                   </div>
                 </div>
-                <div className="flex justify-between items-end border-t border-dashed border-white/10 pt-8">
-                  <div className="flex flex-col">
-                    <p className="text-[10px] text-white/40 uppercase tracking-widest font-bold mb-1">Regular Price</p>
-                    <p className="text-2xl text-white/40 line-through font-bold decoration-rose-500/80 decoration-2">R2 500</p>
+                <div className="flex justify-between items-center border-t border-dashed border-white/10 pt-8">
+                  <div className="flex items-baseline gap-2">
+                    <span className="text-brand-gold font-bold text-lg uppercase tracking-widest opacity-60">from</span>
+                    <p className="text-5xl font-black text-white font-sora tracking-tighter">R2 500</p>
                   </div>
-                  <div className="text-right">
-                    <p className="text-5xl font-black text-brand-gold mb-2 font-sora shadow-brand-gold drop-shadow-lg">R1 875</p>
-                    <span className="bg-emerald-500/20 text-emerald-400 text-[10px] font-black px-3 py-1 rounded-full uppercase tracking-wider border border-emerald-500/20">You Save R625</span>
-                  </div>
+                  <ArrowRight className="text-brand-gold group-hover:translate-x-2 transition-transform" />
                 </div>
               </div>
             </RevealOnScroll>
 
-            {/* Promo Card 2 (Shortened for brevity, structure maintained) */}
+            {/* Price Card 2 */}
             <RevealOnScroll delay={0.2}>
-              <div className="bg-white/5 border border-white/10 rounded-[2.5rem] p-8 md:p-10 flex flex-col justify-between h-full hover:border-brand-gold transition-all duration-300 hover:bg-white/10 group">
+              <div className="bg-white/5 border border-white/10 rounded-[2.5rem] p-8 md:p-10 flex flex-col justify-between h-full hover:border-brand-gold transition-all duration-300 hover:bg-white/10 group relative overflow-hidden">
+                <div className="absolute top-0 right-0 p-3 bg-brand-gold text-brand-900 font-black text-[10px] uppercase tracking-widest rounded-bl-2xl">Recurring Support</div>
                 <div>
-                  <h3 className="text-2xl font-black text-white mb-6 flex items-center gap-3 uppercase tracking-tight"><PieChart className="text-emerald-400" size={32} /> Monthly Review</h3>
+                  <h3 className="text-2xl font-black text-white mb-6 flex items-center gap-3 uppercase tracking-tight"><PieChart className="text-brand-gold" size={32} /> Monthly Review</h3>
                   <div className="grid grid-cols-2 gap-y-4 gap-x-8 text-xs text-brand-100/70 mb-10 font-bold uppercase tracking-wider">
                     <p className="flex items-center gap-2"><div className="w-1 h-1 bg-brand-gold rounded-full"></div> Expense Review</p>
                     <p className="flex items-center gap-2"><div className="w-1 h-1 bg-brand-gold rounded-full"></div> Journal Entries</p>
@@ -206,15 +201,12 @@ const LandingPage: React.FC<HomeProps> = ({ onOpenAssessment }) => {
                     <p className="flex items-center gap-2"><div className="w-1 h-1 bg-brand-gold rounded-full"></div> Management Acc.</p>
                   </div>
                 </div>
-                <div className="flex justify-between items-end border-t border-dashed border-white/10 pt-8">
-                  <div className="flex flex-col">
-                    <p className="text-[10px] text-white/40 uppercase tracking-widest font-bold mb-1">Regular Price</p>
-                    <p className="text-2xl text-white/40 line-through font-bold decoration-rose-500/80 decoration-2">R999</p>
+                <div className="flex justify-between items-center border-t border-dashed border-white/10 pt-8">
+                  <div className="flex items-baseline gap-2">
+                    <span className="text-brand-gold font-bold text-lg uppercase tracking-widest opacity-60">from</span>
+                    <p className="text-5xl font-black text-white font-sora tracking-tighter">R999</p>
                   </div>
-                  <div className="text-right">
-                    <p className="text-5xl font-black text-brand-gold mb-2 font-sora drop-shadow-lg">R749</p>
-                    <span className="bg-emerald-500/20 text-emerald-400 text-[10px] font-black px-3 py-1 rounded-full uppercase tracking-wider border border-emerald-500/20">You Save R250</span>
-                  </div>
+                  <ArrowRight className="text-brand-gold group-hover:translate-x-2 transition-transform" />
                 </div>
               </div>
             </RevealOnScroll>
@@ -232,7 +224,7 @@ const LandingPage: React.FC<HomeProps> = ({ onOpenAssessment }) => {
             <form onSubmit={handleCta} className="bg-brand-50 rounded-2xl p-2 flex items-center border-2 border-brand-900/10 focus-within:border-brand-gold transition-colors max-w-2xl mx-auto">
               <input 
                 type="text" 
-                placeholder="E.g., I'd like to claim the 25% off setup offer..." 
+                placeholder="E.g., I'd like to book a strategy session..." 
                 className="bg-transparent w-full text-brand-900 px-6 py-4 outline-none placeholder-brand-900/30 font-bold"
                 required
               />
