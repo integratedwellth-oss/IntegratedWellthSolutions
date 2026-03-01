@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { db, auth } from '../firebaseConfig';
-import { collection, onSnapshot, query, where, doc, setDoc } from 'firebase/firestore'; // Replaced updateDoc with setDoc
+import { collection, onSnapshot, query, where, doc, setDoc } from 'firebase/firestore';
 import { GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from 'firebase/auth';
-import { Lock, LogOut, FileText, RefreshCcw, X, ChevronRight, Layout, Calculator, Receipt, Box, FileSpreadsheet, CreditCard, Loader2, Calendar, CheckSquare, Square, TrendingUp, TrendingDown } from 'lucide-react';
+import { Lock, LogOut, FileText, RefreshCcw, X, ChevronRight, Layout, Calculator, Receipt, Box, FileSpreadsheet, CreditCard, Loader2, Calendar, CheckSquare, Square, TrendingUp, TrendingDown, Star } from 'lucide-react';
 
 export interface UserDashboardProps {
   onTriggerAssessment?: () => void;
@@ -65,11 +65,14 @@ const UserDashboard: React.FC<UserDashboardProps> = ({ onTriggerAssessment }) =>
     if (!user) return;
     const newState = { ...complianceState, [itemId]: !complianceState[itemId] };
     const complianceDocRef = doc(db, 'compliance_states', user.uid);
-    // THE FIX: Use setDoc with merge option, which is the correct syntax
     await setDoc(complianceDocRef, newState, { merge: true });
   };
 
   const complianceProgress = (Object.values(complianceState).filter(Boolean).length / COMPLIANCE_CHECKLIST_ITEMS.length) * 100;
+  
+  const latestAssessment = myAssessments[myAssessments.length - 1];
+  const previousAssessment = myAssessments[myAssessments.length - 2];
+  const scoreDifference = latestAssessment && previousAssessment ? latestAssessment.score - previousAssessment.score : null;
 
   if (!user) {
     return (
@@ -88,9 +91,8 @@ const UserDashboard: React.FC<UserDashboardProps> = ({ onTriggerAssessment }) =>
       <div className="max-w-7xl mx-auto">
         <header className="flex flex-col md:flex-row justify-between items-start md:items-center mb-16 gap-6">
           <div>
-            <div className="flex items-center gap-2 mb-2"><span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span><p className="text-[#d4af37] text-xs uppercase font-bold tracking-widest">Client Hub Active</p></div>
+            <div className="flex items-center gap-2 mb-2"><span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span><p className="text-[#d4af37] text-xs uppercase font-bold tracking-widest">Sovereignty Hub Active</p></div>
             <h1 className="text-4xl md:text-5xl font-black uppercase tracking-tighter leading-none font-sora">Command Center</h1>
-            <p className="text-[#134e4a]/60 text-sm mt-2 font-medium">{user.displayName || user.email}</p>
           </div>
           <button onClick={() => signOut(auth)} className="px-8 py-4 bg-white text-rose-600 rounded-2xl text-xs font-black uppercase border border-rose-600/20 hover:bg-rose-600 hover:text-white transition-all shadow-sm">Logout</button>
         </header>
@@ -99,33 +101,44 @@ const UserDashboard: React.FC<UserDashboardProps> = ({ onTriggerAssessment }) =>
            
            <div className="lg:col-span-7 space-y-12">
               <div className="bg-white p-8 rounded-[3rem] shadow-lg border border-[#134e4a]/10">
-                {/* RENAMED to "My Progress" */}
                 <h3 className="text-2xl font-black uppercase tracking-tighter mb-8">My Progress</h3>
-                {loading ? <div className="flex justify-center py-10"><Loader2 className="animate-spin text-brand-gold"/></div> : myAssessments.length > 0 ? (
-                  <div className="relative pt-10">
-                    <div className="absolute left-4 top-[58px] bottom-0 w-1 bg-[#134e4a]/5 rounded-full"></div>
-                    <div className="space-y-8">
-                      {myAssessments.map((item, index) => (
-                        <div key={item.id} className="flex items-center gap-6">
-                           <div className={`w-10 h-10 rounded-full flex items-center justify-center text-white font-black text-sm shrink-0 shadow-lg z-10 ${item.score >= 28 ? 'bg-emerald-500' : item.score >= 15 ? 'bg-brand-gold' : 'bg-rose-500'}`}>{item.score}</div>
-                           <div>
-                              <p className="font-black text-lg uppercase tracking-tight">{item.persona}</p>
-                              <p className="text-xs text-[#134e4a]/60 font-bold uppercase">{item.timestamp?.toDate().toLocaleDateString()}</p>
-                           </div>
-                           {index > 0 && myAssessments[index-1] && (
-                               <div className={`ml-auto flex items-center gap-2 font-bold text-xs ${item.score > myAssessments[index-1].score ? 'text-emerald-600' : 'text-rose-600'}`}>
-                                  {item.score > myAssessments[index-1].score ? <TrendingUp size={14} /> : <TrendingDown size={14} />}
-                                  {item.score - myAssessments[index-1].score} PTS
-                               </div>
-                           )}
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                ) : (
+                
+                {loading ? <div className="flex justify-center py-10"><Loader2 className="animate-spin text-brand-gold"/></div> 
+                : myAssessments.length === 0 ? (
                   <div className="text-center p-10 border-2 border-dashed rounded-2xl">
                      <p className="font-bold text-[#134e4a]/50 uppercase tracking-widest text-xs">No assessments yet.</p>
                      <button onClick={onTriggerAssessment} className="mt-4 text-brand-gold font-black uppercase text-xs">Take your first audit</button>
+                  </div>
+                ) : (
+                  <div className="grid md:grid-cols-2 gap-8">
+                    {/* Previous Assessment */}
+                    {previousAssessment && (
+                      <div className="opacity-50">
+                        <h4 className="text-xs font-black uppercase tracking-widest mb-4 text-center">Previous Report</h4>
+                        <div className="bg-gray-50 p-6 rounded-2xl shadow-inner text-center">
+                          <p className="text-3xl font-black text-gray-400">{previousAssessment.score}</p>
+                          <p className="font-bold text-gray-500 uppercase text-xs">{previousAssessment.persona}</p>
+                          <p className="text-[10px] text-gray-400 font-bold mt-1">{previousAssessment.timestamp?.toDate().toLocaleDateString()}</p>
+                        </div>
+                      </div>
+                    )}
+                    
+                    {/* Latest Assessment */}
+                    <div className={previousAssessment ? '' : 'md:col-span-2'}>
+                       <h4 className="text-xs font-black uppercase tracking-widest mb-4 text-center">Latest Report</h4>
+                       <div className="bg-white p-6 rounded-2xl shadow-lg border-2 border-brand-gold text-center relative">
+                         <p className="text-5xl font-black text-brand-900">{latestAssessment.score}</p>
+                         <p className="font-bold text-brand-gold uppercase text-sm">{latestAssessment.persona}</p>
+                         <p className="text-[10px] text-gray-500 font-bold mt-1">{latestAssessment.timestamp?.toDate().toLocaleDateString()}</p>
+                         
+                         {scoreDifference !== null && (
+                            <div className={`absolute top-4 right-4 flex items-center gap-1 font-bold text-xs ${scoreDifference >= 0 ? 'text-emerald-600' : 'text-rose-600'}`}>
+                               {scoreDifference >= 0 ? <TrendingUp size={14}/> : <TrendingDown size={14}/>}
+                               {scoreDifference > 0 ? `+${scoreDifference}`: scoreDifference} PTS
+                            </div>
+                         )}
+                       </div>
+                    </div>
                   </div>
                 )}
               </div>
