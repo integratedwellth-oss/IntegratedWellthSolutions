@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { LayoutGrid, Users, Calendar, Target, Workflow, ArrowRight, Menu, X, Layout, ShieldAlert } from 'lucide-react';
+import { LayoutGrid, Users, Calendar, Target, Workflow, Menu, X, Layout, ShieldAlert } from 'lucide-react';
 import { auth } from '../firebaseConfig';
 import { onAuthStateChanged } from 'firebase/auth';
 
@@ -39,7 +39,7 @@ const Navbar: React.FC<NavbarProps> = ({ onNavigate }) => {
   const navLinks = [
     { label: 'THE PROTOCOL', hash: '#protocol', icon: <Workflow size={14} /> },
     { label: 'ECOSYSTEM', hash: '#services', icon: <LayoutGrid size={14} /> },
-    { label: 'CALENDAR', hash: '#compliance-calendar', icon: <Calendar size={14} />, isSpecial: true }, // NEW LINK ADDED
+    { label: 'CALENDAR', hash: '#compliance-calendar', icon: <Calendar size={14} />, isSpecial: true },
     { label: 'AUDIENCES', hash: '#who-we-help', icon: <Users size={14} /> },
     { label: 'IDENTITY', hash: '#team', icon: <Target size={14} /> },
   ];
@@ -102,7 +102,7 @@ const Navbar: React.FC<NavbarProps> = ({ onNavigate }) => {
         </div>
       </div>
 
-      {/* MOBILE MENU */}
+      {/* MOBILE MENU (Optimized for Clarity) */}
       {isMobileMenuOpen && (
         <div className="fixed inset-0 z-[200] bg-brand-900 flex flex-col animate-fadeIn">
           <div className="flex justify-between items-center p-6 border-b border-white/10">
@@ -114,7 +114,7 @@ const Navbar: React.FC<NavbarProps> = ({ onNavigate }) => {
           </div>
           <div className="flex flex-col px-6 py-8 gap-4 overflow-y-auto">
             {navLinks.map((link) => (
-              <button key={link.hash} onClick={() => handleLinkClick(link.hash)} className="flex items-center justify-between w-full p-5 rounded-2xl bg-white/5 text-white hover:bg-brand-gold hover:text-brand-900 transition-all font-black uppercase text-xs">
+              <button key={link.hash} onClick={() => handleLinkClick(link.hash)} className={`flex items-center justify-between w-full p-5 rounded-2xl bg-white/5 text-white hover:bg-brand-gold hover:text-brand-900 transition-all font-black uppercase text-xs ${link.isSpecial ? 'border-2 border-brand-gold' : ''}`}>
                 <div className="flex items-center gap-4">{link.icon}<span>{link.label}</span></div><ArrowRight size={16} />
               </button>
             ))}
