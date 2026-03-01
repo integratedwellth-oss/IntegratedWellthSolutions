@@ -1,247 +1,154 @@
-import React from 'react';
-import RevealOnScroll from '../RevealOnScroll';
-import { ShieldCheck, CheckCircle2, Settings, BookOpen, PieChart, FileBarChart, Send, Sparkles, Zap, ArrowRight, Quote } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { 
+  Menu, X, Link as LinkIcon, LayoutGrid, Calendar, 
+  Users, Target, Layout, ShieldAlert, Zap 
+} from 'lucide-react';
 
-interface HomeProps {
-  onOpenAssessment: () => void;
+interface NavbarProps {
+  onNavigate: (view: string) => void;
 }
 
-const LandingPage: React.FC<HomeProps> = ({ onOpenAssessment }) => {
-  
-  // Directs to the War Room / AI Logic
-  const handleCta = (e: React.FormEvent) => {
-    e.preventDefault();
-    window.location.hash = '#warroom';
-  };
+const Navbar: React.FC<NavbarProps> = ({ onNavigate }) => {
+  const [isOpen, setIsOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
 
-  const TREE_HERO_URL = "https://res.cloudinary.com/dka0498ns/image/upload/f_auto,q_auto/v1772373342/Profuse_Beauty_Logo_Tree_z1nc3c.png";
-  const FOUNDER_URL = "https://res.cloudinary.com/dka0498ns/image/upload/f_auto,q_auto/v1768022744/Marcia_Kgaphola._The_founder_of_Integrated_Wellth_Solution_giving_a_keynote_speech_at_a_women_business_conference_rr55ol.jpg";
+  useEffect(() => {
+    const handleScroll = () => setScrolled(window.scrollY > 20);
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  const navLinks = [
+    { name: 'THE PROTOCOL', view: 'protocol', icon: <LinkIcon size={14} /> },
+    { name: 'ECOSYSTEM', view: 'services', icon: <LayoutGrid size={14} /> },
+    { name: 'CALENDAR', view: 'calendar', icon: <Calendar size={14} />, isGold: true },
+    { name: 'AUDIENCES', view: 'who-we-help', icon: <Users size={14} /> },
+    { name: 'IDENTITY', view: 'team', icon: <Target size={14} /> },
+  ];
+
+  const LOGO_TREE = "https://res.cloudinary.com/dka0498ns/image/upload/v1772373342/Profuse_Beauty_Logo_Tree_z1nc3c.png";
 
   return (
-    <div className="bg-slate-950 font-sans text-white selection:bg-brand-gold selection:text-brand-900 overflow-x-hidden">
-      
-      {/* 1. HERO SECTION */}
-      <section className="relative min-h-screen flex flex-col justify-center items-center text-center px-6 pt-20">
+    <nav className={`fixed w-full z-[100] transition-all duration-500 bg-[#134e4a] border-b border-white/5 ${
+      scrolled ? 'py-3' : 'py-5'
+    }`}>
+      <div className="max-w-[1800px] mx-auto px-4 flex items-center justify-between">
         
-        {/* Background Visuals */}
-        <div className="absolute inset-0 z-0">
-          <img 
-            src={TREE_HERO_URL} 
-            alt="Growth Ecosystem" 
-            className="w-full h-full object-cover opacity-35 mix-blend-screen scale-110 animate-pulse-slow"
-            loading="eager"
-          />
-          <div className="absolute inset-0 bg-gradient-to-b from-slate-950/90 via-slate-950/80 to-slate-950 z-0"></div>
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_transparent_0%,_#020617_100%)]"></div>
-        </div>
-
-        <RevealOnScroll>
-          <div className="max-w-5xl mx-auto z-10 relative">
-            
-            <div className="inline-flex items-center gap-3 px-6 py-2 rounded-full border border-brand-gold/30 bg-brand-gold/5 mb-10 backdrop-blur-xl shadow-[0_0_30px_rgba(212,175,55,0.1)]">
-              <Zap size={14} className="text-brand-gold animate-pulse" />
-              <span className="text-[10px] md:text-xs font-black uppercase tracking-[0.3em] text-brand-gold">IWS Growth Partnership</span>
-            </div>
-
-            <h1 className="text-5xl md:text-7xl lg:text-[6rem] font-sora font-extrabold tracking-tighter mb-8 leading-[1] text-transparent bg-clip-text bg-gradient-to-b from-white to-white/60">
-              Master compliance. <br/>
-              <span className="text-brand-gold">Optimize wealth.</span>
-            </h1>
-            
-            <p className="text-xl text-white/80 mb-12 max-w-3xl mx-auto font-light leading-relaxed drop-shadow-lg">
-                Integrated Wellth Solutions offers comprehensive personal and professional growth support, integrating financial, emotional, and empowerment services for diverse clients, from entrepreneurs to teens. Their team of experts provides tailored solutions, encompassing financial planning, accounting, financial management, organizational development, and digital marketing, ensuring holistic support.
-            </p>
-            
-            <div className="flex flex-col sm:flex-row gap-6 justify-center items-center mb-16">
-              <button 
-                onClick={onOpenAssessment}
-                className="group relative bg-brand-gold text-brand-900 font-black uppercase tracking-widest text-sm md:text-base px-12 py-6 rounded-full transition-all duration-300 w-full sm:w-auto hover:scale-105 hover:bg-white hover:shadow-[0_0_40px_rgba(212,175,55,0.6)]"
-              >
-                Find My Cash Leaks & Fix Them
-              </button>
-              <button 
-                onClick={() => window.location.hash = '#contact'}
-                className="group relative bg-white/5 border border-white/20 text-white font-black uppercase tracking-widest text-sm px-12 py-6 rounded-full transition-all duration-300 w-full sm:w-auto hover:bg-white/10 hover:border-brand-gold/50"
-              >
-                Talk To An Expert
-              </button>
-            </div>
-
-            {/* Trust Badges */}
-            <div className="flex flex-wrap items-center justify-center gap-6 md:gap-16 text-xs text-brand-100/50 font-bold uppercase tracking-widest border-t border-white/5 pt-10">
-              <span className="flex items-center gap-3 hover:text-white transition-colors cursor-default">
-                <ShieldCheck className="w-5 h-5 text-emerald-500" />
-                SARS Authorized
-              </span>
-              <span className="flex items-center gap-3 hover:text-white transition-colors cursor-default">
-                <ShieldCheck className="w-5 h-5 text-emerald-500" />
-                CIPC Compliant
-              </span>
-              <span className="flex items-center gap-3 hover:text-white transition-colors cursor-default">
-                <ShieldCheck className="w-5 h-5 text-emerald-500" />
-                CIBA Registered
-              </span>
-            </div>
+        {/* LEFT: BRANDING & LOGO BLOCK */}
+        <div className="flex items-start gap-4">
+          {/* Tree Icon */}
+          <div 
+            onClick={() => onNavigate('home')}
+            className="w-12 h-12 bg-white rounded-lg p-1.5 border-2 border-[#d4af37] cursor-pointer shadow-xl"
+          >
+            <img src={LOGO_TREE} alt="IWS" className="w-full h-full object-contain" />
           </div>
-        </RevealOnScroll>
-      </section>
 
-      {/* 2. THE ANCHOR: Founder Mission */}
-      <section className="py-24 bg-white relative overflow-hidden">
-        <div className="max-w-7xl mx-auto px-6">
-          <div className="flex flex-col lg:flex-row items-center gap-16">
+          {/* Text Logo & Taglines */}
+          <div className="flex flex-col gap-2">
+            <div className="flex items-stretch overflow-hidden rounded-md h-8 cursor-pointer" onClick={() => onNavigate('home')}>
+              <div className="bg-[#3E2723] px-3 flex items-center">
+                <span className="font-black text-sm tracking-tighter text-[#14b8a6]">INTEGRATED</span>
+              </div>
+              <div className="bg-[#14b8a6] px-3 flex items-center">
+                <span className="font-black text-sm tracking-tighter text-[#3E2723]">WELLTH</span>
+              </div>
+            </div>
             
-            {/* Image Side */}
-            <div className="lg:w-1/2 relative">
-              <RevealOnScroll>
-                <div className="relative z-10 rounded-[3rem] overflow-hidden shadow-2xl border-8 border-slate-50 rotate-2 hover:rotate-0 transition-all duration-700">
-                  <img 
-                    src={FOUNDER_URL} 
-                    alt="Marcia Kgaphola" 
-                    className="w-full h-auto object-cover grayscale hover:grayscale-0 transition-all duration-700"
-                    loading="lazy"
-                  />
-                  <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-brand-900/90 to-transparent p-8">
-                    <p className="text-white font-black uppercase tracking-widest text-lg">Marcia Kgaphola</p>
-                    <p className="text-brand-gold text-xs font-bold uppercase tracking-widest">Founder & Principal Architect</p>
-                  </div>
-                </div>
-                <div className="absolute -top-10 -right-10 w-40 h-40 bg-brand-gold/20 rounded-full blur-3xl -z-0"></div>
-                <div className="absolute -bottom-10 -left-10 w-40 h-40 bg-brand-900/20 rounded-full blur-3xl -z-0"></div>
-              </RevealOnScroll>
-            </div>
-
-            {/* Text Side */}
-            <div className="lg:w-1/2">
-              <RevealOnScroll delay={0.2}>
-                <div className="inline-flex items-center gap-2 text-brand-900/40 font-black uppercase tracking-[0.4em] text-xs mb-6">
-                  <Quote size={16} /> The Founder's Mission
-                </div>
-                <h2 className="text-4xl md:text-6xl font-sora font-black text-brand-900 mb-8 tracking-tighter leading-tight">
-                  The Vision is <br/> <span className="text-brand-gold italic">Structural Integrity.</span>
-                </h2>
-                <div className="space-y-6 text-lg text-brand-900/70 font-medium leading-relaxed">
-                  <p>
-                    "I built Integrated Wellth Solutions because I saw too many brilliant South African businesses fail—not from a lack of talent, but from a lack of <strong>structural integrity</strong>."
-                  </p>
-                  <p>
-                    We don't just file your taxes. We act as the <strong>strategic anchor</strong> for your business, combining high-precision financial systems with the psychological resilience you need to lead.
-                  </p>
-                </div>
-                
-                <div className="mt-10 flex gap-4">
-                  <div className="px-6 py-4 bg-brand-50 rounded-2xl border border-brand-900/5">
-                    <p className="text-3xl font-black text-brand-900">100%</p>
-                    <p className="text-[10px] font-bold uppercase tracking-widest text-brand-900/40">Compliance Rate</p>
-                  </div>
-                  <div className="px-6 py-4 bg-brand-50 rounded-2xl border border-brand-900/5">
-                    <p className="text-3xl font-black text-brand-900">15+</p>
-                    <p className="text-[10px] font-bold uppercase tracking-widest text-brand-900/40">Years Experience</p>
-                  </div>
-                </div>
-              </RevealOnScroll>
-            </div>
-
-          </div>
-        </div>
-      </section>
-
-      {/* 3. THE OFFER: Adjusted Pricing Cards */}
-      <section className="py-32 px-6 bg-slate-950 relative border-t border-brand-gold/20">
-        <div className="absolute inset-0 opacity-5" style={{ backgroundImage: 'radial-gradient(#d4af37 1px, transparent 1px)', backgroundSize: '40px 40px' }}></div>
-        
-        <div className="max-w-7xl mx-auto relative z-10">
-          <RevealOnScroll>
-            <div className="text-center mb-20">
-              <span className="bg-brand-gold text-brand-900 text-xs font-black px-6 py-2 rounded-full uppercase tracking-widest shadow-xl">Strategic Pricing</span>
-              <h2 className="text-5xl md:text-7xl font-sora font-black mt-8 mb-6 tracking-tighter uppercase text-white">
-                FIXED RATE <span className="text-transparent bg-clip-text bg-gradient-to-r from-brand-gold to-yellow-200">SOLUTIONS</span>
-              </h2>
-              <p className="text-brand-100/60 font-medium tracking-wide text-sm max-w-2xl mx-auto uppercase tracking-widest">
-                Professional financial infrastructure for South African SMEs.
+            <div className="hidden xl:block">
+              <p className="text-[7px] font-black text-white/60 leading-none uppercase tracking-widest mb-1">
+                Transforming lives through emotional,<br/>financial and personal wellness.
               </p>
+              <div className="inline-flex items-center gap-1.5 px-2 py-1 rounded-full border border-[#d4af37]/40 bg-[#d4af37]/5">
+                <Zap size={8} className="text-[#d4af37]" />
+                <span className="text-[7px] font-black text-[#d4af37] uppercase tracking-widest">
+                  The SARS Safety Net is Active
+                </span>
+              </div>
             </div>
-          </RevealOnScroll>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 text-left">
-            
-            {/* Price Card 1 */}
-            <RevealOnScroll delay={0.1}>
-              <div className="bg-white/5 border border-white/10 rounded-[2.5rem] p-8 md:p-10 flex flex-col justify-between h-full hover:border-brand-gold transition-all duration-300 hover:bg-white/10 group relative overflow-hidden">
-                <div className="absolute top-0 right-0 p-3 bg-brand-gold text-brand-900 font-black text-[10px] uppercase tracking-widest rounded-bl-2xl">Foundational</div>
-                <div>
-                  <h3 className="text-2xl font-black text-white mb-6 flex items-center gap-3 uppercase tracking-tight"><Settings className="text-brand-gold" size={32} /> System Configuration</h3>
-                  <div className="grid grid-cols-2 gap-y-4 gap-x-8 text-xs text-brand-100/70 mb-10 font-bold uppercase tracking-wider">
-                    <p className="flex items-center gap-2"><div className="w-1 h-1 bg-brand-gold rounded-full"></div> Chart of Accounts</p>
-                    <p className="flex items-center gap-2"><div className="w-1 h-1 bg-brand-gold rounded-full"></div> Invoices Setup</p>
-                    <p className="flex items-center gap-2"><div className="w-1 h-1 bg-brand-gold rounded-full"></div> Bank integration</p>
-                    <p className="flex items-center gap-2"><div className="w-1 h-1 bg-brand-gold rounded-full"></div> Open balances</p>
-                  </div>
-                </div>
-                <div className="flex justify-between items-center border-t border-dashed border-white/10 pt-8">
-                  <div className="flex items-baseline gap-2">
-                    <span className="text-brand-gold font-bold text-lg uppercase tracking-widest opacity-60">from</span>
-                    <p className="text-5xl font-black text-white font-sora tracking-tighter">R2 500</p>
-                  </div>
-                  <ArrowRight className="text-brand-gold group-hover:translate-x-2 transition-transform" />
-                </div>
-              </div>
-            </RevealOnScroll>
-
-            {/* Price Card 2 */}
-            <RevealOnScroll delay={0.2}>
-              <div className="bg-white/5 border border-white/10 rounded-[2.5rem] p-8 md:p-10 flex flex-col justify-between h-full hover:border-brand-gold transition-all duration-300 hover:bg-white/10 group relative overflow-hidden">
-                <div className="absolute top-0 right-0 p-3 bg-brand-gold text-brand-900 font-black text-[10px] uppercase tracking-widest rounded-bl-2xl">Recurring Support</div>
-                <div>
-                  <h3 className="text-2xl font-black text-white mb-6 flex items-center gap-3 uppercase tracking-tight"><PieChart className="text-brand-gold" size={32} /> Monthly Review</h3>
-                  <div className="grid grid-cols-2 gap-y-4 gap-x-8 text-xs text-brand-100/70 mb-10 font-bold uppercase tracking-wider">
-                    <p className="flex items-center gap-2"><div className="w-1 h-1 bg-brand-gold rounded-full"></div> Expense Review</p>
-                    <p className="flex items-center gap-2"><div className="w-1 h-1 bg-brand-gold rounded-full"></div> Journal Entries</p>
-                    <p className="flex items-center gap-2"><div className="w-1 h-1 bg-brand-gold rounded-full"></div> GL Reconciliations</p>
-                    <p className="flex items-center gap-2"><div className="w-1 h-1 bg-brand-gold rounded-full"></div> Management Acc.</p>
-                  </div>
-                </div>
-                <div className="flex justify-between items-center border-t border-dashed border-white/10 pt-8">
-                  <div className="flex items-baseline gap-2">
-                    <span className="text-brand-gold font-bold text-lg uppercase tracking-widest opacity-60">from</span>
-                    <p className="text-5xl font-black text-white font-sora tracking-tighter">R999</p>
-                  </div>
-                  <ArrowRight className="text-brand-gold group-hover:translate-x-2 transition-transform" />
-                </div>
-              </div>
-            </RevealOnScroll>
           </div>
         </div>
-      </section>
 
-      {/* 4. DIAGNOSTIC / AI CHAT CTA */}
-      <section className="py-32 px-6 max-w-4xl mx-auto">
-        <RevealOnScroll>
-          <div className="bg-white rounded-[3rem] p-10 md:p-16 text-center border-t-8 border-brand-gold shadow-2xl relative overflow-hidden">
-            <h2 className="text-4xl md:text-5xl font-sora font-black mb-6 tracking-tighter uppercase text-brand-900">Skip the forms. <br className="md:hidden"/>Talk to us.</h2>
-            <p className="text-brand-900/60 mb-10 font-medium text-lg leading-relaxed max-w-2xl mx-auto">Tell us what you're trying to build, solve, or comply with. Our AI Advisor will match you with the right specialist.</p>
-            
-            <form onSubmit={handleCta} className="bg-brand-50 rounded-2xl p-2 flex items-center border-2 border-brand-900/10 focus-within:border-brand-gold transition-colors max-w-2xl mx-auto">
-              <input 
-                type="text" 
-                placeholder="E.g., I'd like to book a strategy session..." 
-                className="bg-transparent w-full text-brand-900 px-6 py-4 outline-none placeholder-brand-900/30 font-bold"
-                required
-              />
-              <button 
-                type="submit"
-                className="bg-brand-900 text-white font-black uppercase tracking-widest text-xs px-8 py-4 rounded-xl hover:bg-brand-gold hover:text-brand-900 transition-all flex items-center gap-2"
+        {/* MIDDLE: WHITE PILL NAVIGATION */}
+        <div className="hidden lg:flex items-center bg-white/95 rounded-full px-2 py-1.5 shadow-2xl border border-white">
+          <div className="flex items-center gap-1 px-4">
+            {navLinks.map((link) => (
+              <button
+                key={link.name}
+                onClick={() => onNavigate(link.view)}
+                className={`flex items-center gap-2 px-4 py-2 text-[10px] font-black uppercase tracking-widest transition-all hover:opacity-100 ${
+                  link.isGold ? 'text-[#d4af37]' : 'text-[#134e4a] opacity-70'
+                }`}
               >
-                Execute <ArrowRight size={14} />
+                {link.icon}
+                {link.name}
               </button>
-            </form>
-            <p className="text-[10px] font-bold text-brand-900/30 uppercase tracking-widest mt-6">Secure, autonomous matching. No spam, ever.</p>
+            ))}
           </div>
-        </RevealOnScroll>
-      </section>
+          
+          <div className="w-px h-6 bg-gray-200 mx-2" />
 
-    </div>
+          {/* Dashboard Entry inside Pill */}
+          <button 
+            onClick={() => onNavigate('my-intel')}
+            className="flex items-center gap-2 px-6 py-2.5 bg-gray-100/80 rounded-full text-[10px] font-black uppercase tracking-widest text-[#134e4a] hover:bg-[#134e4a] hover:text-white transition-all shadow-inner"
+          >
+            <Layout size={14} /> MY DASHBOARD
+          </button>
+        </div>
+
+        {/* RIGHT: WAR ROOM BUTTON */}
+        <div className="flex items-center gap-4">
+          <button 
+            onClick={() => onNavigate('warroom')}
+            className="hidden sm:flex items-center gap-3 px-6 py-3 bg-[#3E2723] border-2 border-[#d4af37] rounded-xl text-[#d4af37] hover:bg-[#d4af37] hover:text-[#3E2723] transition-all group shadow-xl"
+          >
+            <ShieldAlert size={18} className="group-hover:scale-110 transition-transform" />
+            <span className="font-black text-xs uppercase tracking-[0.2em]">War Room</span>
+          </button>
+
+          {/* Mobile Menu Button */}
+          <button 
+            className="lg:hidden w-10 h-10 rounded-full bg-white/10 flex items-center justify-center text-white"
+            onClick={() => setIsOpen(!isOpen)}
+          >
+            {isOpen ? <X size={24} /> : <Menu size={24} />}
+          </button>
+        </div>
+      </div>
+
+      {/* MOBILE OVERLAY */}
+      {isOpen && (
+        <div className="lg:hidden absolute top-full left-0 w-full bg-[#134e4a] border-t border-white/5 p-8 flex flex-col gap-4 animate-fadeIn shadow-2xl">
+          {navLinks.map((link) => (
+            <button
+              key={link.name}
+              onClick={() => { onNavigate(link.view); setIsOpen(false); }}
+              className={`flex items-center gap-4 text-xl font-black uppercase tracking-tighter text-left ${
+                link.isGold ? 'text-[#d4af37]' : 'text-white'
+              }`}
+            >
+              {link.icon}
+              {link.name}
+            </button>
+          ))}
+          <div className="h-px w-full bg-white/10 my-4" />
+          <button 
+            onClick={() => { onNavigate('my-intel'); setIsOpen(false); }}
+            className="w-full p-5 bg-white rounded-2xl text-[#134e4a] font-black uppercase tracking-widest flex items-center justify-center gap-3"
+          >
+            <Layout size={20} /> My Dashboard
+          </button>
+          <button 
+            onClick={() => { onNavigate('warroom'); setIsOpen(false); }}
+            className="w-full p-5 bg-[#3E2723] border-2 border-[#d4af37] rounded-2xl text-[#d4af37] font-black uppercase tracking-widest flex items-center justify-center gap-3"
+          >
+            <ShieldAlert size={20} /> War Room
+          </button>
+        </div>
+      )}
+    </nav>
   );
 };
 
-export default LandingPage;
+export default Navbar;
