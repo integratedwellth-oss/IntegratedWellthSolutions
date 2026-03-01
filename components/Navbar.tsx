@@ -29,7 +29,6 @@ const Navbar: React.FC<NavbarProps> = ({ onNavigate }) => {
       scrolled ? 'py-4 bg-white/80 backdrop-blur-xl shadow-lg' : 'py-6 bg-transparent'
     }`}>
       <div className="max-w-7xl mx-auto px-6 flex justify-between items-center">
-        {/* Logo */}
         <div 
           onClick={() => onNavigate('home')} 
           className="flex items-center gap-2 cursor-pointer group"
@@ -42,7 +41,6 @@ const Navbar: React.FC<NavbarProps> = ({ onNavigate }) => {
           </span>
         </div>
 
-        {/* Desktop Links */}
         <div className="hidden lg:flex items-center gap-8">
           {navLinks.map((link) => (
             <button
@@ -74,13 +72,11 @@ const Navbar: React.FC<NavbarProps> = ({ onNavigate }) => {
           </Button>
         </div>
 
-        {/* Mobile Toggle */}
         <button className="lg:hidden p-2 text-brand-900" onClick={() => setIsOpen(!isOpen)}>
           {isOpen ? <X size={28} /> : <Menu size={28} />}
         </button>
       </div>
 
-      {/* Mobile Menu */}
       {isOpen && (
         <div className="lg:hidden absolute top-full left-0 w-full bg-white shadow-2xl border-t border-gray-100 p-8 flex flex-col gap-6 animate-fadeIn">
           {navLinks.map((link) => (
