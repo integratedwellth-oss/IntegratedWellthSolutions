@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { db, auth } from '../firebaseConfig';
 import { collection, onSnapshot, query, where, doc, setDoc } from 'firebase/firestore';
 import { GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from 'firebase/auth';
-import { Lock, FileText, RefreshCcw, X, ChevronRight, Layout, Calculator, Receipt, Box, FileSpreadsheet, CreditCard, Loader2, CheckSquare, Square, TrendingUp, TrendingDown, Zap, Eye, ShieldCheck } from 'lucide-react';
+import { Lock, Calculator, Receipt, Box, FileSpreadsheet, CreditCard, Loader2, CheckSquare, Square, TrendingUp, TrendingDown, Zap, Eye, ShieldCheck, Calendar, ArrowRight, ChevronRight } from 'lucide-react';
 
 export interface UserDashboardProps {
   onTriggerAssessment?: () => void;
@@ -13,6 +13,11 @@ const COMPLIANCE_CHECKLIST_ITEMS = [
   { id: 'sars_prov', label: 'Provisional Tax Submitted (IRP6)' },
   { id: 'sars_vat', label: 'VAT Returns Up to Date' },
   { id: 'paye', label: 'PAYE/UIF Reconciliations Complete' },
+];
+
+const UPCOMING_DEADLINES_SUMMARY = [
+  { date: "28 Feb", title: "Provisional Tax (IRP6)", type: "Critical" },
+  { date: "31 Mar", title: "CIPC Annual Returns", type: "Critical" },
 ];
 
 const UserDashboard: React.FC<UserDashboardProps> = ({ onTriggerAssessment }) => {
@@ -59,11 +64,11 @@ const UserDashboard: React.FC<UserDashboardProps> = ({ onTriggerAssessment }) =>
     };
   }, []);
 
-  // FIX: OPTIMISTIC UI UPDATE FOR CHECKLIST
+  // OPTIMISTIC UI UPDATE FOR CHECKLIST
   const handleToggleCompliance = async (itemId: string) => {
     if (!user) return;
     
-    // 1. Instantly update the UI so it feels snappy and responsive
+    // 1. Instantly update the UI
     const currentVal = !!complianceState[itemId];
     const newVal = !currentVal;
     
@@ -73,13 +78,12 @@ const UserDashboard: React.FC<UserDashboardProps> = ({ onTriggerAssessment }) =>
     }));
 
     try {
-      // 2. Sync with database in the background
+      // 2. Sync with database
       const complianceDocRef = doc(db, 'compliance_states', user.uid);
-      // We pass only the changed field using merge: true
       await setDoc(complianceDocRef, { [itemId]: newVal }, { merge: true });
     } catch (error) {
       console.error("Failed to sync compliance state:", error);
-      // 3. If the database fails (e.g. lost connection), revert the checkbox
+      // 3. Revert on failure
       setComplianceState(prev => ({ 
         ...prev, 
         [itemId]: currentVal 
@@ -193,19 +197,25 @@ const UserDashboard: React.FC<UserDashboardProps> = ({ onTriggerAssessment }) =>
               )}
             </div>
 
-            {/* COMPLIANCE MATRIX */}
+            {/* COMPLIANCE & CALENDAR SUMMARY */}
             <div className="bg-white p-8 rounded-[3rem] shadow-lg border border-[#134e4a]/10">
               <div className="flex justify-between items-end mb-8">
-                <h3 className="text-2xl font-black uppercase tracking-tighter">Compliance Matrix</h3>
-                <span className="text-[10px] font-black uppercase tracking-widest text-[#d4af37] bg-[#d4af37]/10 px-3 py-1 rounded-full">Real-Time Sync</span>
+                <h3 className="text-2xl font-black uppercase tracking-tighter">Compliance Hub</h3>
+                <button 
+                  onClick={() => window.location.hash = '#compliance-calendar'}
+                  className="text-[10px] font-black uppercase tracking-widest text-[#d4af37] hover:text-[#134e4a] flex items-center gap-1 transition-colors"
+                >
+                  View Full Calendar <ArrowRight size={12} />
+                </button>
               </div>
               
-              <div className="space-y-3">
+              {/* Interactive Checklist */}
+              <div className="space-y-3 mb-8">
+                <p className="text-xs font-bold text-[#134e4a]/60 uppercase tracking-widest mb-2">My Task List</p>
                 {COMPLIANCE_CHECKLIST_ITEMS.map(item => (
                   <button 
                     key={item.id} 
                     onClick={() => handleToggleCompliance(item.id)} 
-                    // Set type to button to prevent any form submission behaviors
                     type="button" 
                     className={`w-full flex items-center gap-4 p-4 rounded-2xl border-2 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-[#d4af37]/50 ${complianceState[item.id] ? 'bg-emerald-50 border-emerald-500/20' : 'bg-gray-50 hover:border-[#d4af37]/50 border-transparent'}`}
                   >
@@ -217,19 +227,40 @@ const UserDashboard: React.FC<UserDashboardProps> = ({ onTriggerAssessment }) =>
                 ))}
               </div>
 
-              <div className="mt-8 bg-gray-50 p-6 rounded-2xl">
-                <div className="flex justify-between items-center mb-3">
-                  <p className="text-xs font-black uppercase tracking-widest text-[#134e4a]/60">Operational Health</p>
-                  <p className={`text-sm font-black ${complianceProgress === 100 ? 'text-emerald-600' : 'text-[#134e4a]'}`}>{Math.round(complianceProgress)}%</p>
+              {/* Operational Health Bar */}
+              <div className="mb-8">
+                <div className="flex justify-between items-center mb-2">
+                  <p className="text-[10px] font-black uppercase tracking-widest text-[#134e4a]/40">Task Completion</p>
+                  <p className={`text-xs font-black ${complianceProgress === 100 ? 'text-emerald-600' : 'text-[#134e4a]'}`}>{Math.round(complianceProgress)}%</p>
                 </div>
-                <div className="w-full bg-gray-200 rounded-full h-3 overflow-hidden shadow-inner">
-                  <div className={`h-full rounded-full transition-all duration-1000 ease-out ${complianceProgress === 100 ? 'bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.8)]' : 'bg-[#d4af37]'}`} style={{width: `${complianceProgress}%`}}></div>
+                <div className="w-full bg-gray-100 rounded-full h-2 overflow-hidden">
+                  <div className={`h-full rounded-full transition-all duration-1000 ease-out ${complianceProgress === 100 ? 'bg-emerald-500' : 'bg-[#d4af37]'}`} style={{width: `${complianceProgress}%`}}></div>
                 </div>
               </div>
+
+              {/* Calendar Summary */}
+              <div className="bg-brand-900/5 rounded-2xl p-6 border border-brand-900/5">
+                <div className="flex justify-between items-center mb-4">
+                  <p className="text-[10px] font-black uppercase tracking-widest text-brand-900/40">Upcoming Deadlines</p>
+                  <Calendar size={14} className="text-brand-900/40" />
+                </div>
+                <div className="space-y-3">
+                  {UPCOMING_DEADLINES_SUMMARY.map((item, idx) => (
+                    <div key={idx} className="flex justify-between items-center bg-white p-3 rounded-xl border border-brand-900/5 shadow-sm">
+                      <div className="flex items-center gap-3">
+                        <div className="bg-[#134e4a]/10 text-[#134e4a] px-2 py-1 rounded text-[10px] font-black uppercase">{item.date}</div>
+                        <p className="text-xs font-bold text-[#134e4a]">{item.title}</p>
+                      </div>
+                      <span className="text-[9px] font-black text-rose-500 uppercase tracking-widest">{item.type}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
             </div>
           </div>
 
-          {/* SHOWCASE FUTURE VALUE (SOFTWARE ECOSYSTEM) */}
+          {/* RIGHT COLUMN: SHOWCASE FUTURE VALUE (SOFTWARE ECOSYSTEM) */}
           <div className="lg:col-span-5">
             <div className="bg-[#134e4a] p-8 md:p-10 rounded-[3rem] shadow-2xl text-white border-4 border-[#d4af37]/20 sticky top-32">
               <h2 className="text-2xl font-black uppercase tracking-tighter mb-2">Finance OS Roadmap</h2>
