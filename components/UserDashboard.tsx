@@ -1,170 +1,160 @@
 import React, { useState, useEffect } from 'react';
-import { 
-  Shield, AlertTriangle, FileText, 
-  Download, Calendar, Clock, ChevronDown, CheckCircle2,
-  Lock, Activity, FileCheck, Eye
-} from 'lucide-react';
-import Button from './Button';
-import ZohoFinanceWidget from './ZohoFinanceWidget';
-import { logUserActivity } from '../services/loggingService';
+import { db, auth } from '../firebaseConfig';
+import { collection, onSnapshot, query, where, orderBy } from 'firebase/firestore';
+import { GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from 'firebase/auth';
+import { Lock, LogOut, FileText, RefreshCcw, X, ChevronRight, Layout, Calculator, Receipt, Box, FileSpreadsheet, CreditCard, Loader2, Calendar, FileType, DollarSign, Building } from 'lucide-react';
 
-const DOCUMENTS = [
-  { id: 'm-01', name: 'Feb 2026 Management Accounts.pdf', date: '12 Feb', type: 'Financials', size: '1.2MB' },
-  { id: 't-02', name: 'Tax Clearance Certificate.pdf', date: '10 Jan', type: 'Compliance', size: '0.4MB' },
-  { id: 'g-03', name: 'Director Resolution_004.pdf', date: '15 Dec', type: 'Governance', size: '0.8MB' }
-];
-
-interface UserDashboardProps {
-  onTriggerAssessment: () => void;
+export interface UserDashboardProps {
+  onTriggerAssessment?: () => void;
 }
 
 const UserDashboard: React.FC<UserDashboardProps> = ({ onTriggerAssessment }) => {
-  const [assessmentHistory, setAssessmentHistory] = useState<any>(null);
-  const [showHistory, setShowHistory] = useState(false);
+  const [user, setUser] = useState<any>(null);
+  const [myAssessments, setMyAssessments] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [activeApp, setActiveApp] = useState('invoice');
 
   useEffect(() => {
-    const saved = localStorage.getItem('iws_health_score_results');
-    if (saved) setAssessmentHistory(JSON.parse(saved));
-    logUserActivity('Dashboard View', 'Secure session initiated');
+    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+      setUser(currentUser);
+      if (currentUser && currentUser.email) {
+        fetchMyData(currentUser.email);
+      }
+    });
+    return () => unsubscribe();
   }, []);
 
-  const handleVaultAction = (docName: string, action: 'view' | 'download') => {
-    logUserActivity(`Vault ${action}`, `Document: ${docName}`);
-    alert(`POPIA Protocol: ${action === 'view' ? 'Opening Secure Viewer' : 'Generating Encrypted Download'} for ${docName}.`);
+  const fetchMyData = async (email: string) => {
+    setLoading(true);
+    const q = query(collection(db, 'assessments'), where('email', '==', email), orderBy('timestamp', 'desc'));
+    const unsubscribe = onSnapshot(q, (snap) => {
+      const data = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      setMyAssessments(data);
+      setLoading(false);
+    });
+    return () => unsubscribe();
   };
 
+  const IWS_OS_APPS = [
+    { id: 'invoice', name: 'IWS Invoice', icon: <FileSpreadsheet size={24} /> },
+    { id: 'books', name: 'IWS Books', icon: <Calculator size={24} /> },
+    { id: 'inventory', name: 'IWS Inventory', icon: <Box size={24} /> },
+    { id: 'expense', name: 'IWS Expense', icon: <Receipt size={24} /> },
+  ];
+
+  const COMPLIANCE_ITEMS = [
+    { name: 'CIPC Annual', status: 'Verified', date: 'Mar 31, 2026' },
+    { name: 'SARS VAT', status: 'Verified', date: 'Feb 25, 2026' },
+    { name: 'PAYE/UIF', status: 'Verified', date: 'Monthly' },
+    { name: 'COIDA', status: 'Action Required', date: 'Apr 30, 2026' },
+  ];
+
+  if (!user) return (
+    <div className="min-h-screen bg-[#f0fdfa] flex items-center justify-center p-6 text-center">
+      <div className="bg-white p-12 rounded-[3rem] shadow-2xl max-w-md w-full">
+        <div className="w-20 h-20 bg-[#134e4a] text-[#d4af37] rounded-2xl flex items-center justify-center mx-auto mb-8 shadow-xl"><Lock size={40} /></div>
+        <h2 className="text-3xl font-black text-[#134e4a] mb-2 uppercase">Client Portal</h2>
+        <button onClick={() => signInWithPopup(auth, new GoogleAuthProvider())} className="w-full bg-[#134e4a] text-white font-black py-5 rounded-2xl hover:bg-[#d4af37] hover:text-[#134e4a] transition-all uppercase text-xs shadow-lg mt-8">Sign in with Google</button>
+        <button onClick={() => window.location.hash = '#home'} className="mt-6 text-[10px] font-black uppercase text-[#134e4a]/40 hover:text-[#134e4a]">Back to Site</button>
+      </div>
+    </div>
+  );
+  
+  const latestAssessment = myAssessments[0];
+
   return (
-    <div className="min-h-screen bg-gray-50 pt-24 pb-20 px-4 sm:px-6 lg:px-8 font-sans">
+    <div className="min-h-screen bg-[#f0fdfa] text-[#134e4a] font-sans pt-32 pb-20 px-6">
       <div className="max-w-7xl mx-auto">
-        
-        {/* Header */}
-        <div className="flex flex-col md:flex-row justify-between items-end mb-12 gap-6 animate-fadeIn">
+        {/* HEADER */}
+        <header className="flex flex-col md:flex-row justify-between items-start md:items-center mb-16 gap-6">
           <div>
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-brand-900/5 border border-brand-900/10 mb-4 text-[10px] font-black uppercase tracking-widest text-brand-900">
+            <div className="flex items-center gap-2 mb-2">
               <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-              Sovereignty Hub Active
+              <p className="text-[#d4af37] text-xs uppercase font-bold tracking-widest">Sovereignty Hub Active</p>
             </div>
-            <h1 className="text-4xl md:text-5xl font-black text-brand-900 tracking-tighter uppercase mb-2">Command Center</h1>
-            <p className="text-brand-900/60 font-medium italic">POPIA Compliant Environment.</p>
+            <h1 className="text-4xl md:text-5xl font-black uppercase tracking-tighter leading-none font-sora">Command Center</h1>
+            <p className="text-[#134e4a]/60 text-sm mt-2 font-medium">POPIA Compliant Environment.</p>
           </div>
-          <div className="flex gap-3">
-            <Button variant="outline" onClick={() => window.open('https://calendly.com/enquiries-integratedwellth/30min')}>
-              <Calendar size={16} className="mr-2" /> Book Strategy
-            </Button>
-            <Button onClick={onTriggerAssessment}>
-              <Clock size={16} className="mr-2" /> Refresh Score
-            </Button>
+          <div className="flex gap-4">
+            <button onClick={() => window.open('https://calendly.com/enquiries-integratedwellth/30min', '_blank')} className="px-6 py-4 bg-white rounded-2xl shadow-sm border border-[#134e4a]/10 text-xs font-black uppercase tracking-widest hover:bg-[#134e4a] hover:text-white transition-all flex items-center gap-2"><Calendar size={16}/> Book Strategy</button>
+            <button onClick={() => user?.email && fetchMyData(user.email)} className="p-4 bg-white rounded-2xl shadow-sm border border-[#134e4a]/10 hover:bg-[#134e4a] hover:text-white transition-all"><RefreshCcw size={18} className={loading ? 'animate-spin' : ''} /></button>
+            <button onClick={() => signOut(auth)} className="px-6 py-4 bg-white text-rose-600 rounded-2xl text-xs font-black uppercase border border-rose-600/20 hover:bg-rose-600 hover:text-white transition-all shadow-sm">Logout</button>
           </div>
-        </div>
+        </header>
 
-        {/* --- ASSESSMENT SUMMARY --- */}
-        {assessmentHistory && (
-          <div className="mb-12 bg-white rounded-[2.5rem] p-8 shadow-sm border border-brand-900/5">
-            <div className="flex justify-between items-center">
-              <div className="flex items-center gap-6">
-                <div className="w-20 h-20 rounded-full border-4 border-brand-gold flex items-center justify-center font-black text-2xl text-brand-900">
-                  {assessmentHistory.totalScore}%
-                </div>
-                <div>
-                  <h3 className="text-xl font-black text-brand-900 uppercase tracking-tight">Intelligence Rating</h3>
-                  <p className="text-xs text-gray-500 font-bold uppercase tracking-widest">Calculated: {assessmentHistory.date}</p>
-                </div>
-              </div>
-              <button onClick={() => setShowHistory(!showHistory)} className="px-6 py-2 bg-gray-50 rounded-full text-[10px] font-black uppercase tracking-widest hover:bg-brand-gold transition-all">
-                {showHistory ? 'Hide Details' : 'View Breakdown'}
-              </button>
-            </div>
+        <div className="grid lg:grid-cols-12 gap-12">
+          {/* LEFT: IWS FINANCE OS & STRATEGIC VAULT */}
+          <div className="lg:col-span-8 space-y-12">
             
-            {showHistory && (
-              <div className="mt-8 pt-8 border-t border-gray-100 grid md:grid-cols-2 gap-8 animate-fadeIn">
-                <div className="space-y-3">
-                  {Object.entries(assessmentHistory.sections || {}).map(([k, v]: [any, any]) => (
-                    <div key={k} className="flex justify-between items-center p-3 bg-gray-50 rounded-xl">
-                      <span className="text-xs font-black uppercase text-brand-900">{k}</span>
-                      <span className="text-brand-gold font-black">{v}%</span>
-                    </div>
-                  ))}
-                </div>
-                <div className="bg-brand-900 text-white p-6 rounded-2xl border-l-4 border-brand-gold">
-                  <h4 className="text-brand-gold text-[10px] font-black uppercase tracking-widest mb-2">Architect's Note</h4>
-                  <p className="text-xs leading-relaxed italic opacity-80">
-                    Your architecture is {assessmentHistory.totalScore > 75 ? 'Optimal' : 'Needs Intervention'}. 
-                    Focus on the {Object.keys(assessmentHistory.sections)[0]} pillar this month.
-                  </p>
-                </div>
-              </div>
-            )}
-          </div>
-        )}
-
-        {/* Main Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-          
-          <div className="lg:col-span-8 space-y-8">
-            {/* IWS INVOICE TOOL */}
-            <ZohoFinanceWidget />
-
-            {/* VAULT ACCESS */}
-            <div className="bg-white rounded-[2.5rem] p-8 shadow-sm border border-brand-900/5">
-              <div className="flex justify-between items-center mb-8">
-                <div>
-                  <h3 className="text-xl font-black text-brand-900 uppercase tracking-tight">Strategic Vault</h3>
-                  <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">End-to-End Encrypted Storage</p>
-                </div>
-                <Lock size={20} className="text-brand-gold" />
-              </div>
-
-              <div className="space-y-4">
-                {DOCUMENTS.map((doc) => (
-                  <div key={doc.id} className="flex items-center justify-between p-5 rounded-2xl bg-gray-50 border border-transparent hover:border-brand-gold/20 transition-all group">
-                    <div className="flex items-center gap-4">
-                      <div className="w-12 h-12 bg-white rounded-xl flex items-center justify-center text-brand-900 shadow-sm">
-                        <FileText size={24} />
-                      </div>
-                      <div>
-                        <p className="font-bold text-sm text-brand-900">{doc.name}</p>
-                        <p className="text-[10px] uppercase font-black text-gray-400 tracking-widest">{doc.type} • {doc.size}</p>
-                      </div>
-                    </div>
-                    <div className="flex gap-2">
-                      <button 
-                        onClick={() => handleVaultAction(doc.name, 'view')}
-                        className="p-3 bg-white text-gray-400 hover:text-brand-900 rounded-xl transition-all shadow-sm"
-                      >
-                        <Eye size={18} />
-                      </button>
-                      <button 
-                        onClick={() => handleVaultAction(doc.name, 'download')}
-                        className="p-3 bg-brand-900 text-brand-gold rounded-xl transition-all shadow-sm hover:scale-105"
-                      >
-                        <Download size={18} />
-                      </button>
-                    </div>
-                  </div>
+            {/* IWS Finance OS */}
+            <div className="bg-white p-8 rounded-[3rem] shadow-lg border border-[#134e4a]/10">
+              <h2 className="text-2xl font-black uppercase tracking-tighter mb-6">IWS Finance OS</h2>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+                {IWS_OS_APPS.map(app => (
+                  <button 
+                    key={app.id} 
+                    onClick={() => setActiveApp(app.id)}
+                    className={`p-4 rounded-2xl border-2 transition-all text-center ${activeApp === app.id ? 'bg-[#d4af37]/20 border-[#d4af37]' : 'bg-brand-50/50 border-transparent hover:border-[#134e4a]/20'}`}
+                  >
+                    <div className={`w-12 h-12 rounded-lg flex items-center justify-center mx-auto mb-2 ${activeApp === app.id ? 'bg-[#134e4a] text-[#d4af37]' : 'bg-white text-[#134e4a]'}`}>{app.icon}</div>
+                    <p className={`text-[10px] font-black uppercase tracking-widest ${activeApp === app.id ? 'text-[#134e4a]' : 'text-[#134e4a]/60'}`}>{app.name}</p>
+                  </button>
                 ))}
+              </div>
+              <div className="bg-brand-50/50 p-6 rounded-2xl flex items-center justify-between shadow-inner">
+                <p className="text-sm font-bold text-[#134e4a]/70">Ready for IWS Invoice Action.</p>
+                <button className="px-6 py-3 bg-[#134e4a] text-white rounded-xl font-black uppercase text-[10px] tracking-widest hover:bg-[#3E2723] transition-all">Launch Dashboard</button>
+              </div>
+            </div>
+
+            {/* Strategic Vault */}
+            <div className="bg-white p-8 rounded-[3rem] shadow-lg border border-[#134e4a]/10">
+              <div className="flex justify-between items-center mb-6">
+                <h2 className="text-2xl font-black uppercase tracking-tighter">Strategic Vault</h2>
+                <Lock size={16} className="text-[#d4af37]"/>
+              </div>
+              <div className="bg-brand-50/50 p-6 rounded-2xl shadow-inner text-center">
+                <p className="text-sm font-bold text-[#134e4a]/70">End-to-End Encrypted Storage Coming Soon...</p>
               </div>
             </div>
           </div>
-
-          {/* COMPLIANCE HUB SIDEBAR */}
+          
+          {/* RIGHT: COMPLIANCE MATRIX */}
           <div className="lg:col-span-4">
-            <div className="bg-brand-900 rounded-[2.5rem] p-8 text-white h-full relative overflow-hidden border border-brand-gold/20">
-              <Shield className="text-brand-gold mb-6" size={32} />
-              <h3 className="text-xl font-black uppercase tracking-tight mb-8">Compliance Matrix</h3>
-              <div className="space-y-8">
-                {['CIPC Annual', 'SARS VAT', 'PAYE/UIF', 'COIDA'].map((label, idx) => (
-                  <div key={label} className="flex justify-between items-center border-b border-white/5 pb-4">
+            <div className="bg-[#134e4a] p-8 rounded-[3rem] shadow-2xl text-white border-4 border-[#d4af37]/20 sticky top-32">
+              <div className="flex items-center gap-3 mb-8">
+                <div className="w-12 h-12 rounded-full bg-brand-gold/10 border-2 border-brand-gold flex items-center justify-center text-brand-gold">
+                  <ShieldCheck size={24} />
+                </div>
+                <h2 className="text-2xl font-black uppercase tracking-tighter">Compliance Matrix</h2>
+              </div>
+
+              <div className="space-y-6">
+                {COMPLIANCE_ITEMS.map((item, i) => (
+                  <div key={i} className="flex justify-between items-center py-4 border-b border-white/10">
                     <div>
-                      <p className="text-[10px] font-black uppercase tracking-widest text-brand-gold mb-1">{label}</p>
-                      <p className="text-xs font-bold opacity-60">Status: Verified</p>
+                      <p className="font-black uppercase text-sm tracking-wide">{item.name}</p>
+                      <p className={`text-xs font-bold ${item.status === 'Verified' ? 'text-emerald-400' : 'text-rose-400'}`}>Status: {item.status}</p>
                     </div>
-                    <div className={`w-3 h-3 rounded-full ${idx === 3 ? 'bg-red-500 animate-pulse' : 'bg-emerald-500'}`} />
+                    <div className={`w-3 h-3 rounded-full ${item.status === 'Verified' ? 'bg-emerald-500' : 'bg-rose-500'} animate-pulse`}></div>
                   </div>
                 ))}
               </div>
-              <div className="mt-12 p-4 bg-white/5 rounded-2xl border border-white/10 text-center">
-                 <p className="text-[9px] font-black uppercase tracking-[0.2em] opacity-60 mb-2 text-brand-gold">POPIA Data Protection</p>
-                 <p className="text-[8px] opacity-40 leading-relaxed uppercase">Your data is stored in localized SA servers following absolute privacy standards.</p>
+              
+              {/* LATEST ASSESSMENT SCORE */}
+              <div className="mt-10 bg-black/20 p-6 rounded-2xl border border-white/10">
+                 {latestAssessment ? (
+                    <div>
+                        <p className="text-xs font-black uppercase text-brand-gold tracking-widest mb-2">Latest Diagnostic</p>
+                        <p className="text-2xl font-black uppercase leading-none">{latestAssessment.persona}</p>
+                        <p className="text-sm text-white/50 font-bold">Score: {latestAssessment.score} / {latestAssessment.maxScore}</p>
+                    </div>
+                 ) : (
+                    <div>
+                        <p className="text-xs font-black uppercase text-white/50 tracking-widest">No Assessment Data</p>
+                        <button onClick={() => onTriggerAssessment && onTriggerAssessment()} className="text-brand-gold font-bold mt-2 hover:underline">Take your audit now</button>
+                    </div>
+                 )}
               </div>
             </div>
           </div>
