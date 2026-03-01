@@ -28,7 +28,7 @@ const UserDashboard: React.FC<UserDashboardProps> = ({ onTriggerAssessment }) =>
     const unsubscribeAuth = onAuthStateChanged(auth, (currentUser) => {
       setUser(currentUser);
       if (currentUser && currentUser.uid) {
-        // Real-time listeners for Continuous Relationship
+        // 1. Listen for Assessment History
         const qAssessments = query(collection(db, 'assessments'), where('userId', '==', currentUser.uid));
         const unsubAssessments = onSnapshot(qAssessments, (snap) => {
           const data = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
@@ -36,11 +36,13 @@ const UserDashboard: React.FC<UserDashboardProps> = ({ onTriggerAssessment }) =>
           setLoading(false);
         });
 
+        // 2. Listen for Compliance Checklist State
         const complianceDocRef = doc(db, 'compliance_states', currentUser.uid);
         const unsubCompliance = onSnapshot(complianceDocRef, (docSnap) => {
           if (docSnap.exists()) {
             setComplianceState(docSnap.data());
           } else {
+            // Initialize if first time
             setComplianceState(COMPLIANCE_CHECKLIST_ITEMS.reduce((acc, item) => ({ ...acc, [item.id]: false }), {}));
           }
         });
@@ -57,14 +59,35 @@ const UserDashboard: React.FC<UserDashboardProps> = ({ onTriggerAssessment }) =>
     };
   }, []);
 
+  // FIX: OPTIMISTIC UI UPDATE FOR CHECKLIST
   const handleToggleCompliance = async (itemId: string) => {
     if (!user) return;
-    const newState = { ...complianceState, [itemId]: !complianceState[itemId] };
-    const complianceDocRef = doc(db, 'compliance_states', user.uid);
-    await setDoc(complianceDocRef, newState, { merge: true });
+    
+    // 1. Instantly update the UI so it feels snappy and responsive
+    const currentVal = !!complianceState[itemId];
+    const newVal = !currentVal;
+    
+    setComplianceState(prev => ({ 
+      ...prev, 
+      [itemId]: newVal 
+    }));
+
+    try {
+      // 2. Sync with database in the background
+      const complianceDocRef = doc(db, 'compliance_states', user.uid);
+      // We pass only the changed field using merge: true
+      await setDoc(complianceDocRef, { [itemId]: newVal }, { merge: true });
+    } catch (error) {
+      console.error("Failed to sync compliance state:", error);
+      // 3. If the database fails (e.g. lost connection), revert the checkbox
+      setComplianceState(prev => ({ 
+        ...prev, 
+        [itemId]: currentVal 
+      }));
+    }
   };
 
-  const complianceProgress = (Object.values(complianceState).filter(Boolean).length / COMPLIANCE_CHECKLIST_ITEMS.length) * 100;
+  const complianceProgress = (Object.values(complianceState).filter(Boolean).length / COMPLIANCE_CHECKLIST_ITEMS.length) * 100 || 0;
 
   if (!user) {
     return (
@@ -81,12 +104,10 @@ const UserDashboard: React.FC<UserDashboardProps> = ({ onTriggerAssessment }) =>
     );
   }
 
-  // Goal 1: Validate Past Efforts (Progress Tracking)
   const latestAssessment = myAssessments[myAssessments.length - 1];
   const previousAssessment = myAssessments[myAssessments.length - 2];
   const scoreDifference = latestAssessment && previousAssessment ? latestAssessment.score - previousAssessment.score : null;
 
-  // Goal 3: Showcase Future Value (Upsell/Retention)
   const IWS_OS_APPS = [
     { name: 'IWS Invoice', icon: <FileSpreadsheet size={24} />, desc: 'Client Billing', locked: true },
     { name: 'IWS Books', icon: <Calculator size={24} />, desc: 'Automated Ledger', locked: true },
@@ -138,7 +159,6 @@ const UserDashboard: React.FC<UserDashboardProps> = ({ onTriggerAssessment }) =>
                         <p className="text-4xl font-black text-[#134e4a]/50 font-sora">{previousAssessment.score}</p>
                         <p className="font-bold text-[#134e4a]/60 uppercase text-xs mt-2">{previousAssessment.persona}</p>
                         <p className="text-[10px] text-[#64748b] font-bold mt-1 mb-4">{previousAssessment.timestamp?.toDate().toLocaleDateString()}</p>
-                        {/* THE MISSING EYE BUTTON */}
                         <button onClick={() => setSelectedResult(previousAssessment)} className="mt-auto flex items-center justify-center gap-2 w-full py-3 bg-white rounded-xl text-xs font-bold text-[#134e4a] hover:bg-gray-200 transition-colors border border-gray-200 shadow-sm">
                           <Eye size={14} /> View Brief
                         </button>
@@ -164,7 +184,6 @@ const UserDashboard: React.FC<UserDashboardProps> = ({ onTriggerAssessment }) =>
                     <p className="text-5xl font-black text-[#134e4a] font-sora my-2">{latestAssessment.score}</p>
                     <p className="font-bold text-[#d4af37] uppercase text-sm">{latestAssessment.persona}</p>
                     <p className="text-[10px] text-[#64748b] font-bold mt-1 mb-6">Generated {latestAssessment.timestamp?.toDate().toLocaleDateString()}</p>
-                    {/* THE MISSING EYE BUTTON */}
                     <button onClick={() => setSelectedResult(latestAssessment)} className="mt-auto flex items-center justify-center gap-2 w-full py-3 bg-[#134e4a] text-white rounded-xl text-xs font-bold hover:bg-[#d4af37] hover:text-[#134e4a] transition-colors shadow-lg">
                       <Eye size={14} /> View Full Brief
                     </button>
@@ -174,7 +193,7 @@ const UserDashboard: React.FC<UserDashboardProps> = ({ onTriggerAssessment }) =>
               )}
             </div>
 
-            {/* Goal 2: COMPLIANCE MATRIX */}
+            {/* COMPLIANCE MATRIX */}
             <div className="bg-white p-8 rounded-[3rem] shadow-lg border border-[#134e4a]/10">
               <div className="flex justify-between items-end mb-8">
                 <h3 className="text-2xl font-black uppercase tracking-tighter">Compliance Matrix</h3>
@@ -183,7 +202,13 @@ const UserDashboard: React.FC<UserDashboardProps> = ({ onTriggerAssessment }) =>
               
               <div className="space-y-3">
                 {COMPLIANCE_CHECKLIST_ITEMS.map(item => (
-                  <button key={item.id} onClick={() => handleToggleCompliance(item.id)} className={`w-full flex items-center gap-4 p-4 rounded-2xl border-2 transition-all duration-300 ${complianceState[item.id] ? 'bg-emerald-50 border-emerald-500/20' : 'bg-gray-50 hover:border-[#d4af37]/50 border-transparent'}`}>
+                  <button 
+                    key={item.id} 
+                    onClick={() => handleToggleCompliance(item.id)} 
+                    // Set type to button to prevent any form submission behaviors
+                    type="button" 
+                    className={`w-full flex items-center gap-4 p-4 rounded-2xl border-2 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-[#d4af37]/50 ${complianceState[item.id] ? 'bg-emerald-50 border-emerald-500/20' : 'bg-gray-50 hover:border-[#d4af37]/50 border-transparent'}`}
+                  >
                     <div className={`w-8 h-8 rounded-xl flex items-center justify-center transition-colors shrink-0 shadow-sm ${complianceState[item.id] ? 'bg-emerald-500 text-white' : 'bg-white border border-gray-200 text-gray-400'}`}>
                       {complianceState[item.id] ? <CheckSquare size={16}/> : <Square size={16}/>}
                     </div>
@@ -204,7 +229,7 @@ const UserDashboard: React.FC<UserDashboardProps> = ({ onTriggerAssessment }) =>
             </div>
           </div>
 
-          {/* Goal 3: SHOWCASE FUTURE VALUE (SOFTWARE ECOSYSTEM) */}
+          {/* SHOWCASE FUTURE VALUE (SOFTWARE ECOSYSTEM) */}
           <div className="lg:col-span-5">
             <div className="bg-[#134e4a] p-8 md:p-10 rounded-[3rem] shadow-2xl text-white border-4 border-[#d4af37]/20 sticky top-32">
               <h2 className="text-2xl font-black uppercase tracking-tighter mb-2">Finance OS Roadmap</h2>
@@ -241,7 +266,7 @@ const UserDashboard: React.FC<UserDashboardProps> = ({ onTriggerAssessment }) =>
           </div>
         </div>
 
-        {/* Goal 4: DEEP DIVE INTELLIGENCE (MODAL) */}
+        {/* DEEP DIVE INTELLIGENCE (MODAL) */}
         {selectedResult && (
           <div className="fixed inset-0 z-[500] flex items-center justify-center p-4 bg-black/90 backdrop-blur-md animate-fadeIn">
             <div className="bg-white text-[#134e4a] w-full max-w-2xl rounded-[3rem] p-8 md:p-12 shadow-2xl overflow-y-auto max-h-[90vh] relative">
