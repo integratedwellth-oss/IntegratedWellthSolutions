@@ -27,7 +27,7 @@ import PrivacyPolicy from './components/PrivacyPolicy';
 import Dashboard from './components/Dashboard';
 import UserDashboard from './components/UserDashboard';
 import SummitPage from './components/pages/SummitPage';
-import ComplianceCalendarPage from './components/pages/ComplianceCalendarPage'; // <--- NEW
+import ComplianceCalendarPage from './components/pages/ComplianceCalendarPage';
 
 // Solution Detail Pages
 import StartupSolutions from './components/audiences/StartupSolutions';
@@ -41,9 +41,6 @@ import WarRoom from './components/WarRoom';
 import StrategicJourney from './components/StrategicJourney';
 import FinancialHealthScore from './components/FinancialHealthScore';
 
-// Constants
-import { CONTACT_INFO } from './constants';
-
 const App: React.FC = () => {
   const [currentView, setCurrentView] = useState('home');
   const [showAssessmentModal, setShowAssessmentModal] = useState(false);
@@ -52,63 +49,28 @@ const App: React.FC = () => {
   useEffect(() => {
     let popupTimer: number | undefined;
     const hasSeenEvent = sessionStorage.getItem('hasSeenIWS_Event_Immediate');
-    
-    // Don't show popup on special immersive pages, the landing page, or the calendar
     const isSpecialPage = ['#warroom', '#intel', '#summit', '#my-intel', '#landing', '#compliance-calendar'].includes(window.location.hash);
-    
-    if (!hasSeenEvent && !isSpecialPage) {
-      popupTimer = window.setTimeout(() => setShowEventPopup(true), 800);
-    }
+    if (!hasSeenEvent && !isSpecialPage) { popupTimer = window.setTimeout(() => setShowEventPopup(true), 800); }
 
     const handleHashChange = () => {
       try {
         const hash = window.location.hash.replace('#', '') || 'home';
-        
-        // Handle direct modal triggers
-        if (hash === 'assessment') {
-          setShowAssessmentModal(true);
-          return;
-        }
+        if (hash === 'assessment') { setShowAssessmentModal(true); return; }
+        const validViews = ['home', 'landing', 'services', 'who-we-help', 'team', 'workshops', 'blog', 'contact', 'privacy', 'startups', 'existing-business', 'npos', 'individuals', 'wellness', 'accountability', 'tracker', 'warroom', 'protocol', 'intel', 'summit', 'my-intel', 'compliance-calendar'];
 
-        const validViews = [
-          'home', 'landing', 'services', 'who-we-help', 'team', 'workshops', 'blog', 'contact',
-          'privacy', 'startups', 'existing-business', 'npos', 'individuals', 
-          'wellness', 'accountability', 'tracker', 'warroom', 'protocol', 'intel', 
-          'summit', 'my-intel', 'compliance-calendar'
-        ];
-
-        // Handle scrolling anchor links on Home page
         if (['protocol', 'services'].includes(hash)) {
           setCurrentView('home');
-          setTimeout(() => {
-            const element = document.getElementById(hash);
-            if (element) element.scrollIntoView({ behavior: 'smooth' });
-          }, 100);
-        } 
-        // Handle valid page views
-        else if (validViews.includes(hash)) {
+          setTimeout(() => { const element = document.getElementById(hash); if (element) element.scrollIntoView({ behavior: 'smooth' }); }, 100);
+        } else if (validViews.includes(hash)) {
           setCurrentView(hash);
           window.scrollTo({ top: 0, behavior: 'smooth' });
-        } 
-        // Default to home
-        else {
-          setCurrentView('home');
-        }
-      } catch (e) {
-        setCurrentView('home');
-      }
+        } else { setCurrentView('home'); }
+      } catch (e) { setCurrentView('home'); }
     };
 
-    // Initial check
     handleHashChange();
-
-    // Listeners
     window.addEventListener('hashchange', handleHashChange);
-    
-    return () => {
-      window.removeEventListener('hashchange', handleHashChange);
-      if (popupTimer) window.clearTimeout(popupTimer);
-    };
+    return () => { window.removeEventListener('hashchange', handleHashChange); if (popupTimer) window.clearTimeout(popupTimer); };
   }, []);
 
   const renderCurrentView = () => {
@@ -126,108 +88,47 @@ const App: React.FC = () => {
         case 'blog': return <BlogPage />;
         case 'contact': return <ContactPage />;
         case 'privacy': return <PrivacyPolicy />;
-        
-        // Solutions
         case 'startups': return <StartupSolutions />;
         case 'existing-business': return <BusinessSolutions />;
         case 'npos': return <NPOSolutions />;
         case 'individuals': return <IndividualSolutions />;
         case 'wellness': return <WellnessSolutions />;
         case 'accountability': return <AccountabilityPartnership />;
-        
-        // Tools
         case 'tracker': return <ComplianceTracker />;
         case 'warroom': return <WarRoom />;
         case 'protocol': return <StrategicJourney />;
-        
-        // Default
         default: return <Home onOpenAssessment={() => setShowAssessmentModal(true)} />;
       }
-    } catch (err) {
-      console.error("View Render Error:", err);
-      return <Home onOpenAssessment={() => setShowAssessmentModal(true)} />;
-    }
+    } catch (err) { return <Home onOpenAssessment={() => setShowAssessmentModal(true)} />; }
   };
 
-  // Views that hide the standard Header/Footer for immersion
   const isFullPageMode = ['warroom', 'intel', 'summit', 'my-intel'].includes(currentView);
-  
-  // Views that hide the Navbar specifically (Landing page hides nav but keeps footer)
   const shouldHideNavbar = ['intel', 'my-intel', 'landing'].includes(currentView);
-
-  // Views that hide the Floating Event Bar at bottom
   const shouldHideFloatingBar = isFullPageMode || currentView === 'landing' || currentView === 'compliance-calendar';
 
   return (
     <ErrorBoundary>
       <div className={`font-sans text-brand-900 bg-white min-h-screen flex flex-col selection:bg-brand-gold/20 ${(showAssessmentModal || showEventPopup) ? 'h-screen overflow-hidden' : ''}`}>
-        
-        {/* Navigation */}
-        {!shouldHideNavbar && (
-          <Navbar onNavigate={(view) => { window.location.hash = `#${view}`; }} />
-        )}
-
-        {/* Main Content Area */}
+        {!shouldHideNavbar && <Navbar onNavigate={(view) => { window.location.hash = `#${view}`; }} />}
         <main className="flex-grow">
-          <Suspense fallback={
-            <div className="min-h-screen flex items-center justify-center bg-white">
-              <Loader2 className="animate-spin text-brand-gold" size={48} />
-            </div>
-          }>
+          <Suspense fallback={<div className="min-h-screen flex items-center justify-center bg-white"><Loader2 className="animate-spin text-brand-gold" size={48} /></div>}>
             {renderCurrentView()}
           </Suspense>
         </main>
-
-        {/* Footer */}
         {!isFullPageMode && <Footer />}
-
-        {/* Sticky Bottom Event Bar - Updated to point to new Calendar */}
         {!shouldHideFloatingBar && (
           <div className="fixed bottom-0 left-0 w-full bg-brand-gold z-[40] px-6 py-4 flex items-center justify-between shadow-[0_-10px_40px_rgba(212,175,55,0.2)]">
-            <div className="flex items-center gap-4">
-              <div className="bg-brand-900 text-white px-3 py-1 rounded text-[10px] font-black uppercase tracking-widest hidden md:block">Regulatory Alert</div>
-              <p className="text-brand-900 font-bold text-sm md:text-base tracking-tight">
-                2026 Compliance Season has started.
-              </p>
-            </div>
-            <button 
-              onClick={() => window.location.hash = '#compliance-calendar'}
-              className="flex items-center gap-2 text-brand-900 font-black uppercase tracking-widest text-[10px] md:text-xs hover:translate-x-1 transition-transform"
-            >
-              View Calendar <ArrowRight size={16} />
-            </button>
+            <div className="flex items-center gap-4"><div className="bg-brand-900 text-white px-3 py-1 rounded text-[10px] font-black uppercase tracking-widest hidden md:block">Regulatory Alert</div><p className="text-brand-900 font-bold text-sm md:text-base tracking-tight">2026 Compliance Season has started.</p></div>
+            <button onClick={() => window.location.hash = '#compliance-calendar'} className="flex items-center gap-2 text-brand-900 font-black uppercase tracking-widest text-[10px] md:text-xs hover:translate-x-1 transition-transform">View Calendar <ArrowRight size={16} /></button>
           </div>
         )}
-
-        {/* Global Modals & Widgets (Hidden on Admin Dashboard) */}
         {currentView !== 'intel' && (
           <>
-            <EventPopup 
-              isOpen={showEventPopup} 
-              onClose={() => {
-                setShowEventPopup(false);
-                sessionStorage.setItem('hasSeenIWS_Event_Immediate', 'true');
-              }} 
-            />
-            
-            <FinancialHealthScore 
-              isOpen={showAssessmentModal} 
-              onClose={() => { 
-                setShowAssessmentModal(false);
-                // If URL was #assessment, clear it cleanly
-                if(window.location.hash === '#assessment') {
-                   window.history.pushState("", document.title, window.location.pathname + window.location.search);
-                }
-              }}
-            />
-            
-            {/* Standard Floating Widgets */}
-            <FloatingCTA />
-            <WhatsAppButton />
-            <UnifiedSupportWidget />
+            <EventPopup isOpen={showEventPopup} onClose={() => { setShowEventPopup(false); sessionStorage.setItem('hasSeenIWS_Event_Immediate', 'true'); }} />
+            <FinancialHealthScore isOpen={showAssessmentModal} onClose={() => { setShowAssessmentModal(false); if(window.location.hash === '#assessment') { window.history.pushState("", document.title, window.location.pathname + window.location.search); } }} />
+            <FloatingCTA /><WhatsAppButton /><UnifiedSupportWidget />
           </>
         )}
-
         <CookieConsent />
       </div>
     </ErrorBoundary>
