@@ -2,15 +2,15 @@ import React from 'react';
 import { Zap, Calendar } from 'lucide-react';
 
 const NewsTicker: React.FC = () => {
-  // Compliance deadlines pulled from Calendar Page, styled for urgency
   const feedItems = [
-    "DEADLINE: FEB 28 | IRP6 2ND PERIOD PAYMENT DUE",
-    "ALERT: MAR 31 | CIPC ANNUAL RETURNS MANDATORY",
-    "APR 07: EMP201 PAYROLL SUBMISSION",
+    "FEB 28: PROVISIONAL TAX (IRP6) DEADLINE - ACTION REQUIRED",
+    "MAR 31: CIPC ANNUAL RENEWAL PROTOCOL DUE",
+    "APR 07: EMP201 PAYROLL SUBMISSION DEADLINE",
     "MAY 31: EMP501 INTERIM RECONCILIATION - AUDIT SENSITIVE",
-    "JUN 30: VOLUNTARY IRP6 TOP-UP WINDOW",
-    "JUL 01: INDIVIDUAL TAX FILING OPENS",
-    "VAT THRESHOLD INCREASED TO R2.3M - REVIEW NOW"
+    "MAY 31: NPO SECTION 18A DATA SUBMISSION",
+    "JUN 30: VOLUNTARY PROVISIONAL TAX TOP-UP WINDOW",
+    "JUL 01: INDIVIDUAL TAX FILING SEASON OPENS",
+    "VAT COMPULSORY THRESHOLD INCREASING TO R2.3M"
   ];
 
   return (
@@ -27,22 +27,16 @@ const NewsTicker: React.FC = () => {
                 {idx === 0 && (
                   <div className="flex items-center gap-4 text-brand-gold shrink-0">
                     <Zap size={14} className="animate-pulse fill-brand-gold" />
-                    <span className="tracking-[0.6em]">COMPLIANCE FEED:</span>
+                    <span className="tracking-[0.6em]">SYSTEM FEED:</span>
                   </div>
                 )}
                 <span className="flex items-center gap-8">
-                  {/* Highlighting items that include DEADLINE, DUE, or ALERT */}
-                  {(item.includes('DEADLINE') || item.includes('DUE') || item.includes('ALERT')) ? (
-                    <span className="flex items-center gap-3 text-rose-400">
-                      <Calendar size={12} className="text-rose-400" />
-                      {item}
-                    </span>
-                  ) : (
-                    <span className="flex items-center gap-3 text-white/90">
+                  {item.includes('DEADLINE') || item.includes('DUE') || item.includes('SENSITIVE') ? (
+                    <span className="flex items-center gap-3">
                       <Calendar size={12} className="text-brand-gold" />
                       {item}
                     </span>
-                  )}
+                  ) : item}
                   <div className="w-1.5 h-1.5 rounded-full bg-brand-gold/30"></div>
                 </span>
               </div>
