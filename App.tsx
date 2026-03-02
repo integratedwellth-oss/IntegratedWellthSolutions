@@ -26,7 +26,8 @@ import ContactPage from './components/pages/ContactPage';
 import PrivacyPolicy from './components/PrivacyPolicy';
 import Dashboard from './components/Dashboard';
 import UserDashboard from './components/UserDashboard';
-import ComplianceCalendarPage from './components/pages/ComplianceCalendarPage';
+// Removed SummitPage import
+import ComplianceCalendarPage from './components/pages/ComplianceCalendarPage'; // NEW
 
 // Solution Detail Pages
 import StartupSolutions from './components/audiences/StartupSolutions';
@@ -40,6 +41,9 @@ import WarRoom from './components/WarRoom';
 import StrategicJourney from './components/StrategicJourney';
 import FinancialHealthScore from './components/FinancialHealthScore';
 
+// Constants
+import { CONTACT_INFO } from './constants';
+
 const App: React.FC = () => {
   const [currentView, setCurrentView] = useState('home');
   const [showAssessmentModal, setShowAssessmentModal] = useState(false);
@@ -48,7 +52,9 @@ const App: React.FC = () => {
   useEffect(() => {
     let popupTimer: number | undefined;
     const hasSeenEvent = sessionStorage.getItem('hasSeenIWS_Event_Immediate');
+    // Exclude landing page and calendar from event popup check
     const isSpecialPage = ['#warroom', '#intel', '#my-intel', '#landing', '#compliance-calendar'].includes(window.location.hash);
+    
     if (!hasSeenEvent && !isSpecialPage) {
       popupTimer = window.setTimeout(() => setShowEventPopup(true), 800);
     }
@@ -81,6 +87,7 @@ const App: React.FC = () => {
 
     handleHashChange();
     window.addEventListener('hashchange', handleHashChange);
+    
     return () => {
       window.removeEventListener('hashchange', handleHashChange);
       if (popupTimer) window.clearTimeout(popupTimer);
@@ -92,7 +99,7 @@ const App: React.FC = () => {
       switch (currentView) {
         case 'landing': return <LandingPage />;
         case 'my-intel': return <UserDashboard onTriggerAssessment={() => setShowAssessmentModal(true)} />;
-        case 'compliance-calendar': return <ComplianceCalendarPage />;
+        case 'compliance-calendar': return <ComplianceCalendarPage />; // NEW ROUTE
         case 'intel': return <Dashboard />;
         case 'services': return <ServicesPage />;
         case 'who-we-help': return <WhoWeHelpPage />;
