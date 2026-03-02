@@ -7,7 +7,7 @@ const ComplianceCalendarPage: React.FC = () => {
   const TREE_HERO_URL = "https://res.cloudinary.com/dka0498ns/image/upload/f_auto,q_auto/v1772373342/Profuse_Beauty_Logo_Tree_z1nc3c.png";
   const [openFaq, setOpenFaq] = useState<number | null>(null);
 
-  // Mock data for schedule (for summary view)
+  // Schedule data for the summary view (used in Dashboard/WarRoom)
   const SCHEDULE = [
     { month: "February 2026", deadlines: [{ day: "28", entity: "All Entities", task: "Provisional Tax (IRP6) - 2nd Period", risk: "High", desc: "Mandatory payment to avoid 10% penalty + interest." }, { day: "28", entity: "Individuals", task: "IT3(b) & IT3(c) Data Prep", risk: "Medium", desc: "Gather investment and interest certificates." }] },
     { month: "March 2026", deadlines: [{ day: "31", entity: "Corporate", task: "CIPC Annual Returns", risk: "Critical", desc: "Hard deadline to prevent deregistration process initiation." }, { day: "25", entity: "VAT Vendors", task: "VAT 201 Submission & Payment", risk: "High", desc: "Category B vendors (periods ending Feb)." }] },
@@ -19,29 +19,14 @@ const ComplianceCalendarPage: React.FC = () => {
   ];
 
   const FAQS = [
-    {
-      q: "How will the 2026 VAT threshold increase affect my small business?",
-      a: "Effective 1 April 2026, the compulsory VAT registration threshold significantly increases from R1 million to R2.3 million. If turnover sits below this, you can apply for VAT deregistration."
-    },
-    {
-      q: "Why is my SARS eFiling status showing 'Pending' or 'Processing'?",
-      a: "Pending usually means SARS is verifying registration details. Processing indicates the return is flagged for audit or verification (up to 21-90 business days)."
-    },
-    {
-      q: "Why was a portion of my Two-Pot Retirement System savings withdrawal taken by SARS?",
-      a: "Withdrawals from the 'savings pot' are taxed at your marginal income tax rate. SARS also instructs deductions for any outstanding tax debt before releasing funds."
-    },
-    {
-      q: "I am a social media influencer. Does SARS track my income?",
-      a: "Yes. SARS uses data-driven profiling for the gig and social media economy, treating influencers as independent contractors who must declare earnings."
-    },
-    {
-      q: "Can I file my CIPC Annual Return without submitting a Beneficial Ownership (BO) declaration?",
-      a: "No. CIPC enforces a 'hard-stop'. Filing is blocked until the BO declaration is up to date."
-    }
+    { q: "How will the 2026 VAT threshold increase affect my small business?", a: "Effective 1 April 2026, the compulsory VAT registration threshold significantly increases from R1 million to R2.3 million. If turnover sits below this, you can apply for VAT deregistration." },
+    { q: "Why is my SARS eFiling status showing 'Pending' or 'Processing'?", a: "Pending usually means SARS is verifying registration details. Processing indicates the return is flagged for audit or verification (up to 21-90 business days)." },
+    { q: "Why was a portion of my Two-Pot Retirement System savings withdrawal taken by SARS?", a: "Withdrawals from the 'savings pot' are taxed at your marginal income tax rate. SARS also instructs deductions for any outstanding tax debt before releasing funds." },
+    { q: "I am a social media influencer. Does SARS track my income?", a: "Yes. SARS uses data-driven profiling for the gig and social media economy, treating influencers as independent contractors who must declare earnings." },
+    { q: "Can I file my CIPC Annual Return without submitting a Beneficial Ownership (BO) declaration?", a: "No. CIPC enforces a 'hard-stop'. Filing is blocked until the BO declaration is up to date." }
   ];
 
-  // Helper component for styled sections
+  // Helper component for styled sections - THIS IS A FUNCTION RETURNING JSX
   const DetailSection = ({ title, children }: { title: string; children: React.ReactNode }) => (
     <RevealOnScroll>
       <div className="bg-white rounded-[2.5rem] p-10 md:p-16 shadow-xl border border-brand-900/10">
@@ -55,7 +40,7 @@ const ComplianceCalendarPage: React.FC = () => {
     </RevealOnScroll>
   );
 
-  // --- GUIDE CONTENT COMPONENTS (JSX returned directly) ---
+  // --- GUIDE CONTENT COMPONENTS (MUST RETURN VALID JSX) ---
   
   const IntroToRegTech = () => (
     <DetailSection title="Introduction to the Regulatory Technology Paradigm">
@@ -147,7 +132,7 @@ const ComplianceCalendarPage: React.FC = () => {
       </table>
 
       <h4 className="text-xl font-bold text-brand-900 pt-4 border-t border-brand-900/10 mb-2">Employer Reconciliations (EMP501)</h4>
-      <p className="text-brand-900/70">The Annual Reconciliation mandate (1 March 2025 to 28 February 2026) closes strictly on **31 May 2026**. This requires flawless reconciliation between EMP201s, IRP5s, and ETI/UIF data.</p>
+      <p className="text-brand-900/70">The Annual Reconciliation mandate (1 March 2025 to 28 February 2026) closes strictly on <strong>31 May 2026</strong>. This requires flawless reconciliation between EMP201s, IRP5s, and ETI/UIF data.</p>
     </DetailSection>
   );
 
@@ -192,71 +177,9 @@ const ComplianceCalendarPage: React.FC = () => {
       <p className="text-brand-900/70">Beneficial Ownership declarations must be submitted concurrently with the CIPC Annual Return. The widget proactively monitors the 10-business-day update window following any ownership structure change.</p>
     </DetailSection>
   );
-
-
-  return (
-    <div className="bg-slate-50 font-sans text-brand-900 selection:bg-brand-gold selection:text-brand-900">
-      
-      {/* 1. HERO SECTION (Slightly reduced height for better scroll flow) */}
-      <section className="relative h-[55vh] flex flex-col justify-center items-center text-center px-6 overflow-hidden bg-brand-900">
-        <div className="absolute inset-0 z-0">
-          <img src={TREE_HERO_URL} alt="Growth Ecosystem" className="w-full h-full object-cover opacity-20 mix-blend-overlay" />
-          <div className="absolute inset-0 bg-gradient-to-b from-brand-900/50 to-slate-50"></div>
-        </div>
-
-        <RevealOnScroll>
-          <div className="max-w-4xl mx-auto z-10 relative mt-20">
-            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-brand-gold/30 bg-brand-gold/10 mb-6 backdrop-blur-md">
-              <ShieldCheck size={14} className="text-brand-gold" />
-              <span className="text-[10px] font-black uppercase tracking-[0.3em] text-brand-900">Statutory Governance</span>
-            </div>
-            <h1 className="text-5xl md:text-7xl font-sora font-extrabold tracking-tighter mb-6 leading-[1] text-brand-900">
-              2026 Compliance <span className="text-brand-gold italic">Calendar.</span>
-            </h1>
-            <p className="text-xl text-brand-900/70 max-w-2xl mx-auto font-medium">
-              The definitive operational timeline for South African entities.
-            </p>
-          </div>
-        </RevealOnScroll>
-      </section>
-
-      {/* 2. THE SCHEDULE (DETAILED TABLE - Summary Only) */}
-      <section className="py-20 px-6 max-w-7xl mx-auto -mt-20 relative z-20">
-        <div className="bg-white rounded-[3rem] shadow-2xl border border-brand-900/5 overflow-hidden">
-          <div className="p-8 md:p-12 bg-brand-900 text-white flex justify-between items-end">
-            <div><h2 className="text-3xl font-bold font-sora mb-2 uppercase">Master Schedule</h2><p className="text-brand-gold text-sm font-bold tracking-widest uppercase">Fiscal Year 2026/2027</p></div>
-            <Clock className="text-brand-gold opacity-50" size={48} />
-          </div>
-          <div className="divide-y divide-gray-100">{SCHEDULE.map((monthGroup, idx) => (
-            <div key={idx} className="p-8 md:p-10 hover:bg-gray-50 transition-colors group">
-              <div className="flex flex-col md:flex-row md:items-start gap-8">
-                <div className="md:w-1/4"><h3 className="text-2xl font-black text-brand-900 uppercase">{monthGroup.month}</h3></div>
-                <div className="md:w-3/4 space-y-6">{monthGroup.deadlines.map((item, i) => (
-                  <div key={i} className="flex flex-col sm:flex-row gap-6 items-start sm:items-center">
-                    <div className="flex-shrink-0 w-16 h-16 bg-brand-50 rounded-2xl flex flex-col items-center justify-center border border-brand-900/10 group-hover:border-brand-gold/50"><span className="text-2xl font-black text-brand-900 leading-none">{item.day}</span></div>
-                    <div className="flex-grow">
-                      <div className="flex items-center gap-3 mb-1"><span className={`px-2 py-0.5 rounded text-[9px] font-black uppercase tracking-widest border ${item.risk === 'Critical' ? 'bg-rose-50 text-rose-600 border-rose-200' : item.risk === 'High' ? 'bg-orange-50 text-orange-600 border-orange-200' : 'bg-emerald-50 text-emerald-600 border-emerald-200'}`}>{item.risk} Priority</span></div>
-                      <h4 className="text-lg font-bold text-brand-900">{item.task}</h4>
-                      <p className="text-sm text-brand-900/60 mt-1">{item.desc}</p>
-                    </div>
-                  </div>
-                ))}</div>
-              </div>
-            </div>
-          ))}</div>
-        </div>
-      </section>
-
-      {/* 3. DETAILED GUIDANCE SECTIONS */}
-      <section className="py-20 px-6 max-w-5xl mx-auto space-y-16">
-        {IntroToRegTech()}
-        {FiscalAdjustments()}
-        {StatutoryDeadlineEngine()}
-        {CipcProtocols()}
-      </section>
-
-      {/* 4. FAQ SECTION */}
-      <section className="py-24 px-6 max-w-5xl mx-auto">
+  
+  const FaqSection = () => (
+    <section className="py-24 px-6 max-w-5xl mx-auto">
         <RevealOnScroll>
           <div className="text-center mb-16">
             <div className="inline-flex items-center justify-center w-12 h-12 bg-brand-50 rounded-full text-brand-900 mb-4 border border-brand-900/10"><HelpCircle size={24} /></div>
@@ -281,7 +204,7 @@ const ComplianceCalendarPage: React.FC = () => {
         </RevealOnScroll>
       </section>
 
-      {/* 5. FINAL CTA */}
+      {/* 4. FINAL CTA */}
       <section className="py-24 bg-white text-center px-6 border-t border-brand-900/5">
         <RevealOnScroll>
           <div className="max-w-3xl mx-auto">
