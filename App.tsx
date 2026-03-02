@@ -26,7 +26,7 @@ import ContactPage from './components/pages/ContactPage';
 import PrivacyPolicy from './components/PrivacyPolicy';
 import Dashboard from './components/Dashboard';
 import UserDashboard from './components/UserDashboard';
-// Removed SummitPage import
+import ComplianceCalendarPage from './components/pages/ComplianceCalendarPage';
 
 // Solution Detail Pages
 import StartupSolutions from './components/audiences/StartupSolutions';
@@ -39,7 +39,6 @@ import ComplianceTracker from './components/ComplianceTracker';
 import WarRoom from './components/WarRoom';
 import StrategicJourney from './components/StrategicJourney';
 import FinancialHealthScore from './components/FinancialHealthScore';
-import ComplianceCalendarPage from './components/pages/ComplianceCalendarPage'; // NEW
 
 // Constants
 import { CONTACT_INFO } from './constants';
@@ -52,6 +51,7 @@ const App: React.FC = () => {
   useEffect(() => {
     let popupTimer: number | undefined;
     const hasSeenEvent = sessionStorage.getItem('hasSeenIWS_Event_Immediate');
+    
     // Updated to exclude landing page, calendar, and admin views from popup check
     const isSpecialPage = ['#warroom', '#intel', '#my-intel', '#landing', '#compliance-calendar'].includes(window.location.hash);
     
@@ -66,9 +66,9 @@ const App: React.FC = () => {
           setShowAssessmentModal(true);
           return;
         }
-        const validViews = ['home', 'landing', 'services', 'who-we-help', 'team', 'workshops', 'blog', 'contact', 'privacy', 'startups', 'existing-business', 'npos', 'individuals', 'wellness', 'accountability', 'tracker', 'warroom', 'protocol', 'intel', 'my-intel', 'compliance-calendar'];
+        const validViews = ['home', 'landing', 'services', 'who-we-help', 'team', 'workshops', 'blog', 'contact', 'privacy', 'startups', 'existing-business', 'npos', 'individuals', 'wellness', 'accountability', 'tracker', 'warroom', 'protocol', 'intel', 'my-intel', 'compliance-calendar', 'roadmap'];
 
-        if (['protocol', 'services'].includes(hash)) {
+        if (['protocol', 'roadmap', 'services'].includes(hash)) {
           setCurrentView('home');
           setTimeout(() => {
             const element = document.getElementById(hash);
@@ -97,7 +97,8 @@ const App: React.FC = () => {
   const renderCurrentView = () => {
     try {
       switch (currentView) {
-        case 'landing': return <LandingPage />;
+        // FIXED LINE: Added onOpenAssessment prop
+        case 'landing': return <LandingPage onOpenAssessment={() => setShowAssessmentModal(true)} />;
         case 'my-intel': return <UserDashboard onTriggerAssessment={() => setShowAssessmentModal(true)} />;
         case 'compliance-calendar': return <ComplianceCalendarPage />;
         case 'intel': return <Dashboard />;
@@ -117,6 +118,7 @@ const App: React.FC = () => {
         case 'tracker': return <ComplianceTracker />;
         case 'warroom': return <WarRoom />;
         case 'protocol': return <StrategicJourney />;
+        case 'roadmap': return <StrategicJourney />;
         default: return <Home onOpenAssessment={() => setShowAssessmentModal(true)} />;
       }
     } catch (err) {
