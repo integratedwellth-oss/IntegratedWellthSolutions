@@ -10,8 +10,9 @@ const LandingPage: React.FC = () => {
     window.location.hash = '#warroom';
   };
 
-  const TREE_HERO_URL = "https://res.cloudinary.com/dka0498ns/image/upload/v1772373342/Profuse_Beauty_Logo_Tree_z1nc3c.png";
-  const FOUNDER_URL = "https://res.cloudinary.com/dka0498ns/image/upload/v1768022744/Marcia_Kgaphola._The_founder_of_Integrated_Wellth_Solution_giving_a_keynote_speech_at_a_women_business_conference_rr55ol.jpg";
+  // OPTIMIZED URL: Added f_auto,q_auto for speed
+  const TREE_HERO_URL = "https://res.cloudinary.com/dka0498ns/image/upload/f_auto,q_auto/v1772373342/Profuse_Beauty_Logo_Tree_z1nc3c.png";
+  const FOUNDER_URL = "https://res.cloudinary.com/dka0498ns/image/upload/f_auto,q_auto/v1768022744/Marcia_Kgaphola._The_founder_of_Integrated_Wellth_Solution_giving_a_keynote_speech_at_a_women_business_conference_rr55ol.jpg";
 
   return (
     <div className="bg-slate-950 font-sans text-white selection:bg-brand-gold selection:text-brand-900 overflow-x-hidden">
@@ -24,9 +25,11 @@ const LandingPage: React.FC = () => {
           <img 
             src={TREE_HERO_URL} 
             alt="Growth Ecosystem" 
-            className="w-full h-full object-cover opacity-20 mix-blend-screen scale-110 animate-pulse-slow"
+            // UPDATED: opacity-35 (was 20), loading="eager"
+            className="w-full h-full object-cover opacity-35 mix-blend-screen scale-110 animate-pulse-slow"
+            loading="eager"
           />
-          <div className="absolute inset-0 bg-gradient-to-b from-slate-950/90 via-slate-950/80 to-slate-950"></div>
+          <div className="absolute inset-0 bg-gradient-to-b from-slate-950/90 via-slate-950/70 to-slate-950"></div>
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_transparent_0%,_#020617_100%)]"></div>
         </div>
 
@@ -43,7 +46,7 @@ const LandingPage: React.FC = () => {
               <span className="text-brand-gold">Optimize wealth.</span>
             </h1>
             
-            <p className="text-xl md:text-2xl text-brand-100/70 mb-12 max-w-3xl mx-auto font-light leading-relaxed">
+            <p className="text-xl md:text-2xl text-brand-100/80 mb-12 max-w-3xl mx-auto font-light leading-relaxed drop-shadow-lg">
               The holistic financial infrastructure and psychological wellness partnership designed to scale South African enterprises.
             </p>
             
@@ -94,6 +97,7 @@ const LandingPage: React.FC = () => {
                     src={FOUNDER_URL} 
                     alt="Marcia Kgaphola Keynote" 
                     className="w-full h-auto object-cover grayscale hover:grayscale-0 transition-all duration-700"
+                    loading="lazy"
                   />
                   <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-brand-900/90 to-transparent p-8">
                     <p className="text-white font-black uppercase tracking-widest text-lg">Marcia Kgaphola</p>
