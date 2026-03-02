@@ -5,11 +5,11 @@ import { db } from '../firebaseConfig';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 import { createChatSession, sendMessageStream } from '../services/geminiService';
 
-type StreamType = 'stress' | 'protocol' | 'calendar' | 'alpha';
+type StreamType = 'stress' | 'roadmap' | 'calendar' | 'alpha';
 
 const STREAM_LABELS: Record<StreamType, string> = {
   stress: 'COMPLIANCE AUDIT',
-  protocol: 'THE ESCAPE PLAN',
+  roadmap: 'THE ESCAPE PLAN',
   calendar: 'URGENT DEADLINES',
   alpha: 'SEND TO ARCHITECTS'
 };
@@ -52,7 +52,7 @@ const WarRoom: React.FC = () => {
     e.preventDefault();
     setIsTransmitting(true);
     setTransmissionLogs([]);
-    const logs = ["ANALYZING DATA...", "MATCHING PROTOCOLS...", "UPLINKING TO HQ...", "SECURE."];
+    const logs = ["ANALYZING DATA...", "MATCHING ROADMAPS...", "UPLINKING TO HQ...", "SECURE."];
     for (const log of logs) {
       setTransmissionLogs(prev => [...prev, log]);
       await new Promise(r => setTimeout(r, 600));
@@ -76,7 +76,8 @@ const WarRoom: React.FC = () => {
           to: formData.email,
           message: {
             subject: `ACTION REQUIRED: ${formData.enterprise} Compliance Report`,
-            html: `<div style="font-family:sans-serif;color:#134e4a;padding:20px;"><h1>AUDIT COMPLETE</h1><p>Status: ${analysis.label}</p><p>Threat: ${analysis.consequence}</p><p>Solution: ${analysis.solution}</p><p><a href="https://calendly.com/enquiries-integratedwellth/30min">BOOK FREE CONSULTATION</a></p></div>`
+            // UPDATED CALENDLY LINK IN EMAIL PAYLOAD
+            html: `<div style="font-family:sans-serif;color:#134e4a;padding:20px;"><h1>AUDIT COMPLETE</h1><p>Status: ${analysis.label}</p><p>Threat: ${analysis.consequence}</p><p>Solution: ${analysis.solution}</p><p><a href="https://calendly.com/marcia-kgaphola/new-meeting">BOOK FREE CONSULTATION</a></p></div>`
           }
         });
       }
@@ -90,7 +91,8 @@ const WarRoom: React.FC = () => {
       <div className="space-y-12 animate-fadeIn py-10 text-center">
         <CheckCircle size={80} className="text-brand-gold mx-auto animate-bounce" />
         <h2 className="text-4xl font-black text-white uppercase">Plan Deployed</h2>
-        <button onClick={() => window.open('https://calendly.com/enquiries-integratedwellth/30min', '_blank')} className="w-full bg-brand-gold text-brand-900 py-6 rounded-full font-black uppercase shadow-2xl hover:scale-105 transition-all">Book Free Consultation</button>
+        {/* UPDATED CALENDLY LINK ON SUCCESS BUTTON */}
+        <button onClick={() => window.open('https://calendly.com/marcia-kgaphola/new-meeting', '_blank')} className="w-full bg-brand-gold text-brand-900 py-6 rounded-full font-black uppercase shadow-2xl hover:scale-105 transition-all">Book Free Consultation</button>
       </div>
     );
 
@@ -128,7 +130,7 @@ const WarRoom: React.FC = () => {
       );
     }
 
-    if (activeStream === 'protocol') return (
+    if (activeStream === 'roadmap') return (
       <div className="space-y-6 animate-fadeIn text-left">
         <h3 className="text-2xl font-black text-brand-gold uppercase">The Escape Plan</h3>
         {["THE AUDIT", "THE ARCHITECTURE", "IMPLEMENTATION", "FREEDOM"].map((t, i) => (
@@ -155,7 +157,7 @@ const WarRoom: React.FC = () => {
             </div>
           );
         })}
-        <div className="p-4 bg-brand-gold/10 border border-brand-gold/20 rounded-xl text-center"><p className="text-[10px] text-brand-gold font-mono uppercase tracking-widest">&gt; SYSTEM NOTE: Full statutory timeline available in dedicated protocol.</p></div>
+        <div className="p-4 bg-brand-gold/10 border border-brand-gold/20 rounded-xl text-center"><p className="text-[10px] text-brand-gold font-mono uppercase tracking-widest">&gt; SYSTEM NOTE: Full statutory timeline available in dedicated strategic roadmap.</p></div>
       </div>
     );
 
@@ -171,7 +173,7 @@ const WarRoom: React.FC = () => {
     );
   };
 
-  if (bootSequence) return <div className="fixed inset-0 z-[1000] bg-brand-900 flex items-center justify-center text-brand-gold font-mono uppercase tracking-[0.5em] animate-pulse">Starting War Room Protocol...</div>;
+  if (bootSequence) return <div className="fixed inset-0 z-[1000] bg-brand-900 flex items-center justify-center text-brand-gold font-mono uppercase tracking-[0.5em] animate-pulse">Initializing Strategic Roadmap...</div>;
 
   return (
     <div className="min-h-screen bg-brand-900 text-white pt-32 pb-20 px-6 font-sans">
