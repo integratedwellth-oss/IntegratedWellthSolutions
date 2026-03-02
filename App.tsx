@@ -27,7 +27,6 @@ import PrivacyPolicy from './components/PrivacyPolicy';
 import Dashboard from './components/Dashboard';
 import UserDashboard from './components/UserDashboard';
 // Removed SummitPage import
-import ComplianceCalendarPage from './components/pages/ComplianceCalendarPage'; // NEW
 
 // Solution Detail Pages
 import StartupSolutions from './components/audiences/StartupSolutions';
@@ -40,6 +39,7 @@ import ComplianceTracker from './components/ComplianceTracker';
 import WarRoom from './components/WarRoom';
 import StrategicJourney from './components/StrategicJourney';
 import FinancialHealthScore from './components/FinancialHealthScore';
+import ComplianceCalendarPage from './components/pages/ComplianceCalendarPage'; // NEW
 
 // Constants
 import { CONTACT_INFO } from './constants';
@@ -52,7 +52,7 @@ const App: React.FC = () => {
   useEffect(() => {
     let popupTimer: number | undefined;
     const hasSeenEvent = sessionStorage.getItem('hasSeenIWS_Event_Immediate');
-    // Exclude landing page and calendar from event popup check
+    // Updated to exclude landing page, calendar, and admin views from popup check
     const isSpecialPage = ['#warroom', '#intel', '#my-intel', '#landing', '#compliance-calendar'].includes(window.location.hash);
     
     if (!hasSeenEvent && !isSpecialPage) {
@@ -99,7 +99,7 @@ const App: React.FC = () => {
       switch (currentView) {
         case 'landing': return <LandingPage />;
         case 'my-intel': return <UserDashboard onTriggerAssessment={() => setShowAssessmentModal(true)} />;
-        case 'compliance-calendar': return <ComplianceCalendarPage />; // NEW ROUTE
+        case 'compliance-calendar': return <ComplianceCalendarPage />;
         case 'intel': return <Dashboard />;
         case 'services': return <ServicesPage />;
         case 'who-we-help': return <WhoWeHelpPage />;
