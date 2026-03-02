@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Terminal, Radio, Activity, Skull, AlertTriangle, Timer, Clock, CheckCircle, FileText, Sparkles, Loader2, Cpu, ArrowRight, Lock, MessageSquare, Mail, Scale, List, ChevronRight } from 'lucide-react';
 import RevealOnScroll from './RevealOnScroll';
+import { generatePDFReport } from '../services/exportService';
 import { db } from '../firebaseConfig';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 import { createChatSession, sendMessageStream } from '../services/geminiService';
@@ -20,6 +21,9 @@ const WarRoom: React.FC = () => {
   const [isTransmitting, setIsTransmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
   const [transmissionLogs, setTransmissionLogs] = useState<string[]>([]);
+  const [aiAnalysis, setAiAnalysis] = useState<string>('');
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const chatRef = useRef<any>(null);
   const [formData, setFormData] = useState({ identifier: '', enterprise: '', email: '', whatsapp: '' });
   const [complianceScore, setComplianceScore] = useState(1);
 
@@ -36,6 +40,7 @@ const WarRoom: React.FC = () => {
     return { label: "SOVEREIGN STATUS", color: "text-emerald-400", definition: "Automated, predictive, and error-free. Your compliance is an asset, not a chore.", consequence: "NONE. SYSTEM IS AUDIT-PROOF.", solution: "Wealth Preservation and Legacy Structuring", risk: "SECURE" };
   };
 
+  // SUMMARY ONLY - Full calendar is on separate page
   const deadlinesSummary = [
     { title: "Trust Tax Returns (ITR12T)", date: "Jan 19, 2026", targetDate: new Date('2026-01-19') },
     { title: "VAT Submission", date: "Feb 25, 2026", targetDate: new Date('2026-02-25') },
@@ -53,6 +58,7 @@ const WarRoom: React.FC = () => {
     setIsTransmitting(true);
     setTransmissionLogs([]);
     const logs = ["ANALYZING DATA...", "MATCHING PROTOCOLS...", "UPLINKING TO HQ...", "SECURE."];
+    
     for (const log of logs) {
       setTransmissionLogs(prev => [...prev, log]);
       await new Promise(r => setTimeout(r, 600));
@@ -111,16 +117,27 @@ const WarRoom: React.FC = () => {
         <div className="space-y-10 animate-fadeIn text-left">
           <h3 className="text-2xl font-black text-brand-gold uppercase">Compliance Audit</h3>
           <div className="space-y-2">
-            <div className="flex justify-between text-xs font-bold text-white/50 uppercase tracking-widest"><span>Non-Compliant</span><span>Sovereign</span></div>
+            <div className="flex justify-between text-xs font-bold text-white/50 uppercase tracking-widest">
+              <span>Non-Compliant</span>
+              <span>Sovereign</span>
+            </div>
             <input type="range" min="0" max="4" step="1" value={complianceScore} onChange={(e) => setComplianceScore(parseInt(e.target.value))} className="w-full h-4 bg-white/10 rounded-full appearance-none cursor-pointer accent-brand-gold" />
           </div>
+          
           <div className="p-8 rounded-[2.5rem] border-2 border-white/10 bg-black/40">
             <p className="text-[10px] font-black uppercase text-white/40 mb-2">Status</p>
             <p className={`text-2xl font-black mb-4 ${analysis.color}`}>{analysis.label}</p>
             <p className="text-white font-medium italic mb-6">"{analysis.definition}"</p>
+            
             <div className="grid md:grid-cols-2 gap-6">
-              <div><p className="text-xs font-black uppercase text-rose-500 mb-2">Likely Consequence</p><p className="text-sm font-bold text-white">{analysis.consequence}</p></div>
-              <div><p className="text-xs font-black uppercase text-emerald-400 mb-2">Our Solution</p><p className="text-sm font-bold text-emerald-400">{analysis.solution}</p></div>
+              <div>
+                <p className="text-xs font-black uppercase text-rose-500 mb-2">Likely Consequence</p>
+                <p className="text-sm font-bold text-white">{analysis.consequence}</p>
+              </div>
+              <div>
+                <p className="text-xs font-black uppercase text-emerald-400 mb-2">Our Solution</p>
+                <p className="text-sm font-bold text-emerald-400">{analysis.solution}</p>
+              </div>
             </div>
           </div>
           <button onClick={() => setActiveStream('alpha')} className="w-full bg-brand-gold text-brand-900 rounded-full py-6 font-black uppercase tracking-widest hover:bg-white transition-all">Get Detailed Report</button>
@@ -144,18 +161,30 @@ const WarRoom: React.FC = () => {
       <div className="space-y-6 animate-fadeIn text-left">
         <div className="flex justify-between items-end mb-4">
           <h3 className="text-2xl font-black text-brand-gold uppercase">Deadline Radar</h3>
-          <button onClick={() => window.location.hash = '#compliance-calendar'} className="text-[10px] font-black text-white/50 hover:text-brand-gold transition-colors uppercase tracking-widest flex items-center gap-2">Access Full Calendar <ArrowRight size={12} /></button>
+          <button onClick={() => window.location.hash = '#compliance-calendar'} className="text-[10px] font-black text-white/50 hover:text-brand-gold transition-colors uppercase tracking-widest flex items-center gap-2">
+            Access Full Calendar <ArrowRight size={12} />
+          </button>
         </div>
+        
+        {/* Only show summary */}
         {deadlinesSummary.map((d, i) => {
           const days = getDaysLeft(d.targetDate);
           return (
             <div key={i} className={`p-6 rounded-2xl border-2 flex justify-between items-center ${days <= 30 ? 'border-rose-500 bg-rose-950/20' : 'border-white/10 bg-black/40'}`}>
-              <div><p className="font-black text-white text-xs uppercase mb-1">{d.title}</p><p className="text-[10px] text-white/40 uppercase font-mono">{d.date}</p></div>
+              <div>
+                <p className="font-black text-white text-xs uppercase mb-1">{d.title}</p>
+                <p className="text-[10px] text-white/40 uppercase font-mono">{d.date}</p>
+              </div>
               <div className={`font-black text-sm ${days <= 30 ? 'text-rose-500' : 'text-brand-gold'}`}>{days} DAYS</div>
             </div>
           );
         })}
-        <div className="p-4 bg-brand-gold/10 border border-brand-gold/20 rounded-xl text-center"><p className="text-[10px] text-brand-gold font-mono uppercase tracking-widest">&gt; SYSTEM NOTE: Full statutory timeline available in dedicated protocol.</p></div>
+        
+        <div className="p-4 bg-brand-gold/10 border border-brand-gold/20 rounded-xl text-center">
+          <p className="text-[10px] text-brand-gold font-mono uppercase tracking-widest">
+            &gt; SYSTEM NOTE: Full statutory timeline available in dedicated protocol.
+          </p>
+        </div>
       </div>
     );
 
