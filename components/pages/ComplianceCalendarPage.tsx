@@ -1,19 +1,29 @@
 import React, { useState } from 'react';
 import RevealOnScroll from '../RevealOnScroll';
-import { Calendar, ShieldCheck, AlertTriangle, Clock, Building2, User, Landmark, HelpCircle, ChevronDown, ChevronUp, ArrowRight, Zap, CheckCircle2 } from 'lucide-react';
+import { Calendar, ShieldCheck, AlertTriangle, Clock, Building2, User, Landmark, HelpCircle, ChevronDown, ChevronUp, ArrowRight } from 'lucide-react';
 import Button from '../Button';
 
 const ComplianceCalendarPage: React.FC = () => {
   const TREE_HERO_URL = "https://res.cloudinary.com/dka0498ns/image/upload/f_auto,q_auto/v1772373342/Profuse_Beauty_Logo_Tree_z1nc3c.png";
   const [openFaq, setOpenFaq] = useState<number | null>(null);
 
-  // --- DATA: SCHEDULE (For Summary/Ticker - Kept for dashboard integration) ---
   const SCHEDULE = [
     { month: "February 2026", deadlines: [{ day: "28", entity: "All Entities", task: "Provisional Tax (IRP6) - 2nd Period", risk: "High", desc: "Mandatory payment to avoid 10% penalty + interest." }, { day: "28", entity: "Individuals", task: "IT3(b) & IT3(c) Data Prep", risk: "Medium", desc: "Gather investment and interest certificates." }] },
-    // ... (rest of schedule data remains, truncated for brevity in this response block)
+    { month: "March 2026", deadlines: [{ day: "31", entity: "Corporate", task: "CIPC Annual Returns", risk: "Critical", desc: "Hard deadline to prevent deregistration process initiation." }, { day: "25", entity: "VAT Vendors", task: "VAT 201 Submission & Payment", risk: "High", desc: "Category B vendors (periods ending Feb)." }] },
+    { month: "April 2026", deadlines: [{ day: "07", entity: "Employers", task: "EMP201 Submission", risk: "Medium", desc: "PAYE, SDL and UIF for March." }] },
+    { month: "May 2026", deadlines: [{ day: "31", entity: "Employers", task: "EMP501 Interim Reconciliation", risk: "Critical", desc: "Bi-annual payroll reconciliation. Major audit trigger if incorrect." }, { day: "31", entity: "NPOs", task: "Section 18A Third Party Data", risk: "High", desc: "Submission of donor data to SARS." }] },
+    { month: "June 2026", deadlines: [{ day: "30", entity: "Corporate", task: "Provisional Tax (IRP6) - 3rd Period", risk: "Medium", desc: "Voluntary top-up to avoid Section 89quat interest." }] },
+    { month: "July 2026", deadlines: [{ day: "01", entity: "Individuals", task: "Tax Season Opens (Filing)", risk: "Low", desc: "2026 Filing season official open date." }] },
+    { month: "August 2026", deadlines: [{ day: "31", entity: "Provisional Taxpayers", task: "Provisional Tax (IRP6) - 1st Period (2027)", risk: "High", desc: "First estimation for the 2027 tax year." }] }
   ];
-  
-  // --- DATA: DETAILED REPORT SECTIONS (As per PDF request) ---
+
+  const FAQS = [
+    { q: "How will the 2026 VAT threshold increase affect my small business?", a: "Effective 1 April 2026, the compulsory VAT registration threshold significantly increases from R1 million to R2.3 million. If turnover sits below this, you can apply for VAT deregistration." },
+    { q: "Why is my SARS eFiling status showing 'Pending' or 'Processing'?", a: "Pending usually means SARS is verifying registration details. Processing indicates the return is flagged for audit or verification (up to 21-90 business days)." },
+    { q: "Why was a portion of my Two-Pot Retirement System savings withdrawal taken by SARS?", a: "Withdrawals from the 'savings pot' are taxed at your marginal income tax rate. SARS also instructs deductions for any outstanding tax debt before releasing funds." },
+    { q: "I am a social media influencer. Does SARS track my income?", a: "Yes. SARS uses data-driven profiling for the gig and social media economy, treating influencers as independent contractors who must declare earnings." },
+    { q: "Can I file my CIPC Annual Return without submitting a Beneficial Ownership (BO) declaration?", a: "No. CIPC enforces a 'hard-stop'. Filing is blocked until the BO declaration is up to date." }
+  ];
 
   const DetailSection = ({ title, children }: { title: string; children: React.ReactNode }) => (
     <RevealOnScroll>
@@ -28,10 +38,6 @@ const ComplianceCalendarPage: React.FC = () => {
     </RevealOnScroll>
   );
 
-  const FAQS = [ /* ... (FAQ data remains the same) ... */ ];
-
-  // --- GUIDE CONTENT COMPONENTS ---
-  
   const IntroToRegTech = () => (
     <DetailSection title="Introduction to the Regulatory Technology Paradigm">
       <p>The South African regulatory and fiscal landscape in 2026 presents an inherently complex, interconnected matrix of compliance obligations that span corporate governance, direct and indirect taxation, and labour statutory requirements. For corporate entities, fiduciary agents, and independent tax practitioners, the margin for administrative error has been systematically eradicated through the aggressive digitization of government service portals. Entities must now navigate a rapidly evolving technological ecosystem that encompasses the modernized South African Revenue Service (SARS) eFiling platform, the Companies and Intellectual Property Commission (CIPC) BizPortal, and the Department of Employment and Labour's digital reporting systems.</p>
@@ -45,7 +51,7 @@ const ComplianceCalendarPage: React.FC = () => {
       <p>The underlying logic of any predictive compliance calendar must be dynamically updated to reflect prevailing legislative rates. The 2026 National Budget Speech, delivered by Finance Minister Enoch Godongwana on 25 February 2026, introduced critical fiscal adjustments that fundamentally alter the calculation engines embedded within tax forecasting software.</p>
       <p>The compliance widget's underlying calculation matrix must incorporate a 3.4% upward adjustment across all personal income tax brackets. The entry threshold for individual income tax has been explicitly elevated to combat bracket creep to R99,000 for those under 65.</p>
       
-      <h4 className="text-xl font-bold pt-4 mb-4">Personal Income Tax Brackets (2026/2027)</h4>
+      <h4 className="text-xl font-bold pt-4 mb-4 text-brand-900">Personal Income Tax Brackets (2026/2027)</h4>
       
       <table className="w-full text-left border-collapse shadow-lg rounded-xl overflow-hidden">
         <thead className="bg-brand-900 text-white text-xs uppercase tracking-widest">
@@ -181,10 +187,7 @@ const ComplianceCalendarPage: React.FC = () => {
           <div className="bg-white rounded-[2rem] shadow-xl border border-brand-900/5 overflow-hidden">
             {FAQS.map((faq, i) => (
               <div key={i} className="border-b border-brand-900/5 last:border-0">
-                <button
-                  onClick={() => setOpenFaq(openFaq === i ? null : i)}
-                  className="w-full px-8 py-6 text-left flex justify-between items-start gap-4 hover:bg-brand-50 transition-colors group"
-                >
+                <button onClick={() => setOpenFaq(openFaq === i ? null : i)} className="w-full px-8 py-6 text-left flex justify-between items-start gap-4 hover:bg-brand-50 transition-colors group">
                   <span className={`font-bold text-lg leading-tight ${openFaq === i ? 'text-brand-gold' : 'text-brand-900'}`}>{faq.q}</span>
                   <div className={`flex-shrink-0 mt-1 transition-transform duration-300 ${openFaq === i ? 'rotate-180' : ''}`}>
                     {openFaq === i ? <ChevronUp className="text-brand-gold" size={20} /> : <ChevronDown className="text-brand-900/20 group-hover:text-brand-900" size={20} />}
@@ -198,7 +201,6 @@ const ComplianceCalendarPage: React.FC = () => {
           </div>
         </RevealOnScroll>
       </section>
-
 
       {/* 4. FINAL CTA */}
       <section className="py-24 bg-white text-center px-6 border-t border-brand-900/5">
