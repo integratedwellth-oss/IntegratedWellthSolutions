@@ -1,9 +1,9 @@
 export const CONTACT_INFO = {
   email: "enquiries@integratedwellth.co.za",
   // UPDATED NUMBER
-  phone: "+27 81 235 5910", 
+  phone: "+27 81 235 5910",
   address: "Pretoria, South Africa",
-  calendlyUrl: "https://calendly.com/enquiries-integratedwellth/30min"
+  calendlyUrl: "https://calendly.com/marcia-kgaphola/new-meeting"
 };
 
 export const COMPANY_CONTEXT = `
