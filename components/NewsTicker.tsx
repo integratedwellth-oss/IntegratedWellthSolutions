@@ -2,12 +2,12 @@ import React from 'react';
 import { Zap, Calendar } from 'lucide-react';
 
 const NewsTicker: React.FC = () => {
-  // Critical deadlines pulled from Compliance Calendar (Updated for Ticker Style)
+  // Compliance deadlines pulled from Calendar Page, styled for urgency
   const feedItems = [
     "DEADLINE: FEB 28 | IRP6 2ND PERIOD PAYMENT DUE",
     "ALERT: MAR 31 | CIPC ANNUAL RETURNS MANDATORY",
     "APR 07: EMP201 PAYROLL SUBMISSION",
-    "MAY 31: EMP501 RECONCILIATION DUE (AUDIT SENSITIVE)",
+    "MAY 31: EMP501 INTERIM RECONCILIATION - AUDIT SENSITIVE",
     "JUN 30: VOLUNTARY IRP6 TOP-UP WINDOW",
     "JUL 01: INDIVIDUAL TAX FILING OPENS",
     "VAT THRESHOLD INCREASED TO R2.3M - REVIEW NOW"
@@ -31,8 +31,8 @@ const NewsTicker: React.FC = () => {
                   </div>
                 )}
                 <span className="flex items-center gap-8">
-                  {/* Logic to highlight high-urgency items */}
-                  {item.includes('DEADLINE') || item.includes('DUE') || item.includes('CRITICAL') ? (
+                  {/* Highlighting items that include DEADLINE, DUE, or ALERT */}
+                  {(item.includes('DEADLINE') || item.includes('DUE') || item.includes('ALERT')) ? (
                     <span className="flex items-center gap-3 text-rose-400">
                       <Calendar size={12} className="text-rose-400" />
                       {item}
@@ -56,7 +56,7 @@ const NewsTicker: React.FC = () => {
           100% { transform: translateX(-25%); }
         }
         .animate-marquee {
-          animation: marquee 25s linear infinite; /* Adjusted speed slightly */
+          animation: marquee 25s linear infinite;
         }
         .animate-marquee:hover {
           animation-play-state: paused;
