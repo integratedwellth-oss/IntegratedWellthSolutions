@@ -1,191 +1,131 @@
-import React, { useState, useEffect, Suspense } from 'react';
-import { ArrowRight, Loader2 } from 'lucide-react';
-import 'swiper/css';
-import 'swiper/css/pagination';
-import 'swiper/css/navigation';
-import ErrorBoundary from './components/ErrorBoundary';
+import React, { useState, useEffect } from 'react';
+import { LayoutGrid, Users, Calendar, Target, Workflow, ArrowRight, Menu, X, Layout, ShieldAlert } from 'lucide-react';
+import { auth } from '../firebaseConfig';
+import { onAuthStateChanged } from 'firebase/auth';
 
-// Layout
-import Navbar from './components/Navbar';
-import Footer from './components/Footer';
-import UnifiedSupportWidget from './components/UnifiedSupportWidget';
-import CookieConsent from './components/CookieConsent';
-import WhatsAppButton from './components/WhatsAppButton';
-import EventPopup from './components/EventPopup';
-import FloatingCTA from './components/FloatingCTA';
+interface NavbarProps {
+  onNavigate: (view: string) => void;
+}
 
-// Pages
-import Home from './components/pages/Home';
-import LandingPage from './components/pages/LandingPage';
-import ServicesPage from './components/pages/ServicesPage';
-import WhoWeHelpPage from './components/pages/WhoWeHelpPage';
-import Team from './Team';
-import WorkshopPage from './components/pages/WorkshopPage';
-import BlogPage from './components/pages/BlogPage';
-import ContactPage from './components/pages/ContactPage';
-import PrivacyPolicy from './components/PrivacyPolicy';
-import Dashboard from './components/Dashboard';
-import UserDashboard from './components/UserDashboard';
-import ComplianceCalendarPage from './components/pages/ComplianceCalendarPage';
-
-// Solution Detail Pages
-import StartupSolutions from './components/audiences/StartupSolutions';
-import BusinessSolutions from './components/audiences/BusinessSolutions';
-import NPOSolutions from './components/audiences/NPOSolutions';
-import IndividualSolutions from './components/audiences/IndividualSolutions';
-import WellnessSolutions from './components/audiences/WellnessSolutions';
-import AccountabilityPartnership from './components/audiences/AccountabilityPartnership';
-import ComplianceTracker from './components/ComplianceTracker';
-import WarRoom from './components/WarRoom';
-import StrategicJourney from './components/StrategicJourney';
-import FinancialHealthScore from './components/FinancialHealthScore';
-
-const App: React.FC = () => {
-  const [currentView, setCurrentView] = useState('home');
-  const [showAssessmentModal, setShowAssessmentModal] = useState(false);
-  const [showEventPopup, setShowEventPopup] = useState(false);
+const Navbar: React.FC<NavbarProps> = ({ onNavigate }) => {
+  const [activeHash, setActiveHash] = useState('#home');
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
 
   useEffect(() => {
-    let popupTimer: number | undefined;
-    const hasSeenEvent = sessionStorage.getItem('hasSeenIWS_Event_Immediate');
-    const isSpecialPage = ['#warroom', '#intel', '#my-intel', '#landing', '#compliance-calendar'].includes(window.location.hash);
-    if (!hasSeenEvent && !isSpecialPage) {
-      popupTimer = window.setTimeout(() => setShowEventPopup(true), 800);
-    }
-
-    const handleHashChange = () => {
-      try {
-        const hash = window.location.hash.replace('#', '') || 'home';
-        if (hash === 'assessment') {
-          setShowAssessmentModal(true);
-          return;
-        }
-        const validViews = ['home', 'landing', 'services', 'who-we-help', 'team', 'workshops', 'blog', 'contact', 'privacy', 'startups', 'existing-business', 'npos', 'individuals', 'wellness', 'accountability', 'tracker', 'warroom', 'protocol', 'intel', 'my-intel', 'compliance-calendar'];
-
-        if (['protocol', 'services'].includes(hash)) {
-          setCurrentView('home');
-          setTimeout(() => {
-            const element = document.getElementById(hash);
-            if (element) element.scrollIntoView({ behavior: 'smooth' });
-          }, 100);
-        } else if (validViews.includes(hash)) {
-          setCurrentView(hash);
-          window.scrollTo({ top: 0, behavior: 'smooth' });
-        } else {
-          setCurrentView('home');
-        }
-      } catch (e) {
-        setCurrentView('home');
-      }
+    const handleScroll = () => {
+      setActiveHash(window.location.hash || '#home');
+      setScrolled(window.scrollY > 20);
     };
-
-    handleHashChange();
-    window.addEventListener('hashchange', handleHashChange);
+    const unsubAuth = onAuthStateChanged(auth, (user) => {
+      setIsLoggedIn(!!user);
+    });
+    window.addEventListener('scroll', handleScroll);
+    window.addEventListener('hashchange', handleScroll);
     return () => {
-      window.removeEventListener('hashchange', handleHashChange);
-      if (popupTimer) window.clearTimeout(popupTimer);
+      window.removeEventListener('scroll', handleScroll);
+      window.removeEventListener('hashchange', handleScroll);
+      unsubAuth();
     };
   }, []);
 
-  const renderCurrentView = () => {
-    try {
-      switch (currentView) {
-        case 'landing': return <LandingPage />;
-        case 'my-intel': return <UserDashboard onTriggerAssessment={() => setShowAssessmentModal(true)} />;
-        case 'compliance-calendar': return <ComplianceCalendarPage />;
-        case 'intel': return <Dashboard />;
-        case 'services': return <ServicesPage />;
-        case 'who-we-help': return <WhoWeHelpPage />;
-        case 'team': return <Team />;
-        case 'workshops': return <WorkshopPage />;
-        case 'blog': return <BlogPage />;
-        case 'contact': return <ContactPage />;
-        case 'privacy': return <PrivacyPolicy />;
-        case 'startups': return <StartupSolutions />;
-        case 'existing-business': return <BusinessSolutions />;
-        case 'npos': return <NPOSolutions />;
-        case 'individuals': return <IndividualSolutions />;
-        case 'wellness': return <WellnessSolutions />;
-        case 'accountability': return <AccountabilityPartnership />;
-        case 'tracker': return <ComplianceTracker />;
-        case 'warroom': return <WarRoom />;
-        case 'protocol': return <StrategicJourney />;
-        default: return <Home onOpenAssessment={() => setShowAssessmentModal(true)} />;
-      }
-    } catch (err) {
-      console.error("View Render Error:", err);
-      return <Home onOpenAssessment={() => setShowAssessmentModal(true)} />;
-    }
+  const handleLinkClick = (hash: string) => {
+    window.location.hash = hash;
+    onNavigate(hash.replace('#', ''));
+    setIsMobileMenuOpen(false);
   };
 
-  const isFullPageMode = ['warroom', 'intel', 'my-intel'].includes(currentView);
-  const shouldHideNavbar = ['intel', 'my-intel', 'landing'].includes(currentView);
-  const shouldHideFloatingBar = isFullPageMode || currentView === 'landing' || currentView === 'compliance-calendar';
+  const navLinks = [
+    { label: 'THE PROTOCOL', hash: '#protocol', icon: <Workflow size={14} /> },
+    { label: 'ECOSYSTEM', hash: '#services', icon: <LayoutGrid size={14} /> },
+    { label: 'CALENDAR', hash: '#compliance-calendar', icon: <Calendar size={14} />, isSpecial: true }, // NEW LINK ADDED
+    { label: 'AUDIENCES', hash: '#who-we-help', icon: <Users size={14} /> },
+    { label: 'IDENTITY', hash: '#team', icon: <Target size={14} /> },
+  ];
+
+  const LOGO_URL = "https://res.cloudinary.com/dka0498ns/image/upload/v1765747786/favicon_ofkkb1.png";
 
   return (
-    <ErrorBoundary>
-      <div className={`font-sans text-brand-900 bg-white min-h-screen flex flex-col selection:bg-brand-gold/20 ${(showAssessmentModal || showEventPopup) ? 'h-screen overflow-hidden' : ''}`}>
+    <nav className={`fixed top-0 w-full z-[100] px-4 md:px-6 pt-4 transition-all duration-300 ${scrolled ? 'pb-4' : 'pb-0'}`}>
+      <div className={`absolute inset-0 transition-opacity duration-300 ${scrolled ? 'bg-brand-900/90 backdrop-blur-xl shadow-2xl' : 'opacity-0'}`}></div>
+      <div className="max-w-[1800px] mx-auto flex items-center justify-between relative z-10">
         
-        {!shouldHideNavbar && (
-          <Navbar onNavigate={(view) => { window.location.hash = `#${view}`; }} />
-        )}
-
-        <main className="flex-grow">
-          <Suspense fallback={
-            <div className="min-h-screen flex items-center justify-center bg-white">
-              <Loader2 className="animate-spin text-brand-gold" size={48} />
+        {/* LOGO AREA */}
+        <div className="flex items-start gap-3 cursor-pointer shrink-0 group" onClick={() => handleLinkClick('#home')}>
+          <div className="w-12 h-12 rounded-xl bg-white border-2 border-brand-brown overflow-hidden shadow-lg flex items-center justify-center p-1 group-hover:scale-105 transition-transform duration-500">
+            <img src={LOGO_URL} className="w-full h-full object-contain" alt="IWS" />
+          </div>
+          <div className="flex flex-col">
+            <div className="flex items-center font-sora font-black text-lg md:text-xl tracking-tighter leading-none shadow-xl">
+              <div className="bg-brand-brown text-[#14b8a6] px-3 py-2 rounded-l-lg tracking-tighter">INTEGRATED</div>
+              <div className="bg-[#14b8a6] text-brand-brown px-3 py-2 rounded-r-lg tracking-tighter">WELLTH</div>
             </div>
-          }>
-            {renderCurrentView()}
-          </Suspense>
-        </main>
-
-        {!isFullPageMode && <Footer />}
-
-        {!shouldHideFloatingBar && (
-          <div className="fixed bottom-0 left-0 w-full bg-brand-gold z-[40] px-6 py-4 flex items-center justify-between shadow-[0_-10px_40px_rgba(212,175,55,0.2)]">
-            <div className="flex items-center gap-4">
-              <div className="bg-brand-900 text-white px-3 py-1 rounded text-[10px] font-black uppercase tracking-widest hidden md:block">Compliance Alert</div>
-              <p className="text-brand-900 font-bold text-sm md:text-base tracking-tight">
-                2026 Statutory Deadlines are active.
-              </p>
+            <div className="mt-2 pl-1 border-l-2 border-brand-gold uppercase text-[7px] md:text-[8px] font-bold text-slate-300 tracking-widest leading-relaxed">
+              TRANSFORMING LIVES THROUGH EMOTIONAL,<br />FINANCIAL AND PERSONAL WELLNESS.
             </div>
-            <button 
-              onClick={() => window.location.hash = '#compliance-calendar'}
-              className="flex items-center gap-2 text-brand-900 font-black uppercase tracking-widest text-[10px] md:text-xs hover:translate-x-1 transition-transform"
+          </div>
+        </div>
+
+        {/* DESKTOP NAV */}
+        <div className="hidden xl:flex bg-white/95 backdrop-blur-md px-2 py-2 rounded-full items-center border border-white/20 shadow-2xl">
+          {navLinks.map((link) => (
+            <button
+              key={link.hash}
+              onClick={() => handleLinkClick(link.hash)}
+              className={`flex items-center gap-2 px-6 py-3 rounded-full text-[10px] font-black uppercase tracking-widest transition-all duration-300 ${activeHash === link.hash ? 'bg-brand-brown text-white' : 'text-brand-900 hover:bg-brand-50'} ${link.isSpecial ? 'text-brand-gold font-black' : ''}`}
             >
-              View Schedule <ArrowRight size={16} />
+              {link.icon} {link.label}
+            </button>
+          ))}
+          <button
+            onClick={() => handleLinkClick('#my-intel')}
+            className={`ml-1 flex items-center gap-2 px-6 py-3 rounded-full text-[10px] font-black uppercase tracking-widest transition-all ${activeHash === '#my-intel' ? 'bg-brand-gold text-brand-900' : 'bg-brand-900/5 text-brand-900 hover:bg-brand-900 hover:text-white'}`}
+          >
+            <Layout size={14}/> {isLoggedIn ? 'My Dashboard' : 'Client Portal'}
+          </button>
+        </div>
+
+        {/* RIGHT ACTIONS */}
+        <div className="flex items-center gap-3">
+          <button
+            onClick={() => handleLinkClick('#warroom')}
+            className="flex items-center gap-2 bg-brand-brown text-brand-gold border-2 border-brand-gold px-4 py-3 rounded-xl shadow-lg hover:bg-brand-gold hover:text-brand-brown transition-all"
+          >
+            <ShieldAlert size={18} className="animate-pulse" />
+            <span className="text-[10px] font-black uppercase tracking-widest hidden md:block">WAR ROOM</span>
+            <span className="text-[10px] font-black uppercase tracking-widest md:hidden">WAR</span>
+          </button>
+          <button onClick={() => setIsMobileMenuOpen(true)} className="xl:hidden w-12 h-12 rounded-xl bg-white/10 text-white border border-white/10 flex items-center justify-center hover:bg-white/20 active:scale-95 transition-all">
+            <Menu size={24} />
+          </button>
+        </div>
+      </div>
+
+      {/* MOBILE MENU */}
+      {isMobileMenuOpen && (
+        <div className="fixed inset-0 z-[200] bg-brand-900 flex flex-col animate-fadeIn">
+          <div className="flex justify-between items-center p-6 border-b border-white/10">
+            <div className="flex items-center gap-2">
+              <div className="bg-brand-brown text-[#14b8a6] px-2 py-1 font-black text-sm rounded">INTEGRATED</div>
+              <div className="bg-white text-brand-brown px-2 py-1 font-black text-sm rounded">WELLTH</div>
+            </div>
+            <button onClick={() => setIsMobileMenuOpen(false)} className="w-10 h-10 rounded-full bg-white/10 text-white flex items-center justify-center"><X size={20} /></button>
+          </div>
+          <div className="flex flex-col px-6 py-8 gap-4 overflow-y-auto">
+            {navLinks.map((link) => (
+              <button key={link.hash} onClick={() => handleLinkClick(link.hash)} className="flex items-center justify-between w-full p-5 rounded-2xl bg-white/5 text-white hover:bg-brand-gold hover:text-brand-900 transition-all font-black uppercase text-xs">
+                <div className="flex items-center gap-4">{link.icon}<span>{link.label}</span></div><ArrowRight size={16} />
+              </button>
+            ))}
+            <button onClick={() => handleLinkClick('#my-intel')} className="flex items-center justify-between w-full p-5 rounded-2xl bg-brand-gold text-brand-900 font-black uppercase text-xs">
+               <div className="flex items-center gap-4"><Layout size={18}/><span>My Dashboard</span></div><ArrowRight size={16}/>
             </button>
           </div>
-        )}
-
-        {currentView !== 'intel' && (
-          <>
-            <EventPopup 
-              isOpen={showEventPopup} 
-              onClose={() => {
-                setShowEventPopup(false);
-                sessionStorage.setItem('hasSeenIWS_Event_Immediate', 'true');
-              }} 
-            />
-            <FinancialHealthScore 
-              isOpen={showAssessmentModal} 
-              onClose={() => { 
-                setShowAssessmentModal(false);
-                if(window.location.hash === '#assessment') {
-                   window.history.pushState("", document.title, window.location.pathname + window.location.search);
-                }
-              }}
-            />
-            <FloatingCTA />
-            <WhatsAppButton />
-            <UnifiedSupportWidget />
-          </>
-        )}
-        <CookieConsent />
-      </div>
-    </ErrorBoundary>
+        </div>
+      )}
+    </nav>
   );
 };
 
-export default App;
+export default Navbar;
