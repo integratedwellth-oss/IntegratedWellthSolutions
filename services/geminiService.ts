@@ -3,14 +3,13 @@ import { COMPANY_CONTEXT } from "../constants";
 
 export const createChatSession = (): any => {
   const apiKey = import.meta.env.VITE_GEMINI_API_KEY || '';
-
   if (!apiKey) {
     console.error("Gemini API Key is missing");
     throw new Error("API Key Missing");
   }
 
   const genAI = new GoogleGenerativeAI(apiKey);
-  const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+  const model = genAI.getGenerativeModel({ model: "gemini-3.1-flash-lite-preview" });
 
   const chatSession = model.startChat({
     history: [
@@ -25,13 +24,13 @@ export const createChatSession = (): any => {
 export const sendMessageStream = async (chat: any, message: string) => {
   try {
     const result = await chat.sendMessageStream(message);
-    
+
     return {
       [Symbol.asyncIterator]: async function* () {
         for await (const chunk of result.stream) {
           const chunkText = chunk.text();
           if (chunkText) {
-            yield { text: chunkText }; 
+            yield { text: chunkText };
           }
         }
       }
