@@ -42,14 +42,14 @@ const ComplianceCalendarPage: React.FC = () => {
             <Clock className="text-brand-gold opacity-50" size={48} />
           </div>
           <div className="divide-y divide-gray-100">
-            {SCHEDULE.map((monthGroup, idx) => (
+            {SCHEDULE.map((monthGroup: any, idx: number) => (
               <div key={idx} className="p-8 md:p-10 hover:bg-gray-50 transition-colors group">
                 <div className="flex flex-col md:flex-row md:items-start gap-8">
                   <div className="md:w-1/4">
                     <h3 className="text-2xl font-black text-brand-900 uppercase tracking-tight">{monthGroup.month}</h3>
                   </div>
                   <div className="md:w-3/4 space-y-6">
-                    {monthGroup.deadlines.map((item, i) => (
+                    {monthGroup.deadlines.map((item: any, i: number) => (
                       <div key={i} className="flex flex-col sm:flex-row gap-6 items-start sm:items-center">
                         <div className="flex-shrink-0 w-16 h-16 bg-brand-50 rounded-2xl flex flex-col items-center justify-center border border-brand-900/10 group-hover:border-brand-gold/50 transition-colors">
                           <span className="text-2xl font-black text-brand-900 leading-none">{item.day}</span>
@@ -92,7 +92,7 @@ const ComplianceCalendarPage: React.FC = () => {
             <p className="text-brand-900/60 mt-4 text-lg">Real-world compliance queries trending in South Africa (2026).</p>
           </div>
           <div className="bg-white rounded-[2rem] shadow-xl border border-brand-900/5 overflow-hidden">
-            {FAQS.map((faq, i) => (
+            {FAQS.map((faq: any, i: number) => (
               <div key={i} className="border-b border-brand-900/5 last:border-0">
                 <button onClick={() => setOpenFaq(openFaq === i ? null : i)} className="w-full px-8 py-6 text-left flex justify-between items-start gap-4 hover:bg-brand-50 transition-colors group">
                   <span className={`font-bold text-lg leading-tight ${openFaq === i ? 'text-brand-gold' : 'text-brand-900'}`}>{faq.q}</span>
