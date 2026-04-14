@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { MessageSquare, X, Bot, Loader2 } from 'lucide-react';
-import { functions } from '../firebaseConfig'; 
+import { functions } from '@/firebaseConfig'; 
 import { httpsCallable } from 'firebase/functions';
 
 interface Message {
