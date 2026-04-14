@@ -8,7 +8,7 @@ import ErrorBoundary from './components/ErrorBoundary';
 // Layout
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
-import UnifiedSupportWidget from './components/UnifiedSupportWidget';
+import { Chatbot } from './components/Chatbot'; 
 import CookieConsent from './components/CookieConsent';
 import WhatsAppButton from './components/WhatsAppButton';
 import EventPopup from './components/EventPopup';
@@ -40,9 +40,6 @@ import WarRoom from './components/WarRoom';
 import StrategicJourney from './components/StrategicJourney';
 import FinancialHealthScore from './components/FinancialHealthScore';
 
-// Constants
-import { CONTACT_INFO } from './constants';
-
 const App: React.FC = () => {
   const [currentView, setCurrentView] = useState('home');
   const [showAssessmentModal, setShowAssessmentModal] = useState(false);
@@ -51,10 +48,8 @@ const App: React.FC = () => {
   useEffect(() => {
     let popupTimer: number | undefined;
     const hasSeenEvent = sessionStorage.getItem('hasSeenIWS_Event_Immediate');
-    
-    // Updated to exclude landing page, calendar, and admin views from popup check
     const isSpecialPage = ['#warroom', '#intel', '#my-intel', '#landing', '#compliance-calendar'].includes(window.location.hash);
-    
+
     if (!hasSeenEvent && !isSpecialPage) {
       popupTimer = window.setTimeout(() => setShowEventPopup(true), 800);
     }
@@ -66,8 +61,9 @@ const App: React.FC = () => {
           setShowAssessmentModal(true);
           return;
         }
-        const validViews = ['home', 'landing', 'services', 'who-we-help', 'team', 'workshops', 'blog', 'contact', 'privacy', 'startups', 'existing-business', 'npos', 'individuals', 'wellness', 'accountability', 'tracker', 'warroom', 'protocol', 'intel', 'my-intel', 'compliance-calendar', 'roadmap'];
 
+        const validViews = ['home', 'landing', 'services', 'who-we-help', 'team', 'workshops', 'blog', 'contact', 'privacy', 'startups', 'existing-business', 'npos', 'individuals', 'wellness', 'accountability', 'tracker', 'warroom', 'protocol', 'intel', 'my-intel', 'compliance-calendar', 'roadmap'];
+        
         if (['protocol', 'roadmap', 'services'].includes(hash)) {
           setCurrentView('home');
           setTimeout(() => {
@@ -97,7 +93,6 @@ const App: React.FC = () => {
   const renderCurrentView = () => {
     try {
       switch (currentView) {
-        // FIXED LINE: Added onOpenAssessment prop
         case 'landing': return <LandingPage onOpenAssessment={() => setShowAssessmentModal(true)} />;
         case 'my-intel': return <UserDashboard onTriggerAssessment={() => setShowAssessmentModal(true)} />;
         case 'compliance-calendar': return <ComplianceCalendarPage />;
@@ -159,7 +154,7 @@ const App: React.FC = () => {
                 2026 Statutory Deadlines are active.
               </p>
             </div>
-            <button 
+            <button
               onClick={() => window.location.hash = '#compliance-calendar'}
               className="flex items-center gap-2 text-brand-900 font-black uppercase tracking-widest text-[10px] md:text-xs hover:translate-x-1 transition-transform"
             >
@@ -172,23 +167,25 @@ const App: React.FC = () => {
           <>
             <EventPopup 
               isOpen={showEventPopup} 
-              onClose={() => {
-                setShowEventPopup(false);
-                sessionStorage.setItem('hasSeenIWS_Event_Immediate', 'true');
+              onClose={() => { 
+                setShowEventPopup(false); 
+                sessionStorage.setItem('hasSeenIWS_Event_Immediate', 'true'); 
               }} 
             />
             <FinancialHealthScore 
               isOpen={showAssessmentModal} 
               onClose={() => { 
-                setShowAssessmentModal(false);
+                setShowAssessmentModal(false); 
                 if(window.location.hash === '#assessment') {
-                   window.history.pushState("", document.title, window.location.pathname + window.location.search);
+                  window.history.pushState("", document.title, window.location.pathname + window.location.search);
                 }
-              }}
+              }} 
             />
             <FloatingCTA />
             <WhatsAppButton />
-            <UnifiedSupportWidget />
+            
+            {/* SURGICAL FIX: Swapped legacy UnifiedSupportWidget for the secure Chatbot component */}
+            <Chatbot /> 
           </>
         )}
         <CookieConsent />
