@@ -8,7 +8,7 @@ import ErrorBoundary from './components/ErrorBoundary';
 // Layout
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
-import { Chatbot } from './components/Chatbot'; 
+import { Chatbot } from './src/components/Chatbot'; // <-- FIXED IMPORT PATH
 import CookieConsent from './components/CookieConsent';
 import WhatsAppButton from './components/WhatsAppButton';
 import EventPopup from './components/EventPopup';
@@ -183,8 +183,6 @@ const App: React.FC = () => {
             />
             <FloatingCTA />
             <WhatsAppButton />
-            
-            {/* SURGICAL FIX: Swapped legacy UnifiedSupportWidget for the secure Chatbot component */}
             <Chatbot /> 
           </>
         )}
