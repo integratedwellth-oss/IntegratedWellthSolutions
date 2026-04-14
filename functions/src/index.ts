@@ -6,7 +6,7 @@ const AI_MODEL = "gemini-3.1-flash-lite-preview";
 export const websiteChat = onCall({
   region: "us-central1",
   cors: true, 
-}, async (request) => {
+}, async (request: any) => {
   const { message, history } = request.data;
 
   if (!message || !GEMINI_API_KEY) {
