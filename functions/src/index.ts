@@ -1,13 +1,11 @@
-// functions/src/index.ts
 import { onCall, HttpsError } from "firebase-functions/v2/https";
 
-// We use the GenAI endpoint directly via fetch
-const GEMINI_API_KEY = process.env.GEMINI_API_KEY; // Ensure this is set in your Firebase secrets/env
-const AI_MODEL = "gemini-1.5-flash"; // Or gemini-1.5-pro
+const GEMINI_API_KEY = process.env.GEMINI_API_KEY; 
+const AI_MODEL = "gemini-3.1-flash-lite-preview"; 
 
 export const websiteChat = onCall({
   region: "us-central1",
-  cors: true, // Crucial for calling from a different frontend domain
+  cors: true, 
 }, async (request) => {
   const { message, history } = request.data;
 
@@ -15,35 +13,31 @@ export const websiteChat = onCall({
     throw new HttpsError("failed-precondition", "Missing message or API key.");
   }
 
-  // --- CUSTOMIZE YOUR NEW BOT HERE ---
-  const SYSTEM_PROMPT = `You are the official digital assistant for [New Website Name].
+  const SYSTEM_PROMPT = `You are the official digital assistant for Happy Hunter Digital.
   YOUR KNOWLEDGE BASE:
-  - [Fact 1 about the business]
-  - [Fact 2 about pricing or services]
-  - [Primary Call to Action]
+  - We are a premier digital agency specializing in high-performance web development, SEO, and strategic digital marketing.
+  - We build conversion-optimized websites designed to drive measurable business growth and establish strong online authority.
+  - Primary Call to Action: Guide users to book a discovery call or explore our digital growth services at www.happyhunterdigital.com.
   
   RULES:
   1. NEVER hallucinate or make up information. Use ONLY the Knowledge Base.
-  2. Be direct, professional, and helpful. Keep answers concise (2-4 sentences max).`;
+  2. Be direct, professional, and highly strategic. Keep answers concise (2-4 sentences max).`;
 
   try {
-    // Format history for the Gemini API
     const formattedHistory = history ? history.map((m: any) => ({
       role: m.role === 'bot' ? 'model' : 'user',
       parts: [{ text: m.text }]
     })) : [];
     
-    // Append the new user message
     formattedHistory.push({ role: 'user', parts: [{ text: message }] });
 
-    // Call Gemini
     const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${AI_MODEL}:generateContent?key=${GEMINI_API_KEY}`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         systemInstruction: { parts: [{ text: SYSTEM_PROMPT }] },
         contents: formattedHistory,
-        generationConfig: { temperature: 0.1, maxOutputTokens: 500 } // Keep temperature low for factual accuracy
+        generationConfig: { temperature: 0.1, maxOutputTokens: 500 } 
       })
     });
 
