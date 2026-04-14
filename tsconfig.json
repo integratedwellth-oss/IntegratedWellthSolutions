@@ -1,33 +1,31 @@
 {
-  "compilerOptions": {
-    "target": "ESNext",
-    "useDefineForClassFields": true,
-    "lib": ["DOM", "DOM.Iterable", "ESNext"],
-    "allowJs": false,
-    "skipLibCheck": true,
-    "esModuleInterop": false,
-    "allowSyntheticDefaultImports": true,
-    "strict": true,
-    "forceConsistentCasingInFileNames": true,
-    "module": "ESNext",
-    "moduleResolution": "bundler",
-    "resolveJsonModule": true,
-    "isolatedModules": true,
-    "noEmit": true,
-    "jsx": "react-jsx",
-    "noUnusedLocals": false,
-    "noUnusedParameters": false,
-    "noFallthroughCasesInSwitch": true,
-    
-    // Path aliases aligned with your Vite config
-    "baseUrl": ".",
-    "paths": {
-      "@/*": ["./*"]
-    },
-    
-    // CRITICAL: Restores Vite client types for `import.meta.env`
-    "types": ["vite/client"]
-  },
-  "include": ["**/*.ts", "**/*.tsx"],
-  "exclude": ["node_modules"]
+ "compilerOptions": {
+ "target": "ESNext",
+ "useDefineForClassFields": true,
+ "lib": ["DOM", "DOM.Iterable", "ESNext"],
+ "allowJs": false,
+ "skipLibCheck": true,
+ "esModuleInterop": false,
+ "allowSyntheticDefaultImports": true,
+ "strict": true,
+ "forceConsistentCasingInFileNames": true,
+ "module": "ESNext",
+ "moduleResolution": "bundler",
+ "resolveJsonModule": true,
+ "isolatedModules": true,
+ "noEmit": true,
+ "jsx": "react-jsx",
+ "noUnusedLocals": false,
+ "noUnusedParameters": false,
+ "noFallthroughCasesInSwitch": true,
+ 
+ "baseUrl": ".",
+ "paths": {
+ "@/*": ["./*"]
+ },
+ 
+ "types": ["vite/client"]
+ },
+ "include": ["**/*.ts", "**/*.tsx"],
+ "exclude": ["node_modules", "functions", "functions/**/*"]
 }
