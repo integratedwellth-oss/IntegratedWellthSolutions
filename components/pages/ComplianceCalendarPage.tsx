@@ -2,7 +2,24 @@ import React, { useState } from 'react';
 import RevealOnScroll from '../RevealOnScroll';
 import { Calendar, ShieldCheck, AlertTriangle, Clock, Building2, User, Landmark, HelpCircle, ChevronDown, ChevronUp } from 'lucide-react';
 import Button from '../Button';
-import { SCHEDULE, FAQS } from './ComplianceCalendarData';
+
+const SCHEDULE = [
+  { month: "February 2026", deadlines: [{ day: "28", entity: "All Entities", task: "Provisional Tax (IRP6) 2nd Period", risk: "High", desc: "Mandatory payment to avoid 10% penalty plus interest." }, { day: "28", entity: "Individuals", task: "IT3(b) & IT3(c) Data Prep", risk: "Medium", desc: "Gather investment and interest certificates." }] },
+  { month: "March 2026", deadlines: [{ day: "31", entity: "Corporate", task: "CIPC Annual Returns", risk: "Critical", desc: "Hard deadline to prevent deregistration process initiation." }, { day: "25", entity: "VAT Vendors", task: "VAT 201 Submission & Payment", risk: "High", desc: "Category B vendors (periods ending Feb)." }] },
+  { month: "April 2026", deadlines: [{ day: "07", entity: "Employers", task: "EMP201 Submission", risk: "Medium", desc: "PAYE, SDL and UIF for March." }] },
+  { month: "May 2026", deadlines: [{ day: "31", entity: "Employers", task: "EMP501 Interim Reconciliation", risk: "Critical", desc: "Bi-annual payroll reconciliation. Major audit trigger if incorrect." }, { day: "31", entity: "NPOs", task: "Section 18A Third Party Data", risk: "High", desc: "Submission of donor data to SARS." }] },
+  { month: "June 2026", deadlines: [{ day: "30", entity: "Corporate", task: "Provisional Tax (IRP6) 3rd Period", risk: "Medium", desc: "Voluntary top-up to avoid Section 89quat interest." }] },
+  { month: "July 2026", deadlines: [{ day: "01", entity: "Individuals", task: "Tax Season Opens (Filing)", risk: "Low", desc: "2026 Filing season official open date." }] },
+  { month: "August 2026", deadlines: [{ day: "31", entity: "Provisional Taxpayers", task: "Provisional Tax (IRP6) 1st Period (2027)", risk: "High", desc: "First estimation for the 2027 tax year." }] }
+];
+
+const FAQS = [
+  { q: "How will the 2026 VAT threshold increase affect my small business?", a: "Effective 1 April 2026, the compulsory VAT registration threshold significantly increases from R1 million to R2.3 million. If your business's 12-month rolling turnover sits below this new threshold, you are legally entitled to apply for VAT deregistration, which can greatly reduce your monthly administrative and cash-flow burdens. Additionally, the voluntary VAT registration threshold has been increased from R50,000 to R120,000." },
+  { q: "Why is my SARS eFiling status showing Pending or Processing instead of Submitted?", a: "In the eFiling ecosystem, a Pending status generally means that SARS is verifying your registration details (which can take 2 to 21 working days) or awaiting the upload of supporting documentation. Processing (or In Progress) indicates that your return has been flagged for audit or verification; this process can take up to 21 business days for a standard verification or up to 90 business days for a full audit." },
+  { q: "Why was a portion of my Two-Pot Retirement System savings withdrawal taken by SARS?", a: "The Two-Pot retirement system rules dictate that any withdrawals made from your savings pot prior to retirement are taxed at your marginal income tax rate. Furthermore, if you have an outstanding tax debt with SARS, the revenue authority will instruct your retirement fund to automatically deduct the owed debt amount from your withdrawal and pay it directly to SARS before releasing the remaining balance to you." },
+  { q: "I am a social media influencer. Does SARS track my income?", a: "Yes. Under its Modernisation 3.0 framework, SARS utilizes artificial intelligence and data-driven insights to profile risk and detect non-compliance, with a specific, publicly stated focus on individuals earning income in the gig and social media economies. SARS views social influencers as independent contractors or sole proprietors who must declare their earnings, which are then taxed according to the standard personal income tax brackets." },
+  { q: "Can I file my CIPC Annual Return without submitting a Beneficial Ownership (BO) declaration?", a: "No. The CIPC strictly enforces a hard-stop functionality. This means you will be completely blocked from filing your Annual Return on the CIPC platforms unless your Beneficial Ownership declaration has been filed and is up to date for that calendar year. For smaller entities without complex ownership structures, the CIPC has rolled out an Optimised System that allows you to complete a simplified securities register online without the need to upload physical mandate documents." }
+];
 
 const ComplianceCalendarPage: React.FC = () => {
   const TREE_HERO_URL = "https://res.cloudinary.com/dka0498ns/image/upload/f_auto,q_auto/v1772373342/Profuse_Beauty_Logo_Tree_z1nc3c.png";
