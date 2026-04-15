@@ -40,13 +40,19 @@ export const Chatbot: React.FC = () => {
     setLoading(true);
     
     try {
+      // SURGICAL FIX: Defensive check to prevent the '_url' crash
+      if (!functions) {
+        console.error("CRITICAL: Firebase Functions instance is null. Production environment variables are missing.");
+        throw new Error("Initialization Failed");
+      }
+
       const chatCall = httpsCallable(functions, 'websiteChat');
       const response = await chatCall({ message: userMsg, history: currentHistory }) as any;
       
       setMessages(prev => [...prev, { role: 'bot', text: response.data?.reply || "Connection lost." }]);
     } catch (err: any) {
-      console.error(err);
-      setMessages(prev => [...prev, { role: 'bot', text: "Error connecting to server. Please try again." }]);
+      console.error("Chat Call Failed:", err);
+      setMessages(prev => [...prev, { role: 'bot', text: "System Configuration Error: Missing production environment keys. Please deploy with VITE_ variables." }]);
     } finally {
       setLoading(false);
     }
