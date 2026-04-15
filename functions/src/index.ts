@@ -1,7 +1,7 @@
 import { onCall, HttpsError } from "firebase-functions/v2/https";
 
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY; 
-const AI_MODEL = "gemini-1.5-flash"; // Updated to stable model
+const AI_MODEL = "gemini-3.1-flash-lite-preview"; // Updated to stable model
 
 export const websiteChat = onCall({
   region: "us-central1",
