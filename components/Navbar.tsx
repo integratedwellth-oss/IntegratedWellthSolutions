@@ -27,21 +27,27 @@ const Navbar: React.FC<NavbarProps> = ({ onNavigate }) => {
     { label: 'ECOSYSTEM', hash: '#services' },
     { label: 'CALENDAR', hash: '#compliance-calendar' },
     { label: 'TEAM', hash: '#team' },
+    { label: 'GALLERY', hash: '#gallery' }, // Added Gallery Link
   ];
+
+  const LOGO_URL = "https://res.cloudinary.com/dka0498ns/image/upload/v1765747786/favicon_ofkkb1.png";
 
   return (
     <>
       <nav className="fixed top-0 left-0 right-0 z-[100] bg-white/95 backdrop-blur-md shadow-sm">
         <div className="max-w-[1400px] mx-auto px-4 md:px-8 py-4 flex items-center justify-between">
-          {/* Logo */}
+          
+          {/* Restored Full Logo Area */}
           <div
             className="flex items-center gap-3 cursor-pointer shrink-0"
             onClick={() => handleLinkClick('#home')}
           >
-            <div className="w-10 h-10 bg-brand-900 rounded-lg" />
+            <div className="w-10 h-10 bg-white border-2 border-brand-900 rounded-lg flex items-center justify-center p-1">
+                <img src={LOGO_URL} alt="IWS Logo" className="w-full h-full object-contain" />
+            </div>
             <div className="flex font-black text-sm tracking-tighter">
               <span className="text-brand-900">INTEGRATED</span>
-              <span className="text-brand-gold">WELLTH</span>
+              <span className="text-brand-gold ml-1">WELLTH</span>
             </div>
           </div>
 
@@ -77,7 +83,7 @@ const Navbar: React.FC<NavbarProps> = ({ onNavigate }) => {
         </div>
       </nav>
 
-      {/* Mobile Menu Overlay — rendered outside nav to avoid stacking/overflow issues */}
+      {/* Mobile Menu Overlay */}
       {isMobileMenuOpen && (
         <div className="fixed inset-0 z-[200] bg-brand-900 flex flex-col p-8 overflow-y-auto">
           <button
