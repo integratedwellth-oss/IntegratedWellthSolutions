@@ -49,7 +49,7 @@ const App: React.FC = () => {
     let popupTimer: number | undefined;
     const hasSeenEvent = sessionStorage.getItem('hasSeenIWS_Event_Immediate');
     const isSpecialPage = ['#warroom', '#intel', '#my-intel', '#landing', '#compliance-calendar'].includes(window.location.hash);
-
+    
     if (!hasSeenEvent && !isSpecialPage) {
       popupTimer = window.setTimeout(() => setShowEventPopup(true), 800);
     }
@@ -57,14 +57,18 @@ const App: React.FC = () => {
     const handleHashChange = () => {
       try {
         const hash = window.location.hash.replace('#', '') || 'home';
+        
         if (hash === 'assessment') {
           setShowAssessmentModal(true);
           return;
         }
 
-        const validViews = ['home', 'landing', 'services', 'who-we-help', 'team', 'workshops', 'blog', 'contact', 'privacy', 'startups', 'existing-business', 'npos', 'individuals', 'wellness', 'accountability', 'tracker', 'warroom', 'protocol', 'intel', 'my-intel', 'compliance-calendar', 'roadmap'];
-        
-        if (['protocol', 'roadmap', 'services'].includes(hash)) {
+        const validViews = ['home', 'landing', 'services', 'who-we-help', 'team', 'workshops', 'blog', 
+        'contact', 'privacy', 'startups', 'existing-business', 'npos', 'individuals', 'wellness', 'accountability', 
+        'tracker', 'warroom', 'protocol', 'intel', 'my-intel', 'compliance-calendar', 'roadmap', 'gallery'];
+
+        // Removed 'services' from here so it loads as a full page, added 'gallery' for home page scrolling
+        if (['protocol', 'roadmap', 'gallery'].includes(hash)) {
           setCurrentView('home');
           setTimeout(() => {
             const element = document.getElementById(hash);
@@ -154,7 +158,7 @@ const App: React.FC = () => {
                 2026 Statutory Deadlines are active.
               </p>
             </div>
-            <button
+            <button 
               onClick={() => window.location.hash = '#compliance-calendar'}
               className="flex items-center gap-2 text-brand-900 font-black uppercase tracking-widest text-[10px] md:text-xs hover:translate-x-1 transition-transform"
             >
@@ -167,15 +171,15 @@ const App: React.FC = () => {
           <>
             <EventPopup 
               isOpen={showEventPopup} 
-              onClose={() => { 
-                setShowEventPopup(false); 
-                sessionStorage.setItem('hasSeenIWS_Event_Immediate', 'true'); 
+              onClose={() => {
+                setShowEventPopup(false);
+                sessionStorage.setItem('hasSeenIWS_Event_Immediate', 'true');
               }} 
             />
             <FinancialHealthScore 
               isOpen={showAssessmentModal} 
-              onClose={() => { 
-                setShowAssessmentModal(false); 
+              onClose={() => {
+                setShowAssessmentModal(false);
                 if(window.location.hash === '#assessment') {
                   window.history.pushState("", document.title, window.location.pathname + window.location.search);
                 }
@@ -183,9 +187,10 @@ const App: React.FC = () => {
             />
             <FloatingCTA />
             <WhatsAppButton />
-            <Chatbot /> 
+            <Chatbot />
           </>
         )}
+        
         <CookieConsent />
       </div>
     </ErrorBoundary>
