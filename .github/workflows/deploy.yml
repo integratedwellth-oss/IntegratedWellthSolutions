@@ -17,6 +17,9 @@ jobs:
         with:
           node-version: '20'
 
+      - name: Run Security Audit
+        run: npm audit --audit-level=high
+
       - name: Install Frontend Dependencies
         run: npm install
 
