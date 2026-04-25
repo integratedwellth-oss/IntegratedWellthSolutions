@@ -16,10 +16,12 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '20'
-          cache: 'npm'
 
-      - name: Install Dependencies
+      - name: Install Frontend Dependencies
         run: npm ci
+
+      - name: Run Security Audit (Non-blocking)
+        run: npm audit --audit-level=high || echo "Audit complete, vulnerabilities found but continuing build..."
 
       - name: Build Website
         run: npm run build
