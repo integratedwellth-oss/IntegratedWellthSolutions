@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { LayoutGrid, Users, Calendar, Target, Workflow, ArrowRight, Menu, X, Layout, ShieldAlert, Shield } from 'lucide-react';
+import { LayoutGrid, Users, Calendar, Target, Workflow, ArrowRight, Menu, X, ShieldAlert } from 'lucide-react';
 import { auth } from '../firebaseConfig';
 import { onAuthStateChanged } from 'firebase/auth';
 
@@ -18,16 +18,9 @@ const Navbar: React.FC<NavbarProps> = ({ onNavigate }) => {
       setActiveHash(window.location.hash || '#home');
       setScrolled(window.scrollY > 20);
     };
-    const unsubAuth = onAuthStateChanged(auth, (user) => {
-      setIsLoggedIn(!!user);
-    });
+    const unsubAuth = onAuthStateChanged(auth, (user) => setIsLoggedIn(!!user));
     window.addEventListener('scroll', handleScroll);
-    window.addEventListener('hashchange', handleScroll);
-    return () => {
-      window.removeEventListener('scroll', handleScroll);
-      window.removeEventListener('hashchange', handleScroll);
-      unsubAuth();
-    };
+    return () => { window.removeEventListener('scroll', handleScroll); unsubAuth(); };
   }, []);
 
   const handleLinkClick = (hash: string) => {
@@ -36,44 +29,39 @@ const Navbar: React.FC<NavbarProps> = ({ onNavigate }) => {
     setIsMobileMenuOpen(false);
   };
 
-  const navLinks = [
-    { label: 'THE PROTOCOL', hash: '#protocol', icon: <Workflow size={14} /> },
-    { label: 'ECOSYSTEM', hash: '#services', icon: <LayoutGrid size={14} /> },
-    { label: 'CALENDAR', hash: '#compliance-calendar', icon: <Calendar size={14} /> },
-    { label: 'AUDIENCES', hash: '#who-we-help', icon: <Users size={14} /> },
-    { label: 'IDENTITY', hash: '#team', icon: <Target size={14} /> },
-    { label: 'WAR ROOM', hash: '#warroom', icon: <ShieldAlert size={14} /> }
-  ];
+  const LOGO_URL = "https://res.cloudinary.com/dka0498ns/image/upload/v1765747786/favicon_ofkkb1.png";
 
   return (
-    <nav className={`fixed top-0 w-full z-[100] px-4 pt-4 transition-all duration-300`}>
-      <div className={`absolute inset-0 bg-brand-900/90 backdrop-blur-xl shadow-2xl transition-opacity duration-300 ${scrolled ? 'opacity-100' : 'opacity-80'}`}></div>
-      <div className="flex items-center justify-between relative z-10 py-2">
-        {/* LOGO AREA - Minimal for Mobile */}
-        <div className="flex items-center gap-2 cursor-pointer" onClick={() => handleLinkClick('#home')}>
-          <div className="w-10 h-10 rounded-lg bg-white flex items-center justify-center font-black text-brand-900">IWS</div>
+    <nav className={`fixed top-0 w-full z-[100] px-4 md:px-6 pt-4 transition-all duration-300 ${scrolled ? 'pb-4' : 'pb-0'}`}>
+      <div className={`absolute inset-0 transition-opacity duration-300 ${scrolled ? 'bg-brand-900/90 backdrop-blur-xl shadow-2xl' : 'opacity-0'}`}></div>
+      <div className="max-w-[1800px] mx-auto flex items-center justify-between relative z-10">
+        
+        {/* LOGO AREA - RESTORED */}
+        <div className="flex items-start gap-3 cursor-pointer shrink-0 group" onClick={() => handleLinkClick('#home')}>
+          <div className="w-12 h-12 rounded-xl bg-white border-2 border-brand-brown overflow-hidden shadow-lg flex items-center justify-center p-1">
+            <img src={LOGO_URL} className="w-full h-full object-contain" alt="IWS" />
+          </div>
+          <div className="flex flex-col">
+            <div className="flex items-center font-sora font-black text-lg md:text-xl tracking-tighter">
+              <div className="bg-brand-brown text-[#14b8a6] px-3 py-2 rounded-l-lg">INTEGRATED</div>
+              <div className="bg-[#14b8a6] text-brand-brown px-3 py-2 rounded-r-lg">WELLTH</div>
+            </div>
+          </div>
         </div>
 
-        {/* MOBILE MENU TOGGLE */}
-        <button onClick={() => setIsMobileMenuOpen(true)} className="p-2 text-white bg-white/10 rounded-lg">
+        {/* DESKTOP ACTIONS */}
+        <div className="hidden xl:flex items-center gap-4">
+          <button onClick={() => handleLinkClick('#warroom')} className="flex items-center gap-2 bg-brand-brown text-brand-gold border-2 border-red-600 px-4 py-3 rounded-xl shadow-lg hover:bg-red-600 hover:text-white transition-all">
+            <ShieldAlert size={18} className="animate-pulse" />
+            <span className="text-[10px] font-black uppercase tracking-widest">WAR ROOM</span>
+          </button>
+        </div>
+
+        {/* MOBILE BURGER */}
+        <button onClick={() => setIsMobileMenuOpen(true)} className="xl:hidden w-12 h-12 rounded-xl bg-white/10 text-white border border-white/10 flex items-center justify-center">
           <Menu size={24} />
         </button>
       </div>
-
-      {isMobileMenuOpen && (
-        <div className="fixed inset-0 z-[200] bg-brand-900 flex flex-col p-6 animate-fadeIn">
-          <div className="flex justify-end mb-10">
-            <button onClick={() => setIsMobileMenuOpen(false)} className="text-white p-2"><X size={32}/></button>
-          </div>
-          <div className="flex flex-col gap-6">
-            {navLinks.map((link) => (
-              <button key={link.hash} onClick={() => handleLinkClick(link.hash)} className="text-white text-2xl font-black uppercase tracking-widest flex items-center gap-4">
-                {link.icon} {link.label}
-              </button>
-            ))}
-          </div>
-        </div>
-      )}
     </nav>
   );
 };
