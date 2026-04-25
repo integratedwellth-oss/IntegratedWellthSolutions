@@ -1,0 +1,12 @@
+// storage.rules
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+    match /{allPaths=**} {
+      allow write: if request.resource != null 
+                   && request.resource.contentType.matches('image/.*')
+                   && request.resource.size < 5 * 1024 * 1024; // Limit to 5MB
+      allow read: if true;
+    }
+  }
+}
