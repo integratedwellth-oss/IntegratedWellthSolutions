@@ -27,9 +27,7 @@ const FinancialHealthScore: React.FC<FinancialHealthScoreProps> = ({ isModal = f
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
       setUser(currentUser);
       setIsAuthLoading(false);
-      if (currentUser && !started && isOpen) {
-        setStarted(true);
-      }
+      if (currentUser && !started && isOpen) setStarted(true);
     });
     return () => unsubscribe();
   }, [started, isOpen]);
@@ -62,6 +60,7 @@ const FinancialHealthScore: React.FC<FinancialHealthScoreProps> = ({ isModal = f
   const handleAnswer = (answerText: string, points: number) => {
     setDetailedAnswers([...detailedAnswers, { q: QUESTIONS[currentStep].question, a: answerText }]);
     const newScore = score + points;
+    
     if (currentStep < QUESTIONS.length - 1) {
       setScore(newScore);
       setCurrentStep(currentStep + 1);
@@ -106,13 +105,13 @@ const FinancialHealthScore: React.FC<FinancialHealthScoreProps> = ({ isModal = f
             html: `<h1>Assessment Complete</h1><p>Your persona is ${res.persona}. Click <a href="https://www.integratedwellth.co.za/#my-intel">here to view your dashboard</a>.</p>`
           }
         });
-        setSubmissionComplete(true);
-        setTimeout(() => {
-          if (onClose) onClose();
-          window.location.href = '/#my-intel';
-          window.location.reload();
-        }, 1500);
       }
+      setSubmissionComplete(true);
+      setTimeout(() => {
+        if (onClose) onClose();
+        window.location.href = '/#my-intel';
+        window.location.reload();
+      }, 1500);
     } catch (err) {
       console.error(err);
       alert("Error saving data. Check Firebase Rules.");
@@ -120,16 +119,28 @@ const FinancialHealthScore: React.FC<FinancialHealthScoreProps> = ({ isModal = f
     setIsSubmitting(false);
   };
 
+  const progressPercent = (currentStep / QUESTIONS.length) * 100;
+
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-brand-900/95 backdrop-blur-xl font-sans text-left animate-fadeIn">
       <div className="bg-white rounded-[3rem] p-1 w-full max-w-4xl max-h-[90vh] overflow-hidden relative shadow-2xl">
         <div className="bg-white rounded-[2.8rem] h-full overflow-y-auto p-8 md:p-16 relative flex flex-col justify-center">
-          <button onClick={onClose} className="absolute top-8 right-8 text-brand-900/40 hover:text-brand-900"><X size={32}/></button>
+          
+          {started && !showProfileForm && !submissionComplete && (
+             <div className="absolute top-0 left-0 w-full h-1.5 bg-gray-100 rounded-t-[2.8rem] overflow-hidden">
+               <div className="h-full bg-brand-gold transition-all duration-500 ease-out" style={{ width: `${progressPercent}%` }}></div>
+             </div>
+          )}
+
+          <button onClick={onClose} className="absolute top-8 right-8 text-brand-900/40 hover:text-brand-900 z-50">
+            <X size={32}/>
+          </button>
+          
           {!user ? (
             <div className="text-center space-y-8 max-w-md mx-auto">
               <div className="w-20 h-20 bg-brand-900 text-brand-gold rounded-2xl flex items-center justify-center mx-auto shadow-xl animate-pulse"><Lock size={40} /></div>
               <h2 className="text-3xl md:text-5xl font-sora font-black text-brand-900 uppercase tracking-tighter">Client Portal</h2>
-              <p className="text-brand-900/60 font-medium">Authenticate to access the assessment.</p>
+              <p className="text-brand-900/60 font-medium">Authenticate to access the assessment and track progress over time.</p>
               <button onClick={handleGoogleLogin} disabled={isAuthLoading} className="w-full flex items-center justify-center gap-3 bg-brand-900 text-white py-5 rounded-2xl hover:bg-brand-gold hover:text-brand-900 transition-all font-black uppercase tracking-widest shadow-xl">
                 {isAuthLoading ? <Loader2 className="animate-spin" /> : 'Sign in with Google'}
               </button>
@@ -141,13 +152,12 @@ const FinancialHealthScore: React.FC<FinancialHealthScoreProps> = ({ isModal = f
               <p className="font-bold text-brand-900/60">Redirecting to your personalized dashboard now...</p>
             </div>
           ) : !showProfileForm ? (
-            <div className="space-y-12 w-full">
+            <div className="space-y-12 w-full pt-4">
               <div className="flex justify-between items-end border-b border-brand-900/10 pb-6">
                 <div>
-                  <p className="text-brand-gold text-[10px] font-black uppercase tracking-[0.4em] mb-2">Diagnostic 0{currentStep+1}</p>
+                  <p className="text-brand-gold text-[10px] font-black uppercase tracking-[0.4em] mb-2">Question {currentStep + 1} of {QUESTIONS.length}</p>
                   <h3 className="text-xl font-black text-brand-900 uppercase">{QUESTIONS[currentStep].category}</h3>
                 </div>
-                <div className="flex gap-1.5">{QUESTIONS.map((_, i) => <div key={i} className={`w-3 h-1 rounded-full ${i <= currentStep ? 'bg-brand-900' : 'bg-brand-900/10'}`}></div>)}</div>
               </div>
               <h2 className="text-2xl md:text-3xl font-bold text-brand-900 leading-tight">{QUESTIONS[currentStep].question}</h2>
               <div className="grid gap-4">
