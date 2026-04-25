@@ -1,5 +1,4 @@
-
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import BlogPost from '../BlogPost';
 import BlogEditor from '../BlogEditor';
 import RevealOnScroll from '../RevealOnScroll';
@@ -12,9 +11,11 @@ const BlogPage: React.FC = () => {
   const [showEditor, setShowEditor] = useState(false);
   const [editingPost, setEditingPost] = useState<BlogPostType | null>(null);
   const [selectedPost, setSelectedPost] = useState<BlogPostType | null>(null);
+  
+  const [searchQuery, setSearchQuery] = useState('');
+  const [activeCategory, setActiveCategory] = useState('All');
 
   useEffect(() => {
-    // Load posts from localStorage or use defaults
     const savedPosts = localStorage.getItem('iws_blog_posts');
     if (savedPosts) {
       setPosts(JSON.parse(savedPosts));
@@ -46,35 +47,17 @@ const BlogPage: React.FC = () => {
     }
   }, []);
 
-  // SEO Side Effect for individual blog posts
-  useEffect(() => {
-    if (selectedPost) {
-      const originalTitle = document.title;
-      const originalDescription = document.querySelector('meta[name="description"]')?.getAttribute('content') || '';
+  const categories = useMemo(() => {
+    return ['All', ...Array.from(new Set(posts.map(p => p.category)))];
+  }, [posts]);
 
-      // Update document title
-      document.title = `${selectedPost.title} | Integrated Wellth Solutions | ${selectedPost.category}`;
-      
-      // Update meta description
-      let metaDesc = document.querySelector('meta[name="description"]');
-      if (metaDesc) {
-        metaDesc.setAttribute('content', selectedPost.excerpt);
-      } else {
-        metaDesc = document.createElement('meta');
-        metaDesc.setAttribute('name', 'description');
-        metaDesc.setAttribute('content', selectedPost.excerpt);
-        document.head.appendChild(metaDesc);
-      }
-
-      // Cleanup: revert to original metadata when unmounting or post is closed
-      return () => {
-        document.title = originalTitle;
-        if (metaDesc) {
-          metaDesc.setAttribute('content', originalDescription);
-        }
-      };
-    }
-  }, [selectedPost]);
+  const filteredPosts = useMemo(() => {
+    return posts.filter(p => {
+      const matchesSearch = p.title.toLowerCase().includes(searchQuery.toLowerCase()) || p.excerpt.toLowerCase().includes(searchQuery.toLowerCase());
+      const matchesCat = activeCategory === 'All' || p.category === activeCategory;
+      return matchesSearch && matchesCat;
+    });
+  }, [posts, searchQuery, activeCategory]);
 
   const savePost = (post: BlogPostType) => {
     let updatedPosts;
@@ -99,68 +82,52 @@ const BlogPage: React.FC = () => {
   if (selectedPost) {
     return (
       <div className="animate-fadeIn pb-20">
-         <div className="pt-32 px-6">
-            <button 
-              onClick={() => setSelectedPost(null)}
-              className="group flex items-center gap-2 text-brand-900/40 hover:text-brand-900 font-black uppercase tracking-widest text-[10px] mb-12"
-            >
-              <ArrowRight size={14} className="rotate-180 group-hover:-translate-x-1 transition-transform" /> Back to Intel Hub
-            </button>
-            <article className="max-w-4xl mx-auto">
-               <div className="text-center mb-16">
-                 <span className="inline-block px-4 py-1 bg-brand-gold text-brand-900 rounded-full text-[10px] font-black uppercase tracking-[0.2em] mb-6">{selectedPost.category}</span>
-                 <h1 className="text-6xl md:text-8xl font-sora font-extrabold text-brand-900 tracking-tighter leading-[0.85] mb-8">{selectedPost.title}</h1>
-                 <div className="flex items-center justify-center gap-8 text-brand-900/40 font-bold uppercase tracking-widest text-[10px]">
-                    <span className="flex items-center gap-2"><Clock size={14} /> {selectedPost.date}</span>
-                    <span>By {selectedPost.author}</span>
-                 </div>
-               </div>
-               <div className="relative mb-20">
-                 <div className="absolute -inset-4 border-2 border-brand-gold/20 rounded-[3.5rem] -rotate-1" />
-                 <img src={selectedPost.image} className="w-full h-[60vh] object-cover rounded-[3rem] relative z-10 shadow-2xl" alt={selectedPost.title} />
-               </div>
-               <div className="max-w-2xl mx-auto">
-                  <p className="text-2xl md:text-3xl text-brand-900/80 font-medium italic leading-relaxed mb-16 pb-16 border-b border-brand-900/10">
-                    {selectedPost.excerpt}
-                  </p>
-                  
-                  {/* Render content with basic markdown handling */}
-                  <div className="space-y-8 text-lg text-brand-900/70 leading-relaxed font-medium">
-                     {selectedPost.content.split('\n').map((line, i) => {
-                       if (line.startsWith('## ')) return <h2 key={i} className="text-4xl font-sora font-black text-brand-900 tracking-tighter mt-12 mb-4 uppercase">{line.replace('## ', '')}</h2>;
-                       if (line.startsWith('### ')) return <h3 key={i} className="text-2xl font-sora font-black text-brand-900 tracking-tighter mt-8 mb-3 uppercase">{line.replace('### ', '')}</h3>;
-                       if (line.startsWith('* ')) return (
-                          <div key={i} className="flex gap-4 items-start pl-4">
-                            <div className="w-2 h-2 rounded-full bg-brand-gold mt-2.5 flex-shrink-0" />
-                            <span>{line.replace('* ', '')}</span>
-                          </div>
-                       );
-                       return line.trim() ? <p key={i}>{line.replace(/\*\*(.*?)\*\*/g, (m, p1) => `<strong class="text-brand-900">${p1}</strong>`)}</p> : null;
-                     })}
-                  </div>
-                  
-                  <div className="mt-20 pt-20 border-t border-brand-900/10 text-center">
-                     <p className="text-[10px] font-black uppercase tracking-[0.5em] text-brand-900/30 mb-8">End of Intel Update</p>
-                     <Button 
-                        onClick={() => window.open('https://calendly.com/enquiries-integratedwellth/30min', '_blank')}
-                        className="rounded-full px-12 py-6 bg-brand-900 text-white font-black uppercase tracking-widest text-xs"
-                     >
-                        Discuss This Strategy
-                     </Button>
-                  </div>
-               </div>
-            </article>
-         </div>
+        <div className="pt-32 px-6">
+          <button onClick={() => setSelectedPost(null)} className="group flex items-center gap-2 text-brand-900/40 hover:text-brand-900 font-black uppercase tracking-widest text-[10px] mb-12">
+            <ArrowRight size={14} className="rotate-180 group-hover:-translate-x-1 transition-transform" /> Back to Intel Hub
+          </button>
+          <article className="max-w-4xl mx-auto">
+            <div className="text-center mb-16">
+              <span className="inline-block px-4 py-1 bg-brand-gold text-brand-900 rounded-full text-[10px] font-black uppercase tracking-[0.2em] mb-6">{selectedPost.category}</span>
+              <h1 className="text-6xl md:text-8xl font-sora font-extrabold text-brand-900 tracking-tighter leading-[0.85] mb-8">{selectedPost.title}</h1>
+              <div className="flex items-center justify-center gap-8 text-brand-900/40 font-bold uppercase tracking-widest text-[10px]">
+                <span className="flex items-center gap-2"><Clock size={14} /> {selectedPost.date}</span>
+                <span>By {selectedPost.author}</span>
+              </div>
+            </div>
+            <div className="relative mb-20">
+              <div className="absolute -inset-4 border-2 border-brand-gold/20 rounded-[3.5rem] -rotate-1" />
+              <img src={selectedPost.image} className="w-full h-[60vh] object-cover rounded-[3rem] relative z-10 shadow-2xl" alt={selectedPost.title} />
+            </div>
+            <div className="max-w-2xl mx-auto">
+              <p className="text-2xl md:text-3xl text-brand-900/80 font-medium italic leading-relaxed mb-16 pb-16 border-b border-brand-900/10">
+                {selectedPost.excerpt}
+              </p>
+              <div className="space-y-8 text-lg text-brand-900/70 leading-relaxed font-medium">
+                {selectedPost.content.split('\n').map((line, i) => {
+                  if (line.startsWith('## ')) return <h2 key={i} className="text-4xl font-sora font-black text-brand-900 tracking-tighter mt-12 mb-4 uppercase">{line.replace('## ', '')}</h2>;
+                  if (line.startsWith('### ')) return <h3 key={i} className="text-2xl font-sora font-black text-brand-900 tracking-tighter mt-8 mb-3 uppercase">{line.replace('### ', '')}</h3>;
+                  if (line.startsWith('* ')) return (
+                    <div key={i} className="flex gap-4 items-start pl-4">
+                      <div className="w-2 h-2 rounded-full bg-brand-gold mt-2.5 flex-shrink-0" />
+                      <span>{line.replace('* ', '')}</span>
+                    </div>
+                  );
+                  return line.trim() ? <p key={i}>{line.replace(/\*\*(.*?)\*\*/g, (m, p1) => `<strong className="text-brand-900">${p1}</strong>`)}</p> : null;
+                })}
+              </div>
+            </div>
+          </article>
+        </div>
       </div>
     );
   }
 
   return (
     <div className="animate-fadeIn min-h-screen bg-white pb-32">
-      {/* Dynamic Header */}
       <div className="bg-brand-900 text-white pt-40 pb-32 px-6 relative overflow-hidden">
         <div className="absolute inset-0 opacity-10 pointer-events-none">
-           <Zap size={800} className="absolute -left-40 -top-40 text-brand-gold" />
+          <Zap size={800} className="absolute -left-40 -top-40 text-brand-gold" />
         </div>
         <div className="max-w-7xl mx-auto relative z-10">
           <div className="flex flex-col md:flex-row justify-between items-end gap-12">
@@ -176,12 +143,8 @@ const BlogPage: React.FC = () => {
                 Navigating the 2026 Compliance Era with predictive clarity and behavioral foresight.
               </p>
             </div>
-            
             <div className="flex flex-col gap-4">
-              <button 
-                onClick={() => { setEditingPost(null); setShowEditor(true); }}
-                className="group flex items-center gap-4 bg-brand-gold text-brand-900 px-8 py-5 rounded-full shadow-2xl hover:bg-white transition-all font-black uppercase tracking-widest text-xs"
-              >
+              <button onClick={() => { setEditingPost(null); setShowEditor(true); }} className="group flex items-center gap-4 bg-brand-gold text-brand-900 px-8 py-5 rounded-full shadow-2xl hover:bg-white transition-all font-black uppercase tracking-widest text-xs">
                 <Plus size={18} /> Compose Insight
               </button>
             </div>
@@ -190,97 +153,94 @@ const BlogPage: React.FC = () => {
       </div>
 
       <div className="max-w-7xl mx-auto px-6 -mt-16 relative z-20">
-        {/* Search & Filter Bar */}
-        <div className="bg-white rounded-[2.5rem] p-4 shadow-2xl border border-brand-900/5 flex flex-col md:flex-row gap-4 mb-20">
-           <div className="flex-1 relative">
-              <Search className="absolute left-6 top-1/2 -translate-y-1/2 text-brand-900/20" size={20} />
-              <input 
-                type="text" 
-                placeholder="Query intellectual property database..." 
-                className="w-full pl-16 pr-8 py-5 bg-brand-50 rounded-full text-sm font-bold text-brand-900 outline-none focus:ring-2 focus:ring-brand-gold"
-              />
-           </div>
-           <div className="flex gap-2">
-              <button className="flex items-center gap-3 px-8 py-5 bg-brand-900 text-white rounded-full text-[10px] font-black uppercase tracking-widest hover:bg-brand-gold transition-all">
-                 <Filter size={16} /> Filter Modules
-              </button>
-           </div>
+        <div className="bg-white rounded-[2.5rem] p-4 shadow-2xl border border-brand-900/5 flex flex-col md:flex-row gap-4 mb-10">
+          <div className="flex-1 relative">
+            <Search className="absolute left-6 top-1/2 -translate-y-1/2 text-brand-900/40" size={20} />
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Query intellectual property database..."
+              className="w-full pl-16 pr-8 py-5 bg-brand-50 rounded-full text-sm font-bold text-brand-900 outline-none focus:ring-2 focus:ring-brand-gold"
+            />
+          </div>
         </div>
 
-        {/* Featured Post Implementation */}
-        {posts.length > 0 && (
-          <div 
-            onClick={() => setSelectedPost(posts[0])}
-            className="group cursor-pointer mb-24 relative overflow-hidden rounded-[3.5rem] bg-brand-900 text-white min-h-[600px] flex items-end p-8 md:p-20 shadow-2xl"
-          >
-             <div className="absolute inset-0 z-0">
-               <img src={posts[0].image} className="w-full h-full object-cover opacity-40 group-hover:scale-105 transition-transform duration-[2s]" alt="Featured" />
-               <div className="absolute inset-0 bg-gradient-to-t from-brand-900 via-brand-900/20 to-transparent" />
-             </div>
-             <div className="relative z-10 max-w-4xl space-y-8">
-                <span className="inline-block px-5 py-2 bg-brand-gold text-brand-900 rounded-full text-[10px] font-black uppercase tracking-[0.2em]">{posts[0].category}</span>
-                <h2 className="text-5xl md:text-8xl font-sora font-extrabold tracking-tighter leading-[0.9] group-hover:text-brand-gold transition-colors">{posts[0].title}</h2>
-                <p className="text-xl md:text-2xl text-brand-100/60 max-w-2xl font-light leading-relaxed">{posts[0].excerpt}</p>
-                <div className="flex items-center gap-6">
-                   <div className="flex items-center gap-3">
-                      <img src="https://res.cloudinary.com/dka0498ns/image/upload/v1768022744/Marcia_Kgaphola._The_founder_of_Integrated_Wellth_Solution_giving_a_keynote_speech_at_a_women_business_conference_rr55ol.jpg" className="w-12 h-12 rounded-xl object-cover grayscale" alt="Marcia" />
-                      <p className="text-xs font-black uppercase tracking-widest">{posts[0].author}</p>
-                   </div>
-                   <div className="w-px h-8 bg-white/10" />
-                   <p className="text-xs font-bold text-white/40 uppercase tracking-widest">{posts[0].date}</p>
-                </div>
-             </div>
-          </div>
-        )}
-
-        {/* Grid System */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-12">
-          {posts.slice(1).map((post, i) => (
-            <RevealOnScroll key={post.id} delay={i * 0.1} width="100%">
-              <div 
-                onClick={() => setSelectedPost(post)}
-                className="group cursor-pointer bg-white rounded-[3rem] border border-brand-900/5 hover:border-brand-gold hover:shadow-2xl transition-all flex flex-col h-full overflow-hidden"
-              >
-                <div className="aspect-[4/3] overflow-hidden relative">
-                   <img src={post.image} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" alt={post.title} />
-                   <div className="absolute top-6 left-6">
-                      <span className="px-4 py-1.5 bg-white/90 backdrop-blur-md rounded-full text-[9px] font-black uppercase tracking-widest text-brand-900 shadow-lg">{post.category}</span>
-                   </div>
-                </div>
-                <div className="p-10 flex flex-col flex-grow space-y-6">
-                  <h3 className="text-2xl font-black text-brand-900 leading-tight uppercase tracking-tighter group-hover:text-brand-gold transition-colors">{post.title}</h3>
-                  <p className="text-brand-900/50 text-sm leading-relaxed flex-grow">{post.excerpt}</p>
-                  
-                  <div className="flex items-center justify-between pt-6 border-t border-brand-900/5">
-                     <div className="flex items-center gap-3 text-brand-900/30 text-[9px] font-black uppercase tracking-widest">
-                        <Clock size={14} /> {post.date}
-                     </div>
-                     <div className="flex gap-2">
-                        <button 
-                          onClick={(e) => { e.stopPropagation(); setEditingPost(post); setShowEditor(true); }}
-                          className="p-3 bg-brand-50 rounded-xl text-brand-900 hover:bg-brand-900 hover:text-white transition-all shadow-sm"
-                        >
-                          <Edit2 size={14} />
-                        </button>
-                        <button 
-                          onClick={(e) => deletePost(post.id, e)}
-                          className="p-3 bg-brand-50 rounded-xl text-red-500 hover:bg-red-500 hover:text-white transition-all shadow-sm"
-                        >
-                          <Trash2 size={14} />
-                        </button>
-                     </div>
-                  </div>
-                </div>
-              </div>
-            </RevealOnScroll>
+        <div className="flex flex-wrap gap-2 mb-16">
+          {categories.map((cat, i) => (
+             <button 
+               key={i} 
+               onClick={() => setActiveCategory(cat)}
+               className={`px-5 py-2.5 rounded-full text-xs font-black uppercase tracking-widest transition-all ${
+                 activeCategory === cat ? 'bg-brand-900 text-brand-gold shadow-md' : 'bg-gray-100 text-gray-500 hover:bg-gray-200'
+               }`}
+             >
+               {cat}
+             </button>
           ))}
         </div>
+
+        {filteredPosts.length > 0 ? (
+          <>
+            {(searchQuery === '' && activeCategory === 'All') && (
+              <div onClick={() => setSelectedPost(filteredPosts[0])} className="group cursor-pointer mb-24 relative overflow-hidden rounded-[3.5rem] bg-brand-900 text-white min-h-[600px] flex items-end p-8 md:p-20 shadow-2xl">
+                <div className="absolute inset-0 z-0">
+                  <img src={filteredPosts[0].image} className="w-full h-full object-cover opacity-40 group-hover:scale-105 transition-transform duration-[2s]" alt="Featured" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-brand-900 via-brand-900/20 to-transparent" />
+                </div>
+                <div className="relative z-10 max-w-4xl space-y-8">
+                  <span className="inline-block px-5 py-2 bg-brand-gold text-brand-900 rounded-full text-[10px] font-black uppercase tracking-[0.2em]">{filteredPosts[0].category}</span>
+                  <h2 className="text-5xl md:text-8xl font-sora font-extrabold tracking-tighter leading-[0.9] group-hover:text-brand-gold transition-colors">{filteredPosts[0].title}</h2>
+                  <p className="text-xl md:text-2xl text-brand-100/60 max-w-2xl font-light leading-relaxed">{filteredPosts[0].excerpt}</p>
+                </div>
+              </div>
+            )}
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-12">
+              {(searchQuery === '' && activeCategory === 'All' ? filteredPosts.slice(1) : filteredPosts).map((post, i) => (
+                <RevealOnScroll key={post.id} delay={i * 0.1} width="100%">
+                  <div onClick={() => setSelectedPost(post)} className="group cursor-pointer bg-white rounded-[3rem] border border-brand-900/5 hover:border-brand-gold hover:shadow-2xl transition-all flex flex-col h-full overflow-hidden">
+                    <div className="aspect-[4/3] overflow-hidden relative">
+                      <img src={post.image} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" alt={post.title} />
+                      <div className="absolute top-6 left-6">
+                        <span className="px-4 py-1.5 bg-white/90 backdrop-blur-md rounded-full text-[9px] font-black uppercase tracking-widest text-brand-900 shadow-lg">{post.category}</span>
+                      </div>
+                    </div>
+                    <div className="p-10 flex flex-col flex-grow space-y-6">
+                      <h3 className="text-2xl font-black text-brand-900 leading-tight uppercase tracking-tighter group-hover:text-brand-gold transition-colors">{post.title}</h3>
+                      <p className="text-brand-900/50 text-sm leading-relaxed flex-grow">{post.excerpt}</p>
+                      
+                      <div className="flex items-center justify-between pt-6 border-t border-brand-900/5">
+                        <div className="flex items-center gap-3 text-brand-900/30 text-[9px] font-black uppercase tracking-widest">
+                          <Clock size={14} /> {post.date}
+                        </div>
+                        <div className="flex gap-2">
+                          <button onClick={(e) => { e.stopPropagation(); setEditingPost(post); setShowEditor(true); }} className="p-3 bg-brand-50 rounded-xl text-brand-900 hover:bg-brand-900 hover:text-white transition-all shadow-sm">
+                            <Edit2 size={14} />
+                          </button>
+                          <button onClick={(e) => deletePost(post.id, e)} className="p-3 bg-brand-50 rounded-xl text-red-500 hover:bg-red-500 hover:text-white transition-all shadow-sm">
+                            <Trash2 size={14} />
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </RevealOnScroll>
+              ))}
+            </div>
+          </>
+        ) : (
+          <div className="py-20 text-center text-brand-900/40 font-bold uppercase tracking-widest">
+            <Search size={40} className="mx-auto mb-4 opacity-50" />
+            <p>No intelligence matching your query.</p>
+          </div>
+        )}
       </div>
 
       {showEditor && (
-        <BlogEditor 
-          onSave={savePost} 
-          onClose={() => { setShowEditor(false); setEditingPost(null); }} 
+        <BlogEditor
+          onSave={savePost}
+          onClose={() => { setShowEditor(false); setEditingPost(null); }}
           initialPost={editingPost}
         />
       )}
