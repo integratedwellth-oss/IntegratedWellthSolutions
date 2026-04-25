@@ -1,63 +1,60 @@
 import React, { useState, useEffect, Suspense } from 'react';
-import { ArrowRight, Loader2 } from 'lucide-react';
+import { ArrowRight, Loader2, X } from 'lucide-react';
 import 'swiper/css';
 import 'swiper/css/pagination';
 import 'swiper/css/navigation';
 import ErrorBoundary from './components/ErrorBoundary';
-
-// Layout
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
-import { Chatbot } from './src/components/Chatbot'; // <-- FIXED IMPORT PATH
 import CookieConsent from './components/CookieConsent';
-import WhatsAppButton from './components/WhatsAppButton';
 import EventPopup from './components/EventPopup';
-import FloatingCTA from './components/FloatingCTA';
 
-// Pages
-import Home from './components/pages/Home';
-import LandingPage from './components/pages/LandingPage';
-import ServicesPage from './components/pages/ServicesPage';
-import WhoWeHelpPage from './components/pages/WhoWeHelpPage';
-import Team from './Team';
-import WorkshopPage from './components/pages/WorkshopPage';
-import BlogPage from './components/pages/BlogPage';
-import ContactPage from './components/pages/ContactPage';
-import PrivacyPolicy from './components/PrivacyPolicy';
-import Dashboard from './components/Dashboard';
-import UserDashboard from './components/UserDashboard';
-import ComplianceCalendarPage from './components/pages/ComplianceCalendarPage';
+const Home = React.lazy(() => import('./components/pages/Home'));
+const LandingPage = React.lazy(() => import('./components/pages/LandingPage'));
+const ServicesPage = React.lazy(() => import('./components/pages/ServicesPage'));
+const WhoWeHelpPage = React.lazy(() => import('./components/pages/WhoWeHelpPage'));
+const Team = React.lazy(() => import('./Team'));
+const WorkshopPage = React.lazy(() => import('./components/pages/WorkshopPage'));
+const BlogPage = React.lazy(() => import('./components/pages/BlogPage'));
+const ContactPage = React.lazy(() => import('./components/pages/ContactPage'));
+const PrivacyPolicy = React.lazy(() => import('./components/PrivacyPolicy'));
+const Dashboard = React.lazy(() => import('./components/Dashboard'));
+const UserDashboard = React.lazy(() => import('./components/UserDashboard'));
+const ComplianceCalendarPage = React.lazy(() => import('./components/pages/ComplianceCalendarPage'));
 
-// Solution Detail Pages
-import StartupSolutions from './components/audiences/StartupSolutions';
-import BusinessSolutions from './components/audiences/BusinessSolutions';
-import NPOSolutions from './components/audiences/NPOSolutions';
-import IndividualSolutions from './components/audiences/IndividualSolutions';
-import WellnessSolutions from './components/audiences/WellnessSolutions';
-import AccountabilityPartnership from './components/audiences/AccountabilityPartnership';
-import ComplianceTracker from './components/ComplianceTracker';
-import WarRoom from './components/WarRoom';
-import StrategicJourney from './components/StrategicJourney';
-import FinancialHealthScore from './components/FinancialHealthScore';
+const StartupSolutions = React.lazy(() => import('./components/audiences/StartupSolutions'));
+const BusinessSolutions = React.lazy(() => import('./components/audiences/BusinessSolutions'));
+const NPOSolutions = React.lazy(() => import('./components/audiences/NPOSolutions'));
+const IndividualSolutions = React.lazy(() => import('./components/audiences/IndividualSolutions'));
+const WellnessSolutions = React.lazy(() => import('./components/audiences/WellnessSolutions'));
+const AccountabilityPartnership = React.lazy(() => import('./components/audiences/AccountabilityPartnership'));
+const ComplianceTracker = React.lazy(() => import('./components/ComplianceTracker'));
+const WarRoom = React.lazy(() => import('./components/WarRoom'));
+const StrategicJourney = React.lazy(() => import('./components/StrategicJourney'));
+const FinancialHealthScore = React.lazy(() => import('./components/FinancialHealthScore'));
+const UnifiedSupportWidget = React.lazy(() => import('./components/UnifiedSupportWidget'));
 
 const App: React.FC = () => {
   const [currentView, setCurrentView] = useState('home');
   const [showAssessmentModal, setShowAssessmentModal] = useState(false);
   const [showEventPopup, setShowEventPopup] = useState(false);
+  const [hideAlertBar, setHideAlertBar] = useState(false);
 
   useEffect(() => {
     let popupTimer: number | undefined;
-    const hasSeenEvent = sessionStorage.getItem('hasSeenIWS_Event_Immediate');
+    const hasSeenEvent = localStorage.getItem('iws_popup_seen');
+    const dismissedAlert = localStorage.getItem('iws_alert_dismissed') === 'true';
     const isSpecialPage = ['#warroom', '#intel', '#my-intel', '#landing', '#compliance-calendar'].includes(window.location.hash);
     
+    setHideAlertBar(dismissedAlert);
+
     if (!hasSeenEvent && !isSpecialPage) {
-      popupTimer = window.setTimeout(() => setShowEventPopup(true), 800);
+      popupTimer = window.setTimeout(() => setShowEventPopup(true), 8000);
     }
 
     const handleHashChange = () => {
       try {
         const hash = window.location.hash.replace('#', '') || 'home';
-        
         if (hash === 'assessment') {
           setShowAssessmentModal(true);
           return;
@@ -67,7 +64,6 @@ const App: React.FC = () => {
         'contact', 'privacy', 'startups', 'existing-business', 'npos', 'individuals', 'wellness', 'accountability', 
         'tracker', 'warroom', 'protocol', 'intel', 'my-intel', 'compliance-calendar', 'roadmap', 'gallery'];
 
-        // Removed 'services' from here so it loads as a full page, added 'gallery' for home page scrolling
         if (['protocol', 'roadmap', 'gallery'].includes(hash)) {
           setCurrentView('home');
           setTimeout(() => {
@@ -93,6 +89,11 @@ const App: React.FC = () => {
       if (popupTimer) window.clearTimeout(popupTimer);
     };
   }, []);
+
+  const dismissAlertBar = () => {
+    setHideAlertBar(true);
+    localStorage.setItem('iws_alert_dismissed', 'true');
+  };
 
   const renderCurrentView = () => {
     try {
@@ -121,14 +122,13 @@ const App: React.FC = () => {
         default: return <Home onOpenAssessment={() => setShowAssessmentModal(true)} />;
       }
     } catch (err) {
-      console.error("View Render Error:", err);
       return <Home onOpenAssessment={() => setShowAssessmentModal(true)} />;
     }
   };
 
   const isFullPageMode = ['warroom', 'intel', 'my-intel'].includes(currentView);
   const shouldHideNavbar = ['intel', 'my-intel', 'landing'].includes(currentView);
-  const shouldHideFloatingBar = isFullPageMode || currentView === 'landing' || currentView === 'compliance-calendar';
+  const shouldHideFloatingBar = isFullPageMode || currentView === 'landing' || currentView === 'compliance-calendar' || hideAlertBar;
 
   return (
     <ErrorBoundary>
@@ -151,19 +151,24 @@ const App: React.FC = () => {
         {!isFullPageMode && <Footer />}
 
         {!shouldHideFloatingBar && (
-          <div className="fixed bottom-0 left-0 w-full bg-brand-gold z-[40] px-6 py-4 flex items-center justify-between shadow-[0_-10px_40px_rgba(212,175,55,0.2)]">
-            <div className="flex items-center gap-4">
+          <div className="fixed bottom-0 left-0 w-full bg-brand-gold z-[40] px-4 md:px-6 py-3 flex items-center justify-between shadow-[0_-10px_40px_rgba(212,175,55,0.2)]">
+            <div className="flex items-center gap-3">
               <div className="bg-brand-900 text-white px-3 py-1 rounded text-[10px] font-black uppercase tracking-widest hidden md:block">Compliance Alert</div>
-              <p className="text-brand-900 font-bold text-sm md:text-base tracking-tight">
-                2026 Statutory Deadlines are active.
+              <p className="text-brand-900 font-bold text-xs md:text-sm tracking-tight truncate max-w-[200px] md:max-w-none">
+                2026 Deadlines active.
               </p>
             </div>
-            <button 
-              onClick={() => window.location.hash = '#compliance-calendar'}
-              className="flex items-center gap-2 text-brand-900 font-black uppercase tracking-widest text-[10px] md:text-xs hover:translate-x-1 transition-transform"
-            >
-              View Schedule <ArrowRight size={16} />
-            </button>
+            <div className="flex items-center gap-4 shrink-0">
+              <a 
+                href="#compliance-calendar"
+                className="flex items-center gap-2 text-brand-900 font-black uppercase tracking-widest text-[10px] md:text-xs hover:translate-x-1 transition-transform"
+              >
+                Schedule <ArrowRight size={14} className="hidden sm:block" />
+              </a>
+              <button onClick={dismissAlertBar} className="p-1 text-brand-900/60 hover:text-brand-900">
+                <X size={18} />
+              </button>
+            </div>
           </div>
         )}
 
@@ -173,21 +178,21 @@ const App: React.FC = () => {
               isOpen={showEventPopup} 
               onClose={() => {
                 setShowEventPopup(false);
-                sessionStorage.setItem('hasSeenIWS_Event_Immediate', 'true');
+                localStorage.setItem('iws_popup_seen', 'true');
               }} 
             />
-            <FinancialHealthScore 
-              isOpen={showAssessmentModal} 
-              onClose={() => {
-                setShowAssessmentModal(false);
-                if(window.location.hash === '#assessment') {
-                  window.history.pushState("", document.title, window.location.pathname + window.location.search);
-                }
-              }} 
-            />
-            <FloatingCTA />
-            <WhatsAppButton />
-            <Chatbot />
+            <Suspense fallback={null}>
+              <FinancialHealthScore 
+                isOpen={showAssessmentModal} 
+                onClose={() => {
+                  setShowAssessmentModal(false);
+                  if(window.location.hash === '#assessment') {
+                    window.history.pushState("", document.title, window.location.pathname + window.location.search);
+                  }
+                }} 
+              />
+              <UnifiedSupportWidget />
+            </Suspense>
           </>
         )}
         
