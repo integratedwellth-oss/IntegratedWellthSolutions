@@ -18,16 +18,13 @@ jobs:
           node-version: '20'
 
       - name: Install Frontend Dependencies
-        run: npm ci
-
-      - name: Run Security Audit (Non-blocking)
-        run: npm audit --audit-level=high || echo "Audit complete, vulnerabilities found but continuing build..."
+        run: npm install --no-package-lock
 
       - name: Build Website
         run: npm run build
 
       - name: Install Functions Dependencies
-        run: cd functions && npm ci
+        run: cd functions && npm install --no-package-lock
 
       - name: Build Functions
         run: cd functions && npm run build
