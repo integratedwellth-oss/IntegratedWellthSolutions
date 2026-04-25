@@ -17,6 +17,9 @@ jobs:
         with:
           node-version: '20'
 
+      - name: Install Dependencies and Generate Lockfile
+        run: npm install --package-lock-only
+
       - name: Run Security Audit
         run: npm audit --audit-level=high
 
