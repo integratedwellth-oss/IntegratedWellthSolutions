@@ -5,13 +5,13 @@ import { getAuth, Auth } from "firebase/auth";
 import { getFunctions, Functions } from "firebase/functions";
 
 const firebaseConfig = {
-  apiKey: import.meta.env.VITE_FIREBASE_API_KEY || "",
-  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN || "",
-  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID || "",
-  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET || "",
-  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID || "",
-  appId: import.meta.env.VITE_FIREBASE_APP_ID || "",
-  measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID || ""
+  apiKey: "REPLACE_WITH_YOUR_ACTUAL_API_KEY",
+  authDomain: "REPLACE_WITH_YOUR_AUTH_DOMAIN",
+  projectId: "REPLACE_WITH_YOUR_PROJECT_ID",
+  storageBucket: "REPLACE_WITH_YOUR_STORAGE_BUCKET",
+  messagingSenderId: "REPLACE_WITH_YOUR_MESSAGING_SENDER_ID",
+  appId: "REPLACE_WITH_YOUR_APP_ID",
+  measurementId: "REPLACE_WITH_YOUR_MEASUREMENT_ID"
 };
 
 const dummyApp = { name: 'shield-active' } as unknown as FirebaseApp;
@@ -22,7 +22,7 @@ let analytics: any = null;
 let functionsInstance: Functions | any = null;
 
 try {
-  if (firebaseConfig.apiKey) {
+  if (firebaseConfig.apiKey && !firebaseConfig.apiKey.includes("REPLACE")) {
     if (!getApps().length) {
       app = initializeApp(firebaseConfig);
     } else {
@@ -37,7 +37,7 @@ try {
       analytics = getAnalytics(app);
     }
   } else {
-    console.warn("IWS Warning: Firebase environment variables missing. Running in UI-only mode.");
+    console.error("CRITICAL: Firebase Config is missing actual values. Please update firebaseConfig.ts");
   }
 } catch (error) {
   console.error("IWS Shield: Firebase initialization paused.", error);
