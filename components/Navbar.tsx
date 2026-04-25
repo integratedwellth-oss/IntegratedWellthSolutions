@@ -24,26 +24,26 @@ const Navbar: React.FC<NavbarProps> = ({ onNavigate }) => {
 
   const navLinks = [
     { label: 'PROTOCOL', hash: '#protocol' },
-    { label: 'ECOSYSTEM', hash: '#services' },
+    { label: 'SERVICES', hash: '#services' },
     { label: 'CALENDAR', hash: '#compliance-calendar' },
     { label: 'TEAM', hash: '#team' },
-    { label: 'GALLERY', hash: '#gallery' }, // Added Gallery Link
+    { label: 'GALLERY', hash: '#gallery' },
   ];
 
-  const LOGO_URL = "https://res.cloudinary.com/dka0498ns/image/upload/v1765747786/favicon_ofkkb1.png";
+  const LOGO_URL =
+    'https://res.cloudinary.com/dka0498ns/image/upload/v1765747786/favicon_ofkkb1.png';
 
   return (
     <>
       <nav className="fixed top-0 left-0 right-0 z-[100] bg-white/95 backdrop-blur-md shadow-sm">
         <div className="max-w-[1400px] mx-auto px-4 md:px-8 py-4 flex items-center justify-between">
-          
-          {/* Restored Full Logo Area */}
+
           <div
             className="flex items-center gap-3 cursor-pointer shrink-0"
             onClick={() => handleLinkClick('#home')}
           >
             <div className="w-10 h-10 bg-white border-2 border-brand-900 rounded-lg flex items-center justify-center p-1">
-                <img src={LOGO_URL} alt="IWS Logo" className="w-full h-full object-contain" />
+              <img src={LOGO_URL} alt="IWS Logo" className="w-full h-full object-contain" />
             </div>
             <div className="flex font-black text-sm tracking-tighter">
               <span className="text-brand-900">INTEGRATED</span>
@@ -51,7 +51,6 @@ const Navbar: React.FC<NavbarProps> = ({ onNavigate }) => {
             </div>
           </div>
 
-          {/* Desktop Nav */}
           <div className="hidden lg:flex items-center gap-8">
             {navLinks.map((link) => (
               <button
@@ -64,6 +63,14 @@ const Navbar: React.FC<NavbarProps> = ({ onNavigate }) => {
                 {link.label}
               </button>
             ))}
+
+            <button
+              onClick={() => handleLinkClick('#services')}
+              className="flex items-center gap-2 bg-brand-gold text-brand-900 px-5 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-brand-900 hover:text-white transition-colors"
+            >
+              Book a Service
+            </button>
+
             <button
               onClick={() => handleLinkClick('#warroom')}
               className="flex items-center gap-2 bg-red-600 text-white px-5 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-red-700 transition-colors"
@@ -72,7 +79,6 @@ const Navbar: React.FC<NavbarProps> = ({ onNavigate }) => {
             </button>
           </div>
 
-          {/* Mobile Burger */}
           <button
             onClick={() => setIsMobileMenuOpen(true)}
             className="lg:hidden p-2 text-brand-900 touch-manipulation"
@@ -83,7 +89,6 @@ const Navbar: React.FC<NavbarProps> = ({ onNavigate }) => {
         </div>
       </nav>
 
-      {/* Mobile Menu Overlay */}
       {isMobileMenuOpen && (
         <div className="fixed inset-0 z-[200] bg-brand-900 flex flex-col p-8 overflow-y-auto">
           <button
@@ -106,8 +111,15 @@ const Navbar: React.FC<NavbarProps> = ({ onNavigate }) => {
             ))}
 
             <button
+              onClick={() => handleLinkClick('#services')}
+              className="flex items-center justify-center bg-brand-gold text-brand-900 px-6 py-4 rounded-xl text-sm font-black uppercase tracking-widest hover:opacity-90 transition-opacity mt-2 touch-manipulation"
+            >
+              Book a Service
+            </button>
+
+            <button
               onClick={() => handleLinkClick('#warroom')}
-              className="flex items-center gap-3 bg-red-600 text-white px-6 py-4 rounded-xl text-sm font-black uppercase tracking-widest hover:bg-red-700 transition-colors mt-4 touch-manipulation"
+              className="flex items-center gap-3 bg-red-600 text-white px-6 py-4 rounded-xl text-sm font-black uppercase tracking-widest hover:bg-red-700 transition-colors mt-2 touch-manipulation"
             >
               <ShieldAlert size={18} /> WAR ROOM
             </button>
