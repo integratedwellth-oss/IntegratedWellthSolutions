@@ -10,9 +10,7 @@ const Testimonials: React.FC = () => {
 
   return (
     <section className="py-24 bg-white relative overflow-hidden">
-      {/* Background decoration */}
       <div className="absolute top-0 right-0 w-1/3 h-full bg-brand-50/50 -z-10 rounded-l-[100px]"></div>
-
       <div className="max-w-7xl mx-auto px-6">
         <RevealOnScroll width="100%">
           <div className="text-center mb-20">
@@ -54,24 +52,21 @@ const Testimonials: React.FC = () => {
               }}
               className="!pb-20"
             >
-              {TESTIMONIALS.map((t, i) => (
+              {TESTIMONIALS.map((t: any, i: number) => (
                 <SwiperSlide key={i} className="h-auto pb-4">
-                  {/* FORCED DARK BACKGROUND FOR VISIBILITY */}
                   <div className="bg-brand-900 p-10 rounded-[2.5rem] border border-white/10 flex flex-col h-full shadow-2xl relative overflow-hidden group hover:scale-[1.02] transition-transform duration-500">
-                    
-                    {/* Decorative Quote Icon */}
                     <div className="absolute top-8 right-8 opacity-10">
                       <Quote size={80} className="text-white" />
                     </div>
-
+                    
                     <div className="flex gap-1 mb-6">
-                       {[1,2,3,4,5].map(s => <Star key={s} size={16} className="fill-brand-gold text-brand-gold" />)}
+                      {[1, 2, 3, 4, 5].map((s: number) => <Star key={s} size={16} className="fill-brand-gold text-brand-gold" />)}
                     </div>
-
+                    
                     <p className="text-white text-lg leading-relaxed font-medium mb-10 flex-grow relative z-10">
                       "{t.quote}"
                     </p>
-
+                    
                     <div className="flex items-center mt-auto pt-8 border-t border-white/10">
                       <div className="w-14 h-14 rounded-2xl bg-brand-gold text-brand-900 flex items-center justify-center font-black text-2xl mr-5 flex-shrink-0 shadow-lg">
                         {t.name[0]}
@@ -89,7 +84,6 @@ const Testimonials: React.FC = () => {
               ))}
             </Swiper>
 
-            {/* Navigation Controls */}
             <button className="test-prev absolute left-0 top-1/2 -translate-y-1/2 z-10 bg-white shadow-xl border border-brand-900/10 p-4 rounded-full text-brand-900 hover:bg-brand-gold transition-all hidden md:flex -ml-6 hover:scale-110">
               <ChevronLeft size={24} />
             </button>
