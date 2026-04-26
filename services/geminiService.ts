@@ -13,7 +13,12 @@ export const createChatSession = (): any => {
 
   const genAI = new GoogleGenerativeAI(apiKey);
 
-  const model = genAI.getGenerativeModel({ model: MODEL_NAME });
+  // Cast to any so older SDK typings don't reject the RequestOptions second argument.
+  // The v1beta endpoint is required for preview models.
+  const model = (genAI as any).getGenerativeModel(
+    { model: MODEL_NAME },
+    { apiVersion: "v1beta" }
+  );
 
   const chatSession = model.startChat({
     history: [
