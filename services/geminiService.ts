@@ -12,7 +12,11 @@ export const createChatSession = (): any => {
   }
 
   const genAI = new GoogleGenerativeAI(apiKey);
-  const model = genAI.getGenerativeModel({ model: MODEL_NAME });
+
+  const model = genAI.getGenerativeModel(
+    { model: MODEL_NAME },
+    { apiVersion: "v1beta" }
+  );
 
   const chatSession = model.startChat({
     history: [
