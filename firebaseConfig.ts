@@ -4,7 +4,6 @@ import { getFirestore, Firestore } from "firebase/firestore";
 import { getAuth, Auth } from "firebase/auth";
 import { getFunctions, Functions } from "firebase/functions";
 
-// SURGICAL FIX: Using Vite environment variables mapped from GitHub Actions Secrets
 const firebaseConfig = {
   apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
   authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
@@ -22,9 +21,13 @@ let auth: Auth | any = { onAuthStateChanged: () => () => {}, currentUser: null }
 let analytics: any = null;
 let functionsInstance: Functions | any = null;
 
+const isConfigValid = () => {
+  const key = firebaseConfig.apiKey;
+  return key && typeof key === 'string' && key.trim() !== '' && key !== 'undefined';
+};
+
 try {
-  // Guard clause ensures we don't try to initialize if keys are missing/undefined
-  if (firebaseConfig.apiKey && firebaseConfig.apiKey !== "undefined") {
+  if (isConfigValid()) {
     if (!getApps().length) {
       app = initializeApp(firebaseConfig);
     } else {
@@ -35,11 +38,11 @@ try {
     auth = getAuth(app);
     functionsInstance = getFunctions(app, 'us-central1');
     
-    if (typeof window !== 'undefined' && firebaseConfig.measurementId) {
+    if (typeof window !== 'undefined' && firebaseConfig.measurementId && firebaseConfig.measurementId !== 'undefined') {
       analytics = getAnalytics(app);
     }
   } else {
-    console.error("CRITICAL: Firebase Config is missing actual values. Please update firebaseConfig.ts or check GitHub Secrets.");
+    console.error("CRITICAL: Firebase API Key is empty or invalid. GitHub Secrets injection failed during build.");
   }
 } catch (error) {
   console.error("IWS Shield: Firebase initialization paused.", error);
