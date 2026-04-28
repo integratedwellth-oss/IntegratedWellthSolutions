@@ -61,7 +61,7 @@ const UnifiedSupportWidget: React.FC = () => {
       }) as any;
 
       setMessages(prev => [...prev, { 
-        role: 'bot', 
+        role: 'model', 
         text: response.data?.reply || "Connection lost.", 
         timestamp: Date.now() 
       }]);
@@ -69,7 +69,7 @@ const UnifiedSupportWidget: React.FC = () => {
       console.error("AI Error:", error);
       setHasError(true);
       setMessages(prev => [...prev, {
-        role: 'bot',
+        role: 'model',
         text: "### PROTOCOL INTERRUPTED\n\nConnection failed. Please try again later.",
         timestamp: Date.now()
       }]);
