@@ -1,8 +1,10 @@
-import { initializeApp, getApps } from "firebase/app";
-import { getFirestore } from "firebase/firestore";
-import { getAuth } from "firebase/auth";
-import { getFunctions } from "firebase/functions";
+import { initializeApp, getApps, FirebaseApp } from "firebase/app";
+import { getAnalytics } from "firebase/analytics";
+import { getFirestore, Firestore } from "firebase/firestore";
+import { getAuth, Auth } from "firebase/auth";
+import { getFunctions, Functions } from "firebase/functions";
 
+// SURGICAL FIX: Using Vite environment variables mapped from GitHub Actions Secrets
 const firebaseConfig = {
   apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
   authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
@@ -13,21 +15,35 @@ const firebaseConfig = {
   measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID
 };
 
-// Debug log: Check if keys are actually arriving
-console.log("Config Check:", { 
-  hasKey: !!firebaseConfig.apiKey, 
-  project: firebaseConfig.projectId 
-});
+const dummyApp = { name: 'shield-active' } as unknown as FirebaseApp;
+let app: FirebaseApp = dummyApp;
+let db: Firestore | any = null;
+let auth: Auth | any = { onAuthStateChanged: () => () => {}, currentUser: null };
+let analytics: any = null;
+let functionsInstance: Functions | any = null;
 
-let app, db, auth, functions;
-
-if (firebaseConfig.apiKey && firebaseConfig.apiKey !== "undefined") {
-  app = !getApps().length ? initializeApp(firebaseConfig) : getApps()[0];
-  db = getFirestore(app);
-  auth = getAuth(app);
-  functions = getFunctions(app, 'us-central1');
-} else {
-  console.error("CRITICAL: Firebase Env Variables are undefined. Check GitHub Secrets mapping.");
+try {
+  // Guard clause ensures we don't try to initialize if keys are missing/undefined
+  if (firebaseConfig.apiKey && firebaseConfig.apiKey !== "undefined") {
+    if (!getApps().length) {
+      app = initializeApp(firebaseConfig);
+    } else {
+      app = getApps()[0];
+    }
+    
+    db = getFirestore(app);
+    auth = getAuth(app);
+    functionsInstance = getFunctions(app, 'us-central1');
+    
+    if (typeof window !== 'undefined' && firebaseConfig.measurementId) {
+      analytics = getAnalytics(app);
+    }
+  } else {
+    console.error("CRITICAL: Firebase Config is missing actual values. Please update firebaseConfig.ts or check GitHub Secrets.");
+  }
+} catch (error) {
+  console.error("IWS Shield: Firebase initialization paused.", error);
 }
 
-export { app, db, auth, functions };
+export { app, db, auth, analytics, functionsInstance as functions };
+export default app;
