@@ -1,24 +1,9 @@
 import { onCall, HttpsError } from "firebase-functions/v2/https";
 
-const GEMINI_API_KEY = process.env.GEMINI_API_KEY; 
-const AI_MODEL = "gemini-3.1-flash-lite-preview"; // Updated to stable model
+const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
+const AI_MODEL = "gemini-3.1-flash-lite-preview";
 
-export const websiteChat = onCall({
-  region: "us-central1",
-  cors: ["https://integratedwellth.co.za", "https://www.integratedwellth.co.za", "http://localhost:5173", "http://localhost:3000"],
-}, async (request) => {
-  const { message, history } = request.data;
-
-  if (!message) {
-    throw new HttpsError("invalid-argument", "Message is required.");
-  }
-  
-  if (!GEMINI_API_KEY) {
-    console.error("GEMINI_API_KEY not configured");
-    throw new HttpsError("failed-precondition", "API key not configured.");
-  }
-
-  const SYSTEM_PROMPT = `You are the official digital advisor for Integrated Wellth Solutions (IWS).
+const SYSTEM_PROMPT = `You are the official digital advisor for Integrated Wellth Solutions (IWS).
 YOUR KNOWLEDGE BASE:
 - We are a strategic business consultancy founded by Marcia Kgaphola, merging accounting precision (IQ) with behavioral psychology (EQ).
 - We help startups, existing businesses, NPOs, and individuals decouple their identity from operational friction.
@@ -29,16 +14,32 @@ RULES:
 1. NEVER hallucinate or make up information. Use ONLY the Knowledge Base.
 2. Be direct, professional, and highly strategic. Keep answers concise (2-4 sentences max).`;
 
+export const websiteChat = onCall({
+  region: "us-central1",
+  cors: true,
+}, async (request) => {
+  const { message, history } = request.data;
+
+  if (!message) {
+    throw new HttpsError("invalid-argument", "Message is required.");
+  }
+
+  if (!GEMINI_API_KEY) {
+    console.error("GEMINI_API_KEY not configured");
+    throw new HttpsError("failed-precondition", "API key not configured.");
+  }
+
   try {
     const formattedHistory = history ? history.map((m: any) => ({
       role: m.role === 'bot' ? 'model' : 'user',
       parts: [{ text: m.text }]
     })) : [];
-    
+
     formattedHistory.push({ role: 'user', parts: [{ text: message }] });
 
-    // ✅ FIXED: Removed space in URL
-    const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${AI_MODEL}:generateContent?key=${GEMINI_API_KEY}`, {
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/${AI_MODEL}:generateContent?key=${GEMINI_API_KEY}`;
+    
+    const res = await fetch(url, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -54,12 +55,11 @@ RULES:
       throw new Error(`Gemini API error: ${res.status}`);
     }
 
-    const data = await res.json();
+    const data = await res.json() as any;
     const replyText = data?.candidates?.[0]?.content?.parts?.[0]?.text;
 
     if (!replyText) {
-      console.error("Empty response from Gemini:", data);
-      return { reply: "I apologize, but I'm having trouble processing your request right now." };
+      throw new Error("Invalid response structure from Gemini");
     }
 
     return { reply: replyText.trim() };
