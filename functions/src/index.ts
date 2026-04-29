@@ -1,6 +1,5 @@
 import { onCall, HttpsError } from "firebase-functions/v2/https";
 
-const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
 const AI_MODEL = "gemini-3.1-flash-lite-preview";
 
 const SYSTEM_PROMPT = `You are the official digital advisor for Integrated Wellth Solutions (IWS).
@@ -17,7 +16,10 @@ RULES:
 export const websiteChat = onCall({
   region: "us-central1",
   cors: true,
+  secrets: ["GEMINI_API_KEY"],
 }, async (request) => {
+  const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
+  
   const message = request.data.message;
   const history = request.data.history;
 
@@ -26,7 +28,7 @@ export const websiteChat = onCall({
   }
 
   if (!GEMINI_API_KEY) {
-    console.error("GEMINI_API_KEY not configured");
+    console.error("GEMINI_API_KEY not configured in Firebase Secrets Manager");
     throw new HttpsError("failed-precondition", "API key not configured.");
   }
 
