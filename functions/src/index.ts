@@ -14,7 +14,7 @@ RULES:
 
 export const websiteChat = onCall({
   region: "us-central1",
-  cors: true,
+  cors: ["https://integratedwellth.co.za", "https://www.integratedwellth.co.za", "http://localhost:5173", "http://localhost:3000"],
   secrets: ["GEMINI_API_KEY"],
 }, async (request) => {
   const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
