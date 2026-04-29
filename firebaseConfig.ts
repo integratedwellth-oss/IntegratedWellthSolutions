@@ -21,13 +21,8 @@ let auth: Auth | any = { onAuthStateChanged: () => () => {}, currentUser: null }
 let analytics: any = null;
 let functionsInstance: Functions | any = null;
 
-const isConfigValid = () => {
-  const key = firebaseConfig.apiKey;
-  return key && typeof key === 'string' && key.trim() !== '' && key !== 'undefined';
-};
-
 try {
-  if (isConfigValid()) {
+  if (firebaseConfig.apiKey && firebaseConfig.apiKey !== "undefined") {
     if (!getApps().length) {
       app = initializeApp(firebaseConfig);
     } else {
@@ -38,11 +33,11 @@ try {
     auth = getAuth(app);
     functionsInstance = getFunctions(app, 'us-central1');
     
-    if (typeof window !== 'undefined' && firebaseConfig.measurementId && firebaseConfig.measurementId !== 'undefined') {
+    if (typeof window !== 'undefined' && firebaseConfig.measurementId) {
       analytics = getAnalytics(app);
     }
   } else {
-    console.error("CRITICAL: Firebase API Key is empty or invalid. GitHub Secrets injection failed during build.");
+    console.error("CRITICAL: Firebase Env Variables are undefined. Check GitHub Secrets mapping.");
   }
 } catch (error) {
   console.error("IWS Shield: Firebase initialization paused.", error);
