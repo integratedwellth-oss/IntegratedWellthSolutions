@@ -8,7 +8,6 @@ YOUR KNOWLEDGE BASE:
 - We help startups, existing businesses, NPOs, and individuals decouple their identity from operational friction.
 - Core Services: Accountability Partnership, Existing Business Solutions, NPO compliance, and Individual Wealth Mapping.
 - Primary Call to Action: Guide users to book a strategic audit or discovery call at www.integratedwellth.co.za.
-
 RULES:
 1. NEVER hallucinate or make up information. Use ONLY the Knowledge Base.
 2. Be direct, professional, and highly strategic. Keep answers concise (2-4 sentences max).`;
@@ -19,16 +18,15 @@ export const websiteChat = onCall({
   secrets: ["GEMINI_API_KEY"],
 }, async (request) => {
   const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
-  
+
   const message = request.data.message;
   const history = request.data.history;
 
   if (!message) {
     throw new HttpsError("invalid-argument", "Message is required.");
   }
-
   if (!GEMINI_API_KEY) {
-    console.error("GEMINI_API_KEY not configured in Firebase Secrets Manager");
+    console.error("GEMINI_API_KEY secret not found");
     throw new HttpsError("failed-precondition", "API key not configured.");
   }
 
@@ -37,11 +35,10 @@ export const websiteChat = onCall({
       role: m.role === 'bot' ? 'model' : 'user',
       parts: [{ text: m.text }]
     })) : [];
-
     formattedHistory.push({ role: 'user', parts: [{ text: message }] });
 
     const url = `https://generativelanguage.googleapis.com/v1beta/models/${AI_MODEL}:generateContent?key=${GEMINI_API_KEY}`;
-    
+
     const res = await fetch(url, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -61,11 +58,10 @@ export const websiteChat = onCall({
     const data = await res.json() as any;
     const replyText = data?.candidates?.[0]?.content?.parts?.[0]?.text;
 
-    if (!replyText) {
-      throw new Error("Invalid response structure from Gemini");
-    }
+    if (!replyText) throw new Error("Invalid response structure from Gemini");
 
     return { reply: replyText.trim() };
+
   } catch (error) {
     console.error("Chatbot Error:", error);
     throw new HttpsError("internal", "Failed to process message. Please try again later.");
