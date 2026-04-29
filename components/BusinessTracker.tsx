@@ -164,7 +164,7 @@ const BusinessTracker: React.FC = () => {
         <div className="text-center py-16 bg-white rounded-3xl border border-dashed border-brand-900/20">
           <Building2 size={40} className="mx-auto text-brand-900/20 mb-4" />
           <p className="text-brand-900/40 font-bold">
-            No businesses added yet. Click <strong className="text-brand-900/60">Add Business</strong> to start tracking.
+            No businesses added yet. Click <b>Add Business</b> to start tracking.
           </p>
         </div>
       )}
