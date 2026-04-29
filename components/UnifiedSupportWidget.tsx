@@ -53,6 +53,18 @@ const UnifiedSupportWidget: React.FC = () => {
     if (!textOverride) setInput('');
     setIsLoading(true);
 
+    if (!functions) {
+      console.error("Firebase Functions missing. Ensure Firebase config is populated.");
+      setHasError(true);
+      setMessages(prev => [...prev, {
+        role: 'model',
+        text: "### SYSTEM OFFLINE\n\nUnable to connect to the AI core. Please configure your Firebase environment variables.",
+        timestamp: Date.now()
+      }]);
+      setIsLoading(false);
+      return;
+    }
+
     try {
       const chatCall = httpsCallable(functions, 'websiteChat');
       const response = await chatCall({ 
