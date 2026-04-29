@@ -18,7 +18,8 @@ export const websiteChat = onCall({
   region: "us-central1",
   cors: true,
 }, async (request) => {
-  const { message, history } = request.data;
+  const message = request.data.message;
+  const history = request.data.history;
 
   if (!message) {
     throw new HttpsError("invalid-argument", "Message is required.");
