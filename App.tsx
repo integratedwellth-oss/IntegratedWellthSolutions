@@ -3,6 +3,7 @@ import { ArrowRight, Loader2, X } from 'lucide-react';
 import 'swiper/css';
 import 'swiper/css/pagination';
 import 'swiper/css/navigation';
+
 import ErrorBoundary from './components/ErrorBoundary';
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
@@ -13,7 +14,7 @@ const Home = React.lazy(() => import('./components/pages/Home'));
 const LandingPage = React.lazy(() => import('./components/pages/LandingPage'));
 const ServicesPage = React.lazy(() => import('./components/pages/ServicesPage'));
 const WhoWeHelpPage = React.lazy(() => import('./components/pages/WhoWeHelpPage'));
-const Team = React.lazy(() => import('./Team'));
+const Team = React.lazy(() => import('./components/pages/TeamPage'));
 const WorkshopPage = React.lazy(() => import('./components/pages/WorkshopPage'));
 const BlogPage = React.lazy(() => import('./components/pages/BlogPage'));
 const ContactPage = React.lazy(() => import('./components/pages/ContactPage'));
@@ -34,6 +35,9 @@ const StrategicJourney = React.lazy(() => import('./components/StrategicJourney'
 const FinancialHealthScore = React.lazy(() => import('./components/FinancialHealthScore'));
 const UnifiedSupportWidget = React.lazy(() => import('./components/UnifiedSupportWidget'));
 
+// NEW FLYER COMPONENT
+const WorkshopFlyer = React.lazy(() => import('./components/WorkshopFlyer'));
+
 const App: React.FC = () => {
   const [currentView, setCurrentView] = useState('home');
   const [showAssessmentModal, setShowAssessmentModal] = useState(false);
@@ -44,7 +48,7 @@ const App: React.FC = () => {
     let popupTimer: number | undefined;
     const hasSeenEvent = localStorage.getItem('iws_popup_seen');
     const dismissedAlert = localStorage.getItem('iws_alert_dismissed') === 'true';
-    const isSpecialPage = ['#warroom', '#intel', '#my-intel', '#landing', '#compliance-calendar'].includes(window.location.hash);
+    const isSpecialPage = ['#warroom', '#intel', '#my-intel', '#landing', '#compliance-calendar', '#poster'].includes(window.location.hash);
     
     setHideAlertBar(dismissedAlert);
 
@@ -62,7 +66,7 @@ const App: React.FC = () => {
 
         const validViews = ['home', 'landing', 'services', 'who-we-help', 'team', 'workshops', 'blog', 
         'contact', 'privacy', 'startups', 'existing-business', 'npos', 'individuals', 'wellness', 'accountability', 
-        'tracker', 'warroom', 'protocol', 'intel', 'my-intel', 'compliance-calendar', 'roadmap', 'gallery'];
+        'tracker', 'warroom', 'protocol', 'intel', 'my-intel', 'compliance-calendar', 'roadmap', 'gallery', 'poster'];
 
         if (['protocol', 'roadmap', 'gallery'].includes(hash)) {
           setCurrentView('home');
@@ -98,6 +102,7 @@ const App: React.FC = () => {
   const renderCurrentView = () => {
     try {
       switch (currentView) {
+        case 'poster': return <WorkshopFlyer />; // SURGICAL ADDITION
         case 'landing': return <LandingPage onOpenAssessment={() => setShowAssessmentModal(true)} />;
         case 'my-intel': return <UserDashboard onTriggerAssessment={() => setShowAssessmentModal(true)} />;
         case 'compliance-calendar': return <ComplianceCalendarPage />;
@@ -126,8 +131,8 @@ const App: React.FC = () => {
     }
   };
 
-  const isFullPageMode = ['warroom', 'intel', 'my-intel'].includes(currentView);
-  const shouldHideNavbar = ['intel', 'my-intel', 'landing'].includes(currentView);
+  const isFullPageMode = ['warroom', 'intel', 'my-intel', 'poster'].includes(currentView);
+  const shouldHideNavbar = ['intel', 'my-intel', 'landing', 'poster'].includes(currentView);
   const shouldHideFloatingBar = isFullPageMode || currentView === 'landing' || currentView === 'compliance-calendar' || hideAlertBar;
 
   return (
@@ -172,7 +177,7 @@ const App: React.FC = () => {
           </div>
         )}
 
-        {currentView !== 'intel' && (
+        {currentView !== 'intel' && currentView !== 'poster' && (
           <>
             <EventPopup 
               isOpen={showEventPopup} 
@@ -196,7 +201,7 @@ const App: React.FC = () => {
           </>
         )}
         
-        <CookieConsent />
+        {currentView !== 'poster' && <CookieConsent />}
       </div>
     </ErrorBoundary>
   );
