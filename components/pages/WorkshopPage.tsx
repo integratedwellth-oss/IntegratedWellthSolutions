@@ -4,7 +4,7 @@ import Button from '../Button';
 import WorkshopRegistrationForm from '../WorkshopRegistrationForm';
 import { Calendar, Clock, Monitor, Tag, ShieldCheck, CheckCircle2, ChevronRight } from 'lucide-react';
 
-const FOUNDER_URL = "https://res.cloudinary.com/dka0498ns/image/upload/v1768022744/Marcia_Kgaphola._The_founder_of_Integrated_Wellth_Solution_giving_a_keynote_speech_at_a_women_business_conference_rr55ol.jpg";
+const FOUNDER_URL = "https://res.cloudinary.com/dkyg07qvv/image/upload/v1778472133/Marcia_Kgaphola._SARS._CIPC._COMPLIANCE_e9mn4f.jpg";
 const TREE_LOGO_URL = "https://res.cloudinary.com/dka0498ns/image/upload/v1765747786/favicon_ofkkb1.png";
 
 const WorkshopPage: React.FC = () => {
