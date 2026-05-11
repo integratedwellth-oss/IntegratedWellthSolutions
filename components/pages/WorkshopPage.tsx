@@ -1,9 +1,9 @@
-
 import React from 'react';
 import EventHighlight from '../EventHighlight';
 import RevealOnScroll from '../RevealOnScroll';
 import Button from '../Button';
-import { Calendar, Users, MapPin, Sparkles, BookOpen, ShieldCheck } from 'lucide-react';
+import WorkshopRegistrationForm from '../WorkshopRegistrationForm';
+import { Users, MapPin, Sparkles, BookOpen, ShieldCheck } from 'lucide-react';
 
 const WorkshopPage: React.FC = () => {
   return (
@@ -23,7 +23,6 @@ const WorkshopPage: React.FC = () => {
               WELLTH <br/> <span className="text-brand-gold italic">WORKSHOPS.</span>
             </h1>
             
-            {/* Redesigned subtext area for maximum impact */}
             <div className="max-w-3xl mx-auto relative px-6 py-8 border-y border-white/10">
                <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-brand-900 px-4">
                   <Sparkles size={16} className="text-brand-gold" />
@@ -60,6 +59,19 @@ const WorkshopPage: React.FC = () => {
               </RevealOnScroll>
             ))}
           </div>
+        </div>
+      </section>
+
+      {/* Registration Form Injection */}
+      <section className="py-32 bg-gray-50 border-t border-brand-900/5" id="registration">
+        <div className="max-w-7xl mx-auto px-6 lg:px-8">
+          <div className="text-center mb-16">
+            <h2 className="text-4xl md:text-6xl font-sora font-extrabold text-brand-900 tracking-tighter uppercase">Secure Your <br/> <span className="text-brand-gold italic">Seat.</span></h2>
+            <p className="text-lg text-brand-900/60 mt-6 font-medium max-w-2xl mx-auto">Complete the diagnostic below to align our workshop modules with your current operational reality.</p>
+          </div>
+          <RevealOnScroll>
+            <WorkshopRegistrationForm />
+          </RevealOnScroll>
         </div>
       </section>
 
