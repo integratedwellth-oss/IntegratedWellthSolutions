@@ -45,7 +45,7 @@ const WorkshopRegistrationForm: React.FC = () => {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     // API logic for Firebase Firestore & Storage upload triggers here
-    setStep(3); 
+    setStep(3);
   };
 
   return (
@@ -66,8 +66,8 @@ const WorkshopRegistrationForm: React.FC = () => {
           <CheckCircle size={80} className="text-green-500 mx-auto mb-8" />
           <h4 className="text-4xl font-black text-brand-900 mb-4 tracking-tighter uppercase">Clearance Confirmed</h4>
           <p className="text-lg text-brand-900/60 mb-8 max-w-xl mx-auto font-medium">
-            {formData.paymentMethod === 'eft' 
-              ? 'Your proof of payment is pending manual verification. Our team will issue your calendar invite shortly.' 
+            {formData.paymentMethod === 'eft'
+              ? 'Your proof of payment is pending manual verification. Our team will issue your calendar invite shortly.'
               : 'Transaction successful. Your automated tax invoice and calendar access have been dispatched to your inbox.'}
           </p>
         </div>
@@ -111,7 +111,6 @@ const WorkshopRegistrationForm: React.FC = () => {
                 <label className="block text-xs font-black uppercase tracking-widest text-brand-900 mb-2">Last Prov. Tax Filed</label>
                 <input required type="date" name="lastProvisionalTax" value={formData.lastProvisionalTax} onChange={handleInputChange} className="w-full p-4 bg-gray-50 border-transparent rounded-xl focus:border-brand-gold focus:bg-white focus:ring-2 focus:ring-brand-gold/20 outline-none transition-all font-medium text-brand-900" />
               </div>
-              
               <div className="md:col-span-2 flex flex-col gap-5 p-6 border-2 border-brand-900/5 rounded-2xl mt-4">
                 <label className="flex items-center gap-4 cursor-pointer group">
                   <input type="checkbox" name="internalControls" checked={formData.internalControls === 'yes'} onChange={(e) => setFormData(prev => ({...prev, internalControls: e.target.checked ? 'yes' : 'no'}))} className="w-6 h-6 text-brand-gold border-gray-300 rounded focus:ring-brand-gold transition-all" />
@@ -122,7 +121,6 @@ const WorkshopRegistrationForm: React.FC = () => {
                   <span className="text-sm font-bold text-brand-900 group-hover:text-brand-gold transition-colors">We currently hold a valid tax clearance certificate.</span>
                 </label>
               </div>
-              
               <div className="md:col-span-2 pt-6 flex justify-end border-t border-gray-100">
                 <Button type="button" onClick={nextStep} className="flex items-center gap-2 px-8 py-4 rounded-full text-sm font-black uppercase tracking-widest">
                   Proceed to Payment <ArrowRight size={18} />
@@ -139,7 +137,6 @@ const WorkshopRegistrationForm: React.FC = () => {
                   <CreditCard size={40} className={formData.paymentMethod === 'card' ? 'text-brand-gold' : 'text-gray-400'} />
                   <span className="font-black text-brand-900 uppercase tracking-widest">Credit / Debit Card</span>
                 </label>
-                
                 <label className={`cursor-pointer p-8 border-2 rounded-2xl flex flex-col items-center gap-4 transition-all ${formData.paymentMethod === 'eft' ? 'border-brand-gold bg-brand-gold/5 shadow-lg' : 'border-gray-200 hover:border-brand-900/20 bg-gray-50'}`}>
                   <input type="radio" name="paymentMethod" value="eft" checked={formData.paymentMethod === 'eft'} onChange={handleInputChange} className="hidden" />
                   <Building size={40} className={formData.paymentMethod === 'eft' ? 'text-brand-gold' : 'text-gray-400'} />
@@ -197,12 +194,11 @@ const WorkshopRegistrationForm: React.FC = () => {
                   <input required type="checkbox" name="consent" checked={formData.consent} onChange={handleInputChange} className="mt-1 w-6 h-6 text-brand-gold border-gray-300 rounded focus:ring-brand-gold transition-all" />
                   <span className="text-sm font-medium text-brand-900/80 leading-relaxed group-hover:text-brand-900 transition-colors">I consent to IntegratedWellth Solutions processing my entity data to finalize this registration, transmit financial invoices, and send strategic workshop materials.</span>
                 </label>
-
                 <div className="flex justify-between items-center">
                   <button type="button" onClick={prevStep} className="text-brand-900/60 font-black uppercase tracking-widest text-sm flex items-center gap-2 hover:text-brand-900 transition-colors">
                     <ArrowLeft size={18} /> Return
                   </button>
-                  <Button type="submit" disabled={!formData.paymentMethod || (formData.paymentMethod === 'eft' && !formData.proofOfPayment) || !formData.consent} className="px-8 py-4 rounded-full text-sm font-black uppercase tracking-widest shadow-xl">
+                  <Button type="submit" disabled={!formData.paymentMethod || (formData.paymentMethod === 'eft' && !formData.proofOfPayment) || !formData.consent} className="px-8 py-4 rounded-full text-sm font-black uppercase tracking-widest shadow-xl bg-brand-900 text-white hover:bg-brand-gold hover:text-brand-900">
                     Execute Registration
                   </Button>
                 </div>
