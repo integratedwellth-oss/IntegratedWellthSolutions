@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { db, auth } from '../firebaseConfig';
 import { collection, getDocs, query, orderBy, updateDoc, doc, addDoc } from 'firebase/firestore';
 import { GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from 'firebase/auth';
-// SURGICAL FIX: Added 'Clock' to the imports to resolve the TS2552 build error
 import { Lock, LogOut, FileText, ShieldAlert, RefreshCcw, Eye, X, Mail, MessageSquare, ChevronRight, Loader2, Download, Ticket, CheckCircle, Clock } from 'lucide-react';
 
 const Dashboard: React.FC = () => {
@@ -49,10 +48,9 @@ const Dashboard: React.FC = () => {
   const handleVerifyRegistration = async (reg: any) => {
     if (!db) return;
     try {
-      // 1. Update status to verified
       await updateDoc(doc(db, 'workshop_registrations', reg.id), { status: 'verified' });
       
-      // 2. Trigger Email via Firebase Extension
+      // SURGICAL FIX: Updated the href with the official Google Meet link
       await addDoc(collection(db, 'mail'), {
         to: reg.email,
         message: {
@@ -62,12 +60,12 @@ const Dashboard: React.FC = () => {
             <p>Hi ${reg.fullName},</p>
             <p>Your payment has been successfully verified. We are excited to host you at the Governance, Recordkeeping & Compliance Workshop.</p>
             <p><strong>Date:</strong> 22nd May 2026<br/><strong>Time:</strong> 18h00 - 20h00</p>
-            <p style="margin-top:20px;"><a href="https://zoom.us/j/iws-workshop-link" style="background-color:#134e4a;color:white;padding:12px 24px;text-decoration:none;border-radius:8px;font-weight:bold;">Join Online Session</a></p>
+            <p style="margin-top:20px;"><a href="https://meet.google.com/ejn-gnih-zqr" style="background-color:#134e4a;color:white;padding:12px 24px;text-decoration:none;border-radius:8px;font-weight:bold;">Join Google Meet Session</a></p>
             </div>`
         }
       });
       
-      fetchData(); // Refresh list to show green checkmark
+      fetchData();
     } catch (error) {
       console.error("Verification failed", error);
       alert("Failed to verify registration.");
@@ -179,7 +177,6 @@ const Dashboard: React.FC = () => {
         </div>
       </div>
 
-      {/* Legacy Lead Viewer Modal for WarRoom / Assessments */}
       {selectedLead && (
         <div className="fixed inset-0 z-[500] flex items-center justify-center p-4 bg-black/90 backdrop-blur-md">
           <div className="bg-white text-brand-900 w-full max-w-2xl rounded-[3rem] p-10 shadow-2xl overflow-y-auto max-h-[85vh] animate-fadeIn">
