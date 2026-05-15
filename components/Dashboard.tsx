@@ -2,7 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { db, auth } from '../firebaseConfig';
 import { collection, getDocs, query, orderBy, updateDoc, doc, addDoc } from 'firebase/firestore';
 import { GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from 'firebase/auth';
-import { Lock, LogOut, FileText, ShieldAlert, RefreshCcw, Eye, X, Mail, MessageSquare, ChevronRight, Loader2, Download, Ticket, CheckCircle } from 'lucide-react';
+// SURGICAL FIX: Added 'Clock' to the imports to resolve the TS2552 build error
+import { Lock, LogOut, FileText, ShieldAlert, RefreshCcw, Eye, X, Mail, MessageSquare, ChevronRight, Loader2, Download, Ticket, CheckCircle, Clock } from 'lucide-react';
 
 const Dashboard: React.FC = () => {
   const [user, setUser] = useState<any>(null);
