@@ -152,6 +152,7 @@ const WorkshopRegistrationForm: React.FC = () => {
                 </div>
               )}
 
+              {/* SURGICAL FIX: Updated Bank Details to Capitec Business Account */}
               {formData.paymentMethod === 'eft' && (
                 <div className="p-8 bg-brand-900 text-white rounded-2xl space-y-6 shadow-2xl relative overflow-hidden">
                   <div className="absolute top-0 right-0 p-8 opacity-5 pointer-events-none">
@@ -159,11 +160,11 @@ const WorkshopRegistrationForm: React.FC = () => {
                   </div>
                   <h4 className="font-black text-brand-gold uppercase tracking-[0.3em] text-sm md:text-base mb-6 border-b border-white/10 pb-4">Corporate Banking Details</h4>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-y-6 gap-x-8 text-sm font-medium relative z-10">
-                    <div className="flex flex-col"><span className="text-brand-100/50 text-xs uppercase tracking-widest mb-1">Bank</span><span className="text-lg">FNB</span></div>
-                    <div className="flex flex-col"><span className="text-brand-100/50 text-xs uppercase tracking-widest mb-1">Account Name</span><span className="text-lg">IntegratedWellth Solutions</span></div>
-                    <div className="flex flex-col"><span className="text-brand-100/50 text-xs uppercase tracking-widest mb-1">Account Number</span><span className="text-lg text-brand-gold">628XXXXXXX</span></div>
-                    <div className="flex flex-col"><span className="text-brand-100/50 text-xs uppercase tracking-widest mb-1">Branch Code</span><span className="text-lg">250655</span></div>
-                    <div className="flex flex-col md:col-span-2 mt-4 p-4 bg-white/5 rounded-xl border border-white/10"><span className="text-brand-100/50 text-xs uppercase tracking-widest mb-1">Required Reference</span><span className="text-lg md:text-xl font-black text-white break-all">{formData.businessName || 'YOUR_BUSINESS'} - WSHOP</span></div>
+                    <div className="flex flex-col"><span className="text-brand-100/50 text-xs uppercase tracking-widest mb-1">Bank</span><span className="text-lg">Capitec Business Account</span></div>
+                    <div className="flex flex-col"><span className="text-brand-100/50 text-xs uppercase tracking-widest mb-1">Account Name</span><span className="text-lg">INTEGRATEDWELLTH SOLUTIONS (PTY) LTD</span></div>
+                    <div className="flex flex-col"><span className="text-brand-100/50 text-xs uppercase tracking-widest mb-1">Account Number</span><span className="text-lg text-brand-gold">1054966877</span></div>
+                    <div className="flex flex-col"><span className="text-brand-100/50 text-xs uppercase tracking-widest mb-1">Branch Code</span><span className="text-lg">450105</span></div>
+                    <div className="flex flex-col md:col-span-2 mt-4 p-4 bg-white/5 rounded-xl border border-white/10"><span className="text-brand-100/50 text-xs uppercase tracking-widest mb-1">Required Reference</span><span className="text-lg md:text-xl font-black text-white break-all">{formData.businessName || formData.fullName || 'Company / Name'}</span></div>
                   </div>
                   
                   <div className="mt-8 pt-8 border-t border-white/10 relative z-10">
