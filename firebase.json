@@ -6,33 +6,14 @@
       "**/.*",
       "**/node_modules/**"
     ],
-    "headers": [
-      {
-        "source": "**/*.@(js|css|html)",
-        "headers": [
-          {
-            "key": "Content-Security-Policy",
-            "value": "default-src 'self'; script-src 'self' https://trusted.cdn.com https://apis.google.com; connect-src 'self' https://generativelanguage.googleapis.com https://firestore.googleapis.com; style-src 'self' 'unsafe-inline'; img-src 'self' https://res.cloudinary.com https://picsum.photos;"
-          }
-        ]
-      }
-    ],
-    "redirects": [
-      {
-        "source": "www.integratedwellth.co.za",
-        "destination": "https://integratedwellth.co.za",
-        "type": 301
-      }
-    ],
     "rewrites": [
       {
-        "source": "/summit",
-        "destination": "/summit.html"
-      },
-      {
         "source": "**",
-        "destination": "/index.html"
+        "function": "websiteChat"
       }
     ]
+  },
+  "storage": {
+    "rules": "storage.rules"
   }
 }
