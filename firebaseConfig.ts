@@ -3,6 +3,7 @@ import { getAnalytics } from "firebase/analytics";
 import { getFirestore, Firestore } from "firebase/firestore";
 import { getAuth, Auth } from "firebase/auth";
 import { getFunctions, Functions } from "firebase/functions";
+import { getStorage, FirebaseStorage } from "firebase/storage"; // SURGICAL FIX: Added Storage
 
 const firebaseConfig = {
   apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
@@ -18,6 +19,7 @@ const dummyApp = { name: 'shield-active' } as unknown as FirebaseApp;
 let app: FirebaseApp = dummyApp;
 let db: Firestore | any = null;
 let auth: Auth | any = { onAuthStateChanged: () => () => {}, currentUser: null };
+let storage: FirebaseStorage | any = null; // SURGICAL FIX: Storage instance
 let analytics: any = null;
 let functionsInstance: Functions | any = null;
 
@@ -31,6 +33,7 @@ try {
     
     db = getFirestore(app);
     auth = getAuth(app);
+    storage = getStorage(app); // SURGICAL FIX: Initialize Storage
     functionsInstance = getFunctions(app, 'us-central1');
     
     if (typeof window !== 'undefined' && firebaseConfig.measurementId) {
@@ -43,5 +46,5 @@ try {
   console.error("IWS Shield: Firebase initialization paused.", error);
 }
 
-export { app, db, auth, analytics, functionsInstance as functions };
+export { app, db, auth, storage, analytics, functionsInstance as functions };
 export default app;
