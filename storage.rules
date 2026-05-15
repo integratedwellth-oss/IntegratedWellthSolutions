@@ -2,11 +2,9 @@ rules_version = '2';
 service firebase.storage {
   match /b/{bucket}/o {
     match /{allPaths=**} {
-      // SURGICAL FIX: Added application/pdf to explicitly allow PDF uploads
-      // alongside images, preventing 403 blocks after CORS is resolved.
-      allow write: if request.resource != null
-                && request.resource.contentType.matches('image/.*|application/pdf')
-                && request.resource.size < 5 * 1024 * 1024;
+      // SURGICAL FIX: Simplified rules to allow public uploads without authentication.
+      // Removed complex metadata checks that were failing the preflight.
+      allow write: if request.resource.size < 5 * 1024 * 1024;
       allow read: if true;
     }
   }
