@@ -1,6 +1,9 @@
 import React, { useState } from 'react';
-import { Upload, CreditCard, Building, CheckCircle, ArrowRight, ArrowLeft } from 'lucide-react';
+import { Upload, CreditCard, Building, CheckCircle, ArrowRight, ArrowLeft, Loader2 } from 'lucide-react';
 import Button from './Button';
+import { db, storage } from '../firebaseConfig';
+import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
+import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 
 interface FormData {
   fullName: string;
@@ -21,6 +24,7 @@ interface FormData {
 
 const WorkshopRegistrationForm: React.FC = () => {
   const [step, setStep] = useState<1 | 2 | 3>(1);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState<FormData>({
     fullName: '', cellphone: '', email: '', businessName: '', sector: '',
     employees: '', yearsInOperation: '', financialYearEnd: '', internalControls: '',
@@ -42,9 +46,48 @@ const WorkshopRegistrationForm: React.FC = () => {
   const nextStep = () => setStep(prev => (prev < 3 ? prev + 1 : prev) as 1 | 2 | 3);
   const prevStep = () => setStep(prev => (prev > 1 ? prev - 1 : prev) as 1 | 2 | 3);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setStep(3);
+    setIsSubmitting(true);
+
+    try {
+      let popUrl = '';
+      
+      // 1. Upload POP to Firebase Storage if EFT was selected
+      if (formData.paymentMethod === 'eft' && formData.proofOfPayment && storage) {
+        const fileRef = ref(storage, `workshop_pops/${Date.now()}_${formData.proofOfPayment.name}`);
+        const uploadResult = await uploadBytes(fileRef, formData.proofOfPayment);
+        popUrl = await getDownloadURL(uploadResult.ref);
+      }
+
+      // 2. Save Registration Data to Firestore
+      if (db) {
+        await addDoc(collection(db, 'workshop_registrations'), {
+          fullName: formData.fullName,
+          cellphone: formData.cellphone,
+          email: formData.email,
+          businessName: formData.businessName,
+          sector: formData.sector,
+          employees: formData.employees,
+          yearsInOperation: formData.yearsInOperation,
+          financialYearEnd: formData.financialYearEnd,
+          internalControls: formData.internalControls,
+          taxClearance: formData.taxClearance,
+          lastProvisionalTax: formData.lastProvisionalTax,
+          paymentMethod: formData.paymentMethod,
+          proofOfPaymentUrl: popUrl,
+          status: formData.paymentMethod === 'card' ? 'verified' : 'pending_verification',
+          timestamp: serverTimestamp()
+        });
+      }
+      
+      setStep(3);
+    } catch (error) {
+      console.error("Registration failed:", error);
+      alert("Registration failed. Please check your connection and try again.");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -152,7 +195,6 @@ const WorkshopRegistrationForm: React.FC = () => {
                 </div>
               )}
 
-              {/* SURGICAL FIX: Updated Bank Details to Capitec Business Account */}
               {formData.paymentMethod === 'eft' && (
                 <div className="p-8 bg-brand-900 text-white rounded-2xl space-y-6 shadow-2xl relative overflow-hidden">
                   <div className="absolute top-0 right-0 p-8 opacity-5 pointer-events-none">
@@ -195,11 +237,11 @@ const WorkshopRegistrationForm: React.FC = () => {
                   <span className="text-sm font-medium text-brand-900/80 leading-relaxed group-hover:text-brand-900 transition-colors">I consent to IntegratedWellth Solutions processing my entity data to finalize this registration, transmit financial invoices, and send strategic workshop materials.</span>
                 </label>
                 <div className="flex flex-col sm:flex-row justify-between items-center gap-6">
-                  <button type="button" onClick={prevStep} className="w-full sm:w-auto justify-center text-brand-900/60 font-black uppercase tracking-widest text-sm flex items-center gap-2 hover:text-brand-900 transition-colors">
+                  <button type="button" onClick={prevStep} disabled={isSubmitting} className="w-full sm:w-auto justify-center text-brand-900/60 font-black uppercase tracking-widest text-sm flex items-center gap-2 hover:text-brand-900 transition-colors disabled:opacity-50">
                     <ArrowLeft size={18} /> Return
                   </button>
-                  <Button type="submit" disabled={!formData.paymentMethod || (formData.paymentMethod === 'eft' && !formData.proofOfPayment) || !formData.consent} className="w-full sm:w-auto px-8 py-4 rounded-full text-sm font-black uppercase tracking-widest shadow-xl bg-brand-gold text-brand-900 hover:bg-brand-900 hover:text-white disabled:opacity-50 disabled:cursor-not-allowed">
-                    Execute Registration
+                  <Button type="submit" disabled={isSubmitting || !formData.paymentMethod || (formData.paymentMethod === 'eft' && !formData.proofOfPayment) || !formData.consent} className="w-full sm:w-auto px-8 py-4 rounded-full text-sm font-black uppercase tracking-widest shadow-xl bg-brand-gold text-brand-900 hover:bg-brand-900 hover:text-white disabled:opacity-50 disabled:cursor-not-allowed">
+                    {isSubmitting ? <Loader2 className="animate-spin mx-auto" size={20} /> : 'Execute Registration'}
                   </Button>
                 </div>
               </div>
