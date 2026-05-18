@@ -1,5 +1,5 @@
 import React, { useRef } from 'react';
-import { motion, useScroll, useTransform } from 'framer-motion';
+import { motion, useScroll, useTransform, Variants } from 'framer-motion';
 import Button from '../Button';
 import WorkshopRegistrationForm from '../WorkshopRegistrationForm';
 import { Monitor, Tag, ChevronRight, Calculator, TrendingUp, BrainCircuit } from 'lucide-react';
@@ -12,12 +12,14 @@ const ExclusiveWorkshopPage: React.FC = () => {
   const { scrollYProgress } = useScroll({ target: containerRef, offset: ["start start", "end start"] });
   const imageY = useTransform(scrollYProgress, [0, 1], ["0%", "20%"]);
 
-  const fadeUp = {
+  // SURGICAL FIX: Explicitly typed 'fadeUp' and 'staggerContainer' as Variants 
+  // to satisfy strict TypeScript rules when passed to framer-motion components.
+  const fadeUp: Variants = {
     hidden: { opacity: 0, y: 40 },
     visible: { opacity: 1, y: 0, transition: { duration: 0.8, ease: [0.22, 1, 0.36, 1] } }
   };
 
-  const staggerContainer = {
+  const staggerContainer: Variants = {
     hidden: { opacity: 0 },
     visible: { opacity: 1, transition: { staggerChildren: 0.15 } }
   };
