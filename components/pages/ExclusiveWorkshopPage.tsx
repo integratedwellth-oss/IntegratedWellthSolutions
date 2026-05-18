@@ -12,8 +12,6 @@ const ExclusiveWorkshopPage: React.FC = () => {
   const { scrollYProgress } = useScroll({ target: containerRef, offset: ["start start", "end start"] });
   const imageY = useTransform(scrollYProgress, [0, 1], ["0%", "20%"]);
 
-  // SURGICAL FIX: Explicitly typed 'fadeUp' and 'staggerContainer' as Variants 
-  // to satisfy strict TypeScript rules when passed to framer-motion components.
   const fadeUp: Variants = {
     hidden: { opacity: 0, y: 40 },
     visible: { opacity: 1, y: 0, transition: { duration: 0.8, ease: [0.22, 1, 0.36, 1] } }
@@ -129,10 +127,11 @@ const ExclusiveWorkshopPage: React.FC = () => {
             <p className="text-lg text-brand-900/60 mt-6 font-medium max-w-2xl mx-auto">Complete the registration protocol below to reserve your spot and receive the meeting link.</p>
           </div>
           
+          {/* SURGICAL FIX: Passing the explicit new Link and Data payload to front end so the DB receives the correct link on submission */}
           <WorkshopRegistrationForm 
-            eventName="Exclusive Governance & Compliance Workshop"
-            eventDate="1st June 2026, 18h00 - 19h00"
-            eventLink="https://meet.google.com/ejn-gnih-zqr"
+            eventName="IntegratedWellth Governance & Compliance"
+            eventDate="Monday, June 1 · 4:00 – 5:00pm (UTC)"
+            eventLink="https://meet.google.com/wpw-zjng-jof"
           />
         </div>
       </motion.section>
