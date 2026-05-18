@@ -2,7 +2,7 @@ import React from 'react';
 import RevealOnScroll from '../RevealOnScroll';
 import Button from '../Button';
 import WorkshopRegistrationForm from '../WorkshopRegistrationForm';
-import { Calendar, Clock, Monitor, Tag, ShieldCheck, CheckCircle2, ChevronRight } from 'lucide-react';
+import { Monitor, Tag, ShieldCheck, ChevronRight } from 'lucide-react';
 
 const FOUNDER_URL = "https://res.cloudinary.com/dkyg07qvv/image/upload/v1778472133/Marcia_Kgaphola._SARS._CIPC._COMPLIANCE_e9mn4f.jpg";
 const TREE_LOGO_URL = "https://res.cloudinary.com/dka0498ns/image/upload/v1765747786/favicon_ofkkb1.png";
@@ -34,6 +34,7 @@ const WorkshopPage: React.FC = () => {
                 <span>Labour</span>
               </div>
 
+              {/* SURGICAL FIX: Reverted back to the original May 22nd / R250 event */}
               <div className="bg-brand-900 text-white p-6 rounded-r-3xl rounded-l-md shadow-2xl inline-block mt-8 border-l-8 border-brand-gold">
                 <p className="text-2xl md:text-3xl font-black tracking-tight mb-2">22nd May, 18h00–20h00</p>
                 <div className="flex flex-wrap items-center gap-4 text-sm font-bold tracking-widest uppercase text-brand-gold mt-4">
@@ -119,7 +120,12 @@ const WorkshopPage: React.FC = () => {
           </div>
           
           <RevealOnScroll>
-            <WorkshopRegistrationForm />
+            {/* SURGICAL FIX: Passing explicit event details so the Dashboard handles the ticket correctly */}
+            <WorkshopRegistrationForm 
+              eventName="Governance, Recordkeeping & Compliance Workshop"
+              eventDate="22nd May 2026, 18h00 - 20h00"
+              eventLink="https://zoom.us/j/iws-workshop-link"
+            />
           </RevealOnScroll>
         </div>
       </section>
