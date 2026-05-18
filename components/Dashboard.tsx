@@ -50,20 +50,21 @@ const Dashboard: React.FC = () => {
     try {
       await updateDoc(doc(db, 'workshop_registrations', reg.id), { status: 'verified' });
       
-      // SURGICAL FIX: Dynamically populating the email template based on the specific event they registered for
+      // SURGICAL FIX: Hardcoded the specific June 1st meeting details and new Google Meet link into the email payload
       await addDoc(collection(db, 'mail'), {
         to: reg.email,
         message: {
-          subject: `Your Exclusive Access: ${reg.eventName || 'IWS Workshop'}`,
+          subject: `Your Exclusive Access: IntegratedWellth Governance & Compliance`,
           html: `<div style="font-family:sans-serif;color:#134e4a;padding:20px;max-width:600px;margin:0 auto;border:1px solid #e5e7eb;border-radius:12px;">
             <h1 style="color:#d4af37;text-transform:uppercase;letter-spacing:1px;">Registration Confirmed</h1>
             <p style="font-size:16px;">Hi ${reg.fullName},</p>
-            <p style="font-size:16px;line-height:1.5;">Your payment has been successfully verified. We are excited to host you at the <strong>${reg.eventName || 'Governance, Recordkeeping & Compliance Workshop'}</strong>.</p>
+            <p style="font-size:16px;line-height:1.5;">Your payment has been successfully verified. We are excited to host you at the <strong>IntegratedWellth Governance & Compliance</strong> workshop.</p>
             <div style="background-color:#f4f1ea;padding:15px;border-radius:8px;margin:20px 0;">
-              <p style="margin:0;font-size:16px;"><strong>Session:</strong> ${reg.eventDate || '22nd May 2026, 18h00 - 20h00'}</p>
+              <p style="margin:0;font-size:16px;"><strong>Date:</strong> Monday, June 1</p>
+              <p style="margin:5px 0 0 0;font-size:16px;"><strong>Time:</strong> 4:00 – 5:00pm (UTC)</p>
             </div>
             <p style="margin-top:30px;margin-bottom:30px;">
-              <a href="${reg.eventLink || 'https://zoom.us/j/iws-workshop-link'}" style="background-color:#134e4a;color:white;padding:14px 28px;text-decoration:none;border-radius:8px;font-weight:bold;text-transform:uppercase;letter-spacing:1px;font-size:14px;">Join Session</a>
+              <a href="https://meet.google.com/wpw-zjng-jof" style="background-color:#134e4a;color:white;padding:14px 28px;text-decoration:none;border-radius:8px;font-weight:bold;text-transform:uppercase;letter-spacing:1px;font-size:14px;">Join Google Meet Session</a>
             </p>
             <p style="font-size:14px;color:#6b7280;margin-top:20px;border-top:1px solid #e5e7eb;padding-top:20px;">Please join 5 minutes early to ensure your connection is stable.</p>
             </div>`
@@ -94,8 +95,7 @@ const Dashboard: React.FC = () => {
           <td className="px-8 py-5 font-bold text-white">{item.fullName}<br/><span className="text-[10px] text-white/50">{item.email}</span></td>
           <td className="px-8 py-5 text-white/60">
             {item.businessName}
-            {/* Display which event they registered for in the dashboard */}
-            <div className="text-[9px] font-bold text-brand-gold mt-1 uppercase">{item.eventName?.includes('Exclusive') ? 'June 1st Event' : 'May 22nd Event'}</div>
+            <div className="text-[9px] font-bold text-brand-gold mt-1 uppercase">{item.eventName || 'June 1st Event'}</div>
           </td>
           <td className="px-8 py-5">
             {item.status === 'verified' ? (
