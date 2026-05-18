@@ -50,17 +50,22 @@ const Dashboard: React.FC = () => {
     try {
       await updateDoc(doc(db, 'workshop_registrations', reg.id), { status: 'verified' });
       
-      // SURGICAL FIX: Updated the href with the official Google Meet link
+      // SURGICAL FIX: Dynamically populating the email template based on the specific event they registered for
       await addDoc(collection(db, 'mail'), {
         to: reg.email,
         message: {
-          subject: 'Your Exclusive Access: IWS Governance Workshop',
-          html: `<div style="font-family:sans-serif;color:#134e4a;padding:20px;">
-            <h1 style="color:#d4af37;">Registration Confirmed</h1>
-            <p>Hi ${reg.fullName},</p>
-            <p>Your payment has been successfully verified. We are excited to host you at the Governance, Recordkeeping & Compliance Workshop.</p>
-            <p><strong>Date:</strong> 22nd May 2026<br/><strong>Time:</strong> 18h00 - 20h00</p>
-            <p style="margin-top:20px;"><a href="https://meet.google.com/ejn-gnih-zqr" style="background-color:#134e4a;color:white;padding:12px 24px;text-decoration:none;border-radius:8px;font-weight:bold;">Join Google Meet Session</a></p>
+          subject: `Your Exclusive Access: ${reg.eventName || 'IWS Workshop'}`,
+          html: `<div style="font-family:sans-serif;color:#134e4a;padding:20px;max-width:600px;margin:0 auto;border:1px solid #e5e7eb;border-radius:12px;">
+            <h1 style="color:#d4af37;text-transform:uppercase;letter-spacing:1px;">Registration Confirmed</h1>
+            <p style="font-size:16px;">Hi ${reg.fullName},</p>
+            <p style="font-size:16px;line-height:1.5;">Your payment has been successfully verified. We are excited to host you at the <strong>${reg.eventName || 'Governance, Recordkeeping & Compliance Workshop'}</strong>.</p>
+            <div style="background-color:#f4f1ea;padding:15px;border-radius:8px;margin:20px 0;">
+              <p style="margin:0;font-size:16px;"><strong>Session:</strong> ${reg.eventDate || '22nd May 2026, 18h00 - 20h00'}</p>
+            </div>
+            <p style="margin-top:30px;margin-bottom:30px;">
+              <a href="${reg.eventLink || 'https://zoom.us/j/iws-workshop-link'}" style="background-color:#134e4a;color:white;padding:14px 28px;text-decoration:none;border-radius:8px;font-weight:bold;text-transform:uppercase;letter-spacing:1px;font-size:14px;">Join Session</a>
+            </p>
+            <p style="font-size:14px;color:#6b7280;margin-top:20px;border-top:1px solid #e5e7eb;padding-top:20px;">Please join 5 minutes early to ensure your connection is stable.</p>
             </div>`
         }
       });
@@ -87,7 +92,11 @@ const Dashboard: React.FC = () => {
         <tr key={item.id} className="hover:bg-white/5">
           <td className="px-8 py-5 font-mono text-xs text-white/40">{item.timestamp?.toDate ? item.timestamp.toDate().toLocaleDateString() : 'N/A'}</td>
           <td className="px-8 py-5 font-bold text-white">{item.fullName}<br/><span className="text-[10px] text-white/50">{item.email}</span></td>
-          <td className="px-8 py-5 text-white/60">{item.businessName}</td>
+          <td className="px-8 py-5 text-white/60">
+            {item.businessName}
+            {/* Display which event they registered for in the dashboard */}
+            <div className="text-[9px] font-bold text-brand-gold mt-1 uppercase">{item.eventName?.includes('Exclusive') ? 'June 1st Event' : 'May 22nd Event'}</div>
+          </td>
           <td className="px-8 py-5">
             {item.status === 'verified' ? (
               <span className="flex items-center gap-2 text-emerald-400 font-bold text-[10px] uppercase tracking-widest"><CheckCircle size={14}/> Verified</span>
@@ -164,7 +173,7 @@ const Dashboard: React.FC = () => {
                 <tr>
                   <th className="px-8 py-6">Date</th>
                   <th className="px-8 py-6">Identity</th>
-                  <th className="px-8 py-6">Business</th>
+                  <th className="px-8 py-6">Business & Event</th>
                   <th className="px-8 py-6">Status / Segment</th>
                   <th className="px-8 py-6 text-center">Action</th>
                 </tr>
