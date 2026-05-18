@@ -16,6 +16,7 @@ const ServicesPage = React.lazy(() => import('./components/pages/ServicesPage'))
 const WhoWeHelpPage = React.lazy(() => import('./components/pages/WhoWeHelpPage'));
 const Team = React.lazy(() => import('./components/pages/TeamPage'));
 const WorkshopPage = React.lazy(() => import('./components/pages/WorkshopPage'));
+const ExclusiveWorkshopPage = React.lazy(() => import('./components/pages/ExclusiveWorkshopPage')); // SURGICAL ADDITION
 const BlogPage = React.lazy(() => import('./components/pages/BlogPage'));
 const ContactPage = React.lazy(() => import('./components/pages/ContactPage'));
 const PrivacyPolicy = React.lazy(() => import('./components/PrivacyPolicy'));
@@ -34,8 +35,6 @@ const WarRoom = React.lazy(() => import('./components/WarRoom'));
 const StrategicJourney = React.lazy(() => import('./components/StrategicJourney'));
 const FinancialHealthScore = React.lazy(() => import('./components/FinancialHealthScore'));
 const UnifiedSupportWidget = React.lazy(() => import('./components/UnifiedSupportWidget'));
-
-// SURGICAL FIX: Import the Flyer component
 const WorkshopFlyer = React.lazy(() => import('./components/WorkshopFlyer'));
 
 const App: React.FC = () => {
@@ -48,9 +47,7 @@ const App: React.FC = () => {
     let popupTimer: number | undefined;
     const hasSeenEvent = localStorage.getItem('iws_popup_seen');
     const dismissedAlert = localStorage.getItem('iws_alert_dismissed') === 'true';
-    
-    // SURGICAL FIX: Added '#poster' to special pages to prevent popups covering it
-    const isSpecialPage = ['#warroom', '#intel', '#my-intel', '#landing', '#compliance-calendar', '#poster'].includes(window.location.hash);
+    const isSpecialPage = ['#warroom', '#intel', '#my-intel', '#landing', '#compliance-calendar', '#poster', '#exclusive'].includes(window.location.hash);
     
     setHideAlertBar(dismissedAlert);
 
@@ -66,8 +63,7 @@ const App: React.FC = () => {
           return;
         }
 
-        // SURGICAL FIX: Added 'poster' to valid views so it doesn't redirect to Home
-        const validViews = ['home', 'landing', 'services', 'who-we-help', 'team', 'workshops', 'blog', 
+        const validViews = ['home', 'landing', 'services', 'who-we-help', 'team', 'workshops', 'exclusive', 'blog', 
         'contact', 'privacy', 'startups', 'existing-business', 'npos', 'individuals', 'wellness', 'accountability', 
         'tracker', 'warroom', 'protocol', 'intel', 'my-intel', 'compliance-calendar', 'roadmap', 'gallery', 'poster'];
 
@@ -105,8 +101,8 @@ const App: React.FC = () => {
   const renderCurrentView = () => {
     try {
       switch (currentView) {
-        // SURGICAL FIX: Mount the Flyer Component
-        case 'poster': return <WorkshopFlyer />; 
+        case 'poster': return <WorkshopFlyer />;
+        case 'exclusive': return <ExclusiveWorkshopPage />; // SURGICAL ADDITION
         case 'landing': return <LandingPage onOpenAssessment={() => setShowAssessmentModal(true)} />;
         case 'my-intel': return <UserDashboard onTriggerAssessment={() => setShowAssessmentModal(true)} />;
         case 'compliance-calendar': return <ComplianceCalendarPage />;
@@ -135,7 +131,6 @@ const App: React.FC = () => {
     }
   };
 
-  // SURGICAL FIX: Hide Navbar, Footer, and Floating widgets on the poster page
   const isFullPageMode = ['warroom', 'intel', 'my-intel', 'poster'].includes(currentView);
   const shouldHideNavbar = ['intel', 'my-intel', 'landing', 'poster'].includes(currentView);
   const shouldHideFloatingBar = isFullPageMode || currentView === 'landing' || currentView === 'compliance-calendar' || hideAlertBar;
@@ -182,7 +177,6 @@ const App: React.FC = () => {
           </div>
         )}
 
-        {/* Hide widgets if on poster view */}
         {currentView !== 'intel' && currentView !== 'poster' && (
           <>
             <EventPopup 
