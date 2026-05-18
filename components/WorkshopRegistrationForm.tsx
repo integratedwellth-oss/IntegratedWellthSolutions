@@ -22,7 +22,17 @@ interface FormData {
   consent: boolean;
 }
 
-const WorkshopRegistrationForm: React.FC = () => {
+interface WorkshopRegistrationFormProps {
+  eventName?: string;
+  eventDate?: string;
+  eventLink?: string;
+}
+
+const WorkshopRegistrationForm: React.FC<WorkshopRegistrationFormProps> = ({ 
+  eventName = "Governance, Recordkeeping & Compliance Workshop",
+  eventDate = "22nd May 2026, 18h00 - 20h00",
+  eventLink = "https://zoom.us/j/iws-workshop-link"
+}) => {
   const [step, setStep] = useState<1 | 2 | 3>(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState<FormData>({
@@ -53,15 +63,14 @@ const WorkshopRegistrationForm: React.FC = () => {
     try {
       let popUrl = '';
       
-      // 1. Upload POP to Firebase Storage if EFT was selected
       if (formData.paymentMethod === 'eft' && formData.proofOfPayment && storage) {
         const fileRef = ref(storage, `workshop_pops/${Date.now()}_${formData.proofOfPayment.name}`);
         const uploadResult = await uploadBytes(fileRef, formData.proofOfPayment);
         popUrl = await getDownloadURL(uploadResult.ref);
       }
 
-      // 2. Save Registration Data to Firestore
       if (db) {
+        // SURGICAL FIX: We now save the specific event metadata into Firestore so the Dashboard knows which ticket to send
         await addDoc(collection(db, 'workshop_registrations'), {
           fullName: formData.fullName,
           cellphone: formData.cellphone,
@@ -77,6 +86,9 @@ const WorkshopRegistrationForm: React.FC = () => {
           paymentMethod: formData.paymentMethod,
           proofOfPaymentUrl: popUrl,
           status: formData.paymentMethod === 'card' ? 'verified' : 'pending_verification',
+          eventName: eventName,
+          eventDate: eventDate,
+          eventLink: eventLink,
           timestamp: serverTimestamp()
         });
       }
