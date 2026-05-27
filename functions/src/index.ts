@@ -12,12 +12,7 @@ RULES:
 
 export const websiteChat = onCall({
   region: "us-central1",
-  cors: [
-    "https://integratedwellth.co.za",
-    "https://www.integratedwellth.co.za",
-    "http://localhost:5173",
-    "http://localhost:3000"
-  ],
+  cors: true,
   secrets: ["DEEPSEEK_API_KEY"],
 }, async (request) => {
   const DEEPSEEK_API_KEY = process.env.DEEPSEEK_API_KEY;
@@ -27,9 +22,10 @@ export const websiteChat = onCall({
   if (!message) {
     throw new HttpsError("invalid-argument", "Message is required.");
   }
+  
   if (!DEEPSEEK_API_KEY) {
-    console.error("DEEPSEEK_API_KEY secret not found");
-    throw new HttpsError("failed-precondition", "API key not configured.");
+    console.error("DEEPSEEK_API_KEY environment variable is missing or empty.");
+    throw new HttpsError("failed-precondition", "DeepSeek API key is not configured in Server Secrets.");
   }
 
   try {
@@ -58,20 +54,23 @@ export const websiteChat = onCall({
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error("DeepSeek API error:", response.status, errorText);
-      throw new Error(`DeepSeek API error: ${response.status}`);
+      console.error("DeepSeek API error response:", response.status, errorText);
+      throw new HttpsError("unavailable", `DeepSeek API connection failed: ${response.status}`);
     }
 
     const data = await response.json() as any;
     const replyText = data?.choices?.[0]?.message?.content;
 
     if (!replyText) {
-      throw new Error("Invalid response structure from DeepSeek");
+      throw new HttpsError("internal", "Invalid response payload returned from DeepSeek API.");
     }
 
     return { reply: replyText.trim() };
   } catch (error: any) {
-    console.error("Chatbot Error:", error);
-    throw new HttpsError("internal", error.message || "Failed to process message.");
+    console.error("Runtime exception in websiteChat execution:", error);
+    if (error instanceof HttpsError) {
+      throw error;
+    }
+    throw new HttpsError("internal", error.message || "An unexpected error occurred processing the chat request.");
   }
 });
