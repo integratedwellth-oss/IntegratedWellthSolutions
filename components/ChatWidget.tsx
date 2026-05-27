@@ -1,11 +1,8 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { MessageSquare, X, Send, Loader2, Sparkles, Trash2 } from 'lucide-react';
-import { createChatSession, sendMessageStream } from '../services/geminiService';
+import { functions } from '../firebaseConfig';
+import { httpsCallable } from 'firebase/functions';
 import { ChatMessage } from '../types';
-
-interface ChatWidgetProps {
-  currentView?: string;
-}
 
 const SUGGESTIONS: Record<string, string[]> = {
   'home': ["What is the SARS Safety Net?", "How do I join the next workshop?", "Can you fix my messy books?"],
@@ -16,12 +13,15 @@ const SUGGESTIONS: Record<string, string[]> = {
   'default': ["Show me your services", "Where is your office?", "Book a free chat"]
 };
 
+interface ChatWidgetProps {
+  currentView?: string;
+}
+
 const ChatWidget: React.FC<ChatWidgetProps> = ({ currentView = 'home' }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const chatSessionRef = useRef<any>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -31,20 +31,12 @@ const ChatWidget: React.FC<ChatWidgetProps> = ({ currentView = 'home' }) => {
 
   useEffect(() => {
     localStorage.setItem('wellth_chat_history', JSON.stringify(messages));
-    scrollToBottom();
-  }, [messages, isOpen]);
-
-  const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  };
+  }, [messages, isOpen]);
 
   const handleSend = async (textOverride?: string) => {
     const textToSend = textOverride || input;
     if (!textToSend.trim()) return;
-
-    if (!chatSessionRef.current) {
-      chatSessionRef.current = createChatSession();
-    }
 
     const userMsg: ChatMessage = { role: 'user', text: textToSend, timestamp: Date.now() };
     setMessages(prev => [...prev, userMsg]);
@@ -52,27 +44,24 @@ const ChatWidget: React.FC<ChatWidgetProps> = ({ currentView = 'home' }) => {
     setIsLoading(true);
 
     try {
-      const stream = await sendMessageStream(chatSessionRef.current, userMsg.text);
-      let fullResponse = '';
-      const modelMsgId = Date.now();
-      
-      setMessages(prev => [...prev, { role: 'model', text: '', timestamp: modelMsgId }]);
-
-      // Fix: Iterate over the async iterable returned by the service
-      for await (const chunk of stream) {
-        const text = chunk.text;
-        if (text) {
-          fullResponse += text;
-          setMessages(prev => 
-            prev.map(msg => 
-              msg.timestamp === modelMsgId ? { ...msg, text: fullResponse } : msg
-            )
-          );
-        }
+      if (!functions) {
+        throw new Error("Firebase Functions instance is null.");
       }
+      const chatCall = httpsCallable(functions, 'websiteChat');
+      const response = await chatCall({ message: textToSend, history: messages }) as any;
+      
+      setMessages(prev => [...prev, {
+        role: 'model',
+        text: response.data?.reply || "Connection lost.",
+        timestamp: Date.now()
+      }]);
     } catch (error) {
       console.error("Chat error:", error);
-      setMessages(prev => [...prev, { role: 'model', text: "Protocol fault. Please check your connection.", timestamp: Date.now() }]);
+      setMessages(prev => [...prev, {
+        role: 'model',
+        text: "Protocol fault. Please check your connection.",
+        timestamp: Date.now()
+      }]);
     } finally {
       setIsLoading(false);
     }
@@ -81,7 +70,6 @@ const ChatWidget: React.FC<ChatWidgetProps> = ({ currentView = 'home' }) => {
   const handleClear = () => {
     setMessages([]);
     localStorage.removeItem('wellth_chat_history');
-    chatSessionRef.current = null;
   };
 
   const renderMessageText = (text: string) => {
@@ -111,8 +99,12 @@ const ChatWidget: React.FC<ChatWidgetProps> = ({ currentView = 'home' }) => {
               </div>
             </div>
             <div className="flex items-center gap-1">
-              <button onClick={handleClear} className="text-brand-200 hover:text-white p-2 rounded-full transition-colors"><Trash2 size={18} /></button>
-              <button onClick={() => setIsOpen(false)} className="text-white hover:text-brand-200 p-2 rounded-full transition-colors"><X size={22} /></button>
+              <button onClick={handleClear} className="text-brand-200 hover:text-white p-2 rounded-full transition-colors">
+                <Trash2 size={18} />
+              </button>
+              <button onClick={() => setIsOpen(false)} className="text-white hover:text-brand-200 p-2 rounded-full transition-colors">
+                <X size={22} />
+              </button>
             </div>
           </div>
           <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-gray-50 scroll-smooth">
@@ -144,7 +136,7 @@ const ChatWidget: React.FC<ChatWidgetProps> = ({ currentView = 'home' }) => {
               type="text"
               value={input}
               onChange={(e) => setInput(e.target.value)}
-              onKeyPress={(e) => e.key === 'Enter' && handleSend()}
+              onKeyDown={(e) => e.key === 'Enter' && handleSend()}
               placeholder="Ask the Advisor..."
               className="flex-1 bg-gray-50 border border-gray-200 rounded-full px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500/20"
             />
@@ -163,4 +155,5 @@ const ChatWidget: React.FC<ChatWidgetProps> = ({ currentView = 'home' }) => {
     </div>
   );
 };
+
 export default ChatWidget;
