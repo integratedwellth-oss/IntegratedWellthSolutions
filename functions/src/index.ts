@@ -1,7 +1,5 @@
 import { onCall, HttpsError } from "firebase-functions/v2/https";
 
-const AI_MODEL = "gemini-3.1-flash-lite-preview";
-
 const SYSTEM_PROMPT = `You are the official digital advisor for Integrated Wellth Solutions (IWS).
 YOUR KNOWLEDGE BASE:
 - We are a strategic business consultancy founded by Marcia Kgaphola, merging accounting precision (IQ) with behavioral psychology (EQ).
@@ -14,56 +12,66 @@ RULES:
 
 export const websiteChat = onCall({
   region: "us-central1",
-  cors: ["https://integratedwellth.co.za", "https://www.integratedwellth.co.za", "http://localhost:5173", "http://localhost:3000"],
-  secrets: ["GEMINI_API_KEY"],
+  cors: [
+    "https://integratedwellth.co.za",
+    "https://www.integratedwellth.co.za",
+    "http://localhost:5173",
+    "http://localhost:3000"
+  ],
+  secrets: ["DEEPSEEK_API_KEY"],
 }, async (request) => {
-  const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
-
+  const DEEPSEEK_API_KEY = process.env.DEEPSEEK_API_KEY;
   const message = request.data.message;
   const history = request.data.history;
 
   if (!message) {
     throw new HttpsError("invalid-argument", "Message is required.");
   }
-  if (!GEMINI_API_KEY) {
-    console.error("GEMINI_API_KEY secret not found");
+  if (!DEEPSEEK_API_KEY) {
+    console.error("DEEPSEEK_API_KEY secret not found");
     throw new HttpsError("failed-precondition", "API key not configured.");
   }
 
   try {
-    const formattedHistory = history ? history.map((m: any) => ({
-      role: m.role === 'bot' ? 'model' : 'user',
-      parts: [{ text: m.text }]
-    })) : [];
-    formattedHistory.push({ role: 'user', parts: [{ text: message }] });
+    const messages = [
+      { role: "system", content: SYSTEM_PROMPT },
+      ...(history || []).map((m: any) => ({
+        role: (m.role === 'model' || m.role === 'bot' || m.role === 'assistant') ? 'assistant' : 'user',
+        content: m.text || m.content
+      })),
+      { role: "user", content: message }
+    ];
 
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/${AI_MODEL}:generateContent?key=${GEMINI_API_KEY}`;
-
-    const res = await fetch(url, {
+    const response = await fetch("https://api.deepseek.com/v1/chat/completions", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${DEEPSEEK_API_KEY}`
+      },
       body: JSON.stringify({
-        systemInstruction: { parts: [{ text: SYSTEM_PROMPT }] },
-        contents: formattedHistory,
-        generationConfig: { temperature: 0.1, maxOutputTokens: 500 }
+        model: "deepseek-chat",
+        messages,
+        temperature: 0.2,
+        max_tokens: 500
       })
     });
 
-    if (!res.ok) {
-      const errorText = await res.text();
-      console.error("Gemini API error:", res.status, errorText);
-      throw new Error(`Gemini API error: ${res.status}`);
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error("DeepSeek API error:", response.status, errorText);
+      throw new Error(`DeepSeek API error: ${response.status}`);
     }
 
-    const data = await res.json() as any;
-    const replyText = data?.candidates?.[0]?.content?.parts?.[0]?.text;
+    const data = await response.json() as any;
+    const replyText = data?.choices?.[0]?.message?.content;
 
-    if (!replyText) throw new Error("Invalid response structure from Gemini");
+    if (!replyText) {
+      throw new Error("Invalid response structure from DeepSeek");
+    }
 
     return { reply: replyText.trim() };
-
-  } catch (error) {
+  } catch (error: any) {
     console.error("Chatbot Error:", error);
-    throw new HttpsError("internal", "Failed to process message. Please try again later.");
+    throw new HttpsError("internal", error.message || "Failed to process message.");
   }
 });
