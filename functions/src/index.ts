@@ -8,15 +8,18 @@ YOUR KNOWLEDGE BASE:
 - Primary Call to Action: Guide users to book a strategic audit or discovery call at www.integratedwellth.co.za.
 RULES:
 1. NEVER hallucinate or make up information. Use ONLY the Knowledge Base.
-2. Be direct, professional, and highly strategic. Keep answers..."`;
+2. Be direct, professional, and highly strategic. Keep answers concise (2-4 sentences max).`;
 
 export const websiteChat = onCall({
   region: "us-central1",
   cors: true,
   secrets: ["DEEPSEEK_API_KEY"],
 }, async (request) => {
-  // Trim prevents any trailing newlines or whitespaces injected by GitHub Actions echo commands
   const DEEPSEEK_API_KEY = (process.env.DEEPSEEK_API_KEY || "").trim();
+  
+  // Safe runtime diagnostic logging to pinpoint deployment secret issues
+  console.log("DeepSeek Secret Diagnostics - Key Length:", DEEPSEEK_API_KEY.length, "Valid prefix (sk-):", DEEPSEEK_API_KEY.startsWith("sk-"));
+
   const message = request.data.message;
   const history = request.data.history;
 
