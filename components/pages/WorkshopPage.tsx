@@ -82,7 +82,7 @@ const WorkshopPage: React.FC = () => {
   };
 
   const getRiskProfile = (finalScore: number) => {
-    if (finalScore >= 25) return { label: "LOW RISK", color: "text-emerald-500", desc: "Your basic compliance is solid. Book a free discovery call to secure your operations." };
+    if (finalScore >= 25) return { label: "LOW RISK", color: "text-emerald-500", desc: "Your basic compliance is solid. Book a free discovery call to audit your setup." };
     if (finalScore >= 12) return { label: "MODERATE RISK", color: "text-brand-gold", desc: "Critical gaps exist. Let's trace and clean them up." };
     return { label: "HIGH RISK", color: "text-rose-500", desc: "Your entity is exposed to penalties. Immediate action is required." };
   };
@@ -93,6 +93,10 @@ const WorkshopPage: React.FC = () => {
         @keyframes marquee { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
         .marquee-track { display: flex; width: max-content; animation: marquee 22s linear infinite; }
         .marquee-track:hover { animation-play-state: paused; }
+        @keyframes float-slow { 0%, 100% { transform: translateY(0px) rotate(0deg); } 50% { transform: translateY(-15px) rotate(3deg); } }
+        @keyframes float-delayed { 0%, 100% { transform: translateY(0px) rotate(0deg); } 50% { transform: translateY(-10px) rotate(-3deg); } }
+        .animate-float-slow { animation: float-slow 7s ease-in-out infinite; }
+        .animate-float-delayed { animation: float-delayed 8s ease-in-out infinite; }
       `}</style>
 
       <div className="min-h-screen flex flex-col relative">
@@ -178,26 +182,32 @@ const WorkshopPage: React.FC = () => {
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            {/* Split Grid - Redesigned High Impact Poster Card with Marcia Portrait (Aligned perfectly from top to prevent head crop) */}
+            {/* Split Grid - Redesigned High Impact Poster Card with Marcia Portrait and Red Corner Ribbon */}
             <div className="sm:col-span-2 lg:col-span-2">
               <RevealOnScroll width="100%">
-                <div className="rounded-[2rem] overflow-hidden shadow-2xl min-h-[420px] flex flex-col justify-between relative border border-brand-900/5 bg-brand-900 text-white">
+                <div className="rounded-[2rem] overflow-hidden shadow-2xl min-h-[440px] flex flex-col justify-between relative border border-brand-900/5 bg-brand-900 text-white">
                   <div className="absolute inset-0 bg-cover bg-no-repeat z-0" style={{ backgroundImage: `url('${FOUNDER_URL}')`, backgroundPosition: '50% 15%' }} />
                   <div className="absolute inset-0 bg-brand-900/85 z-10" />
-                  <div className="relative z-20 flex flex-col justify-between h-full min-h-[380px] w-full p-8">
+                  
+                  {/* High Visibility Red corner sash for massive discount */}
+                  <div className="absolute top-0 right-0 bg-red-600 text-white font-black text-[10px] px-8 py-2.5 uppercase tracking-widest rotate-45 translate-x-8 translate-y-3 shadow-lg z-30">
+                    SAVE R500
+                  </div>
+
+                  <div className="relative z-20 flex flex-col justify-between h-full min-h-[400px] w-full p-8">
                     <div>
                       <span className="bg-brand-gold text-brand-900 font-black px-4 py-1.5 rounded-full text-[10px] uppercase tracking-widest">Special Session Pass</span>
-                      <h4 className="text-xl md:text-2xl font-black uppercase mt-4 leading-tight">GOVERNANCE, RECORDKEEPING AND COMPLIANCE WORKSHOP</h4>
+                      <h4 className="text-2xl md:text-3xl lg:text-4xl font-black uppercase mt-4 leading-none tracking-tight">GOVERNANCE, RECORDKEEPING AND COMPLIANCE WORKSHOP</h4>
                     </div>
                     <div className="space-y-4 border-t border-white/10 pt-6">
-                      <div className="flex justify-between items-center bg-[#f4f1ea]/10 p-3 rounded-xl border border-white/5">
-                        <span className="text-xs opacity-70">Sovereign Investment</span>
+                      <div className="flex justify-between items-center bg-[#f4f1ea]/10 p-4 rounded-xl border border-white/5">
+                        <span className="text-xs font-black uppercase tracking-wider opacity-80">Sovereign Investment</span>
                         <div className="text-right">
-                          <span className="text-xs opacity-50 line-through mr-2">R750.00</span>
-                          <span className="text-xl font-black text-brand-gold">R250 ONLY</span>
+                          <span className="text-xs font-black text-red-500 line-through mr-2">R750.00</span>
+                          <span className="text-2xl md:text-3xl font-black text-brand-gold">R250 ONLY</span>
                         </div>
                       </div>
-                      <div className="grid grid-cols-2 gap-4 text-xs font-bold uppercase tracking-wider text-white/90">
+                      <div className="grid grid-cols-2 gap-4 text-xs md:text-sm font-bold uppercase tracking-wider text-white/90">
                         <div><strong className="text-brand-gold">Date:</strong> {nextEventDate}</div>
                         <div><strong className="text-brand-gold">Time:</strong> 18h00 - 20h00</div>
                         <div><strong className="text-brand-gold">Platform:</strong> Online Session</div>
