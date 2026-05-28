@@ -94,16 +94,21 @@ const WorkshopPage: React.FC = () => {
         .marquee-track { display: flex; width: max-content; animation: marquee 22s linear infinite; }
         .marquee-track:hover { animation-play-state: paused; }
         @keyframes float-upward {
-          0% { transform: translateY(110vh) rotate(0deg) scale(0.8); opacity: 0; }
-          10% { opacity: 0.7; }
-          90% { opacity: 0.7; }
+          0% { transform: translateY(110vh) rotate(0deg) scale(0.7); opacity: 0; }
+          10% { opacity: 0.65; }
+          90% { opacity: 0.65; }
           100% { transform: translateY(-10vh) rotate(360deg) scale(1.1); opacity: 0; }
         }
         .animate-coin-1 { animation: float-upward 14s linear infinite; }
-        .animate-coin-2 { animation: float-upward 18s linear infinite; animation-delay: 3s; }
-        .animate-coin-3 { animation: float-upward 16s linear infinite; animation-delay: 6s; }
-        .animate-coin-4 { animation: float-upward 20s linear infinite; animation-delay: 9s; }
-        .animate-coin-5 { animation: float-upward 15s linear infinite; animation-delay: 12s; }
+        .animate-coin-2 { animation: float-upward 18s linear infinite; animation-delay: 2s; }
+        .animate-coin-3 { animation: float-upward 16s linear infinite; animation-delay: 4s; }
+        .animate-coin-4 { animation: float-upward 20s linear infinite; animation-delay: 6s; }
+        .animate-coin-5 { animation: float-upward 15s linear infinite; animation-delay: 8s; }
+        .animate-coin-6 { animation: float-upward 17s linear infinite; animation-delay: 1s; }
+        .animate-coin-7 { animation: float-upward 13s linear infinite; animation-delay: 3s; }
+        .animate-coin-8 { animation: float-upward 19s linear infinite; animation-delay: 5s; }
+        .animate-coin-9 { animation: float-upward 15s linear infinite; animation-delay: 7s; }
+        .animate-coin-10 { animation: float-upward 16s linear infinite; animation-delay: 9s; }
       `}</style>
 
       <div className="min-h-screen flex flex-col relative overflow-hidden">
@@ -137,19 +142,24 @@ const WorkshopPage: React.FC = () => {
           </div>
         )}
 
-        {/* Hero Section with Gravity-Defying Floating Coins Background */}
+        {/* Hero Section with Gravity-Defying Double Floating Coins Background */}
         <section className="flex-1 px-4 md:px-6 pt-24 pb-12 flex items-center relative z-10">
           <div className="max-w-[88rem] mx-auto w-full">
             <div className="relative w-full rounded-2xl overflow-hidden shadow-2xl min-h-[80vh] md:h-[calc(100vh-120px)] flex flex-col justify-center">
               <div className="absolute inset-0 bg-cover bg-center z-0" style={{ backgroundImage: `url('${COIN_BACKGROUND}')` }} />
               <div className="absolute inset-0 bg-gradient-to-r from-[#F5F5F5]/95 via-[#F5F5F5]/60 to-transparent z-10" />
               
-              {/* Gravity-Defying Pure Metallic Floating Coins */}
-              <div className="absolute left-[8%] w-16 h-16 rounded-full bg-gradient-to-r from-slate-300 via-white to-slate-400 border-2 border-brand-gold/40 shadow-2xl animate-coin-1 pointer-events-none z-20" />
-              <div className="absolute left-[30%] w-20 h-20 rounded-full bg-gradient-to-r from-slate-300 via-white to-slate-400 border-2 border-brand-gold/40 shadow-2xl animate-coin-2 pointer-events-none z-20" />
-              <div className="absolute right-[25%] w-14 h-14 rounded-full bg-gradient-to-r from-slate-300 via-white to-slate-400 border-2 border-brand-gold/40 shadow-2xl animate-coin-3 pointer-events-none z-20" />
-              <div className="absolute right-[8%] w-18 h-18 rounded-full bg-gradient-to-r from-slate-300 via-white to-slate-400 border-2 border-brand-gold/40 shadow-2xl animate-coin-4 pointer-events-none z-20" />
-              <div className="absolute left-[45%] w-16 h-16 rounded-full bg-gradient-to-r from-slate-300 via-white to-slate-400 border-2 border-brand-gold/40 shadow-2xl animate-coin-5 pointer-events-none z-20" />
+              {/* Gravity-Defying Double Floating Metallic Coins (R and $) */}
+              <div className="absolute left-[5%] w-16 h-16 rounded-full bg-gradient-to-r from-slate-300 via-white to-slate-400 border-2 border-brand-gold/40 shadow-2xl animate-coin-1 pointer-events-none z-20 flex items-center justify-center"><span className="font-black text-2xl text-brand-gold font-sora">R</span></div>
+              <div className="absolute left-[22%] w-20 h-20 rounded-full bg-gradient-to-r from-slate-300 via-white to-slate-400 border-2 border-brand-gold/40 shadow-2xl animate-coin-2 pointer-events-none z-20 flex items-center justify-center"><span className="font-black text-3xl text-brand-gold font-sora">$</span></div>
+              <div className="absolute left-[40%] w-14 h-14 rounded-full bg-gradient-to-r from-slate-300 via-white to-slate-400 border-2 border-brand-gold/40 shadow-2xl animate-coin-3 pointer-events-none z-20 flex items-center justify-center"><span className="font-black text-xl text-brand-gold font-sora">R</span></div>
+              <div className="absolute left-[58%] w-18 h-18 rounded-full bg-gradient-to-r from-slate-300 via-white to-slate-400 border-2 border-brand-gold/40 shadow-2xl animate-coin-4 pointer-events-none z-20 flex items-center justify-center"><span className="font-black text-2xl text-brand-gold font-sora">$</span></div>
+              <div className="absolute left-[75%] w-16 h-16 rounded-full bg-gradient-to-r from-slate-300 via-white to-slate-400 border-2 border-brand-gold/40 shadow-2xl animate-coin-5 pointer-events-none z-20 flex items-center justify-center"><span className="font-black text-2xl text-brand-gold font-sora">R</span></div>
+              <div className="absolute right-[10%] w-16 h-16 rounded-full bg-gradient-to-r from-slate-300 via-white to-slate-400 border-2 border-brand-gold/40 shadow-2xl animate-coin-6 pointer-events-none z-20 flex items-center justify-center"><span className="font-black text-2xl text-brand-gold font-sora">$</span></div>
+              <div className="absolute right-[28%] w-20 h-20 rounded-full bg-gradient-to-r from-slate-300 via-white to-slate-400 border-2 border-brand-gold/40 shadow-2xl animate-coin-7 pointer-events-none z-20 flex items-center justify-center"><span className="font-black text-3xl text-brand-gold font-sora">R</span></div>
+              <div className="absolute right-[45%] w-14 h-14 rounded-full bg-gradient-to-r from-slate-300 via-white to-slate-400 border-2 border-brand-gold/40 shadow-2xl animate-coin-8 pointer-events-none z-20 flex items-center justify-center"><span className="font-black text-xl text-brand-gold font-sora">$</span></div>
+              <div className="absolute right-[62%] w-18 h-18 rounded-full bg-gradient-to-r from-slate-300 via-white to-slate-400 border-2 border-brand-gold/40 shadow-2xl animate-coin-9 pointer-events-none z-20 flex items-center justify-center"><span className="font-black text-2xl text-brand-gold font-sora">R</span></div>
+              <div className="absolute right-[78%] w-16 h-16 rounded-full bg-gradient-to-r from-slate-300 via-white to-slate-400 border-2 border-brand-gold/40 shadow-2xl animate-coin-10 pointer-events-none z-20 flex items-center justify-center"><span className="font-black text-2xl text-brand-gold font-sora">$</span></div>
 
               <div className="relative z-30 flex flex-col items-start justify-start h-full p-6 md:p-12 pt-28 max-w-2xl">
                 <h1 className="text-brand-900 text-4xl md:text-6xl lg:text-7xl font-semibold leading-tight mb-4 uppercase tracking-tighter" style={{ letterSpacing: '-0.04em' }}>Sovereign<br/>Governance</h1>
@@ -185,7 +195,7 @@ const WorkshopPage: React.FC = () => {
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            {/* Split Grid - Redesigned High Impact Poster Card with Marcia Portrait and Red Corner Ribbon */}
+            {/* Split Grid - High Impact Poster Card with Marcia Portrait and Red Corner Ribbon */}
             <div className="sm:col-span-2 lg:col-span-2">
               <RevealOnScroll width="100%">
                 <div className="rounded-[2rem] overflow-hidden shadow-2xl min-h-[440px] flex flex-col justify-between relative border border-brand-900/5 bg-brand-900 text-white">
