@@ -17,6 +17,8 @@ const REGULATORY_STYLES: Record<string, React.CSSProperties> = {
   CIPC: { fontFamily: "monospace", fontWeight: 800, letterSpacing: "0.12em", fontSize: "16px" }
 };
 
+const COIN_BACKGROUND = "https://images.higgs.ai/?default=1&output=webp&url=https%3A%2F%2Fd8j0ntlcm91z4.cloudfront.net%2Fuser_38xzZboKViGWJOttwIXH07lWA1P%2Fhf_20260423_164207_f243351d-ed59-48ec-83a0-a5e996bdbe3c.png&w=1280&q=85";
+
 const ASSESSMENT_QUESTIONS = [
   {
     q: "Do you have separate bank accounts for business and personal use?",
@@ -80,7 +82,7 @@ const WorkshopPage: React.FC = () => {
   };
 
   const getRiskProfile = (finalScore: number) => {
-    if (finalScore >= 25) return { label: "LOW RISK", color: "text-emerald-500", desc: "Your basic compliance is solid. Book a free discovery call to audit your setup." };
+    if (finalScore >= 25) return { label: "LOW RISK", color: "text-emerald-500", desc: "Your basic compliance is solid. Book a free discovery call to secure your operations." };
     if (finalScore >= 12) return { label: "MODERATE RISK", color: "text-brand-gold", desc: "Critical gaps exist. Let's trace and clean them up." };
     return { label: "HIGH RISK", color: "text-rose-500", desc: "Your entity is exposed to penalties. Immediate action is required." };
   };
@@ -90,10 +92,7 @@ const WorkshopPage: React.FC = () => {
       <style>{`
         @keyframes marquee { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
         .marquee-track { display: flex; width: max-content; animation: marquee 22s linear infinite; }
-        @keyframes float-slow { 0%, 100% { transform: translateY(0px) rotate(0deg); } 50% { transform: translateY(-15px) rotate(3deg); } }
-        @keyframes float-delayed { 0%, 100% { transform: translateY(0px) rotate(0deg); } 50% { transform: translateY(-10px) rotate(-3deg); } }
-        .animate-float-slow { animation: float-slow 7s ease-in-out infinite; }
-        .animate-float-delayed { animation: float-delayed 8s ease-in-out infinite; }
+        .marquee-track:hover { animation-play-state: paused; }
       `}</style>
 
       <div className="min-h-screen flex flex-col relative">
@@ -127,12 +126,13 @@ const WorkshopPage: React.FC = () => {
           </div>
         )}
 
+        {/* Hero Section with Floating Coins Background Image */}
         <section className="flex-1 px-4 md:px-6 pt-24 pb-12 flex items-center relative z-10">
           <div className="max-w-[88rem] mx-auto w-full">
             <div className="relative w-full rounded-2xl overflow-hidden shadow-2xl min-h-[80vh] md:h-[calc(100vh-120px)] flex flex-col justify-center">
-              <video autoPlay muted loop playsInline className="w-full h-full object-cover absolute inset-0" src="https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260423_183428_ab5e672a-f608-4dcb-b319-f3e040f02e2d.mp4" />
-              <div className="absolute inset-0 bg-gradient-to-r from-[#F5F5F5]/95 via-[#F5F5F5]/60 to-transparent z-0" />
-              <div className="relative z-10 flex flex-col items-start justify-start h-full p-6 md:p-12 pt-28 max-w-2xl">
+              <div className="absolute inset-0 bg-cover bg-center z-0" style={{ backgroundImage: `url('${COIN_BACKGROUND}')` }} />
+              <div className="absolute inset-0 bg-gradient-to-r from-[#F5F5F5]/95 via-[#F5F5F5]/60 to-transparent z-10" />
+              <div className="relative z-20 flex flex-col items-start justify-start h-full p-6 md:p-12 pt-28 max-w-2xl">
                 <h1 className="text-brand-900 text-4xl md:text-6xl lg:text-7xl font-semibold leading-tight mb-4 uppercase tracking-tighter" style={{ letterSpacing: '-0.04em' }}>Sovereign<br/>Governance</h1>
                 <p className="text-brand-900/80 text-sm md:text-lg mb-8 leading-relaxed font-medium max-w-md">An intensive systems training track for South African founders to navigate regulatory frameworks, insulate personal wealth, and qualify for enterprise tenders.</p>
                 <button onClick={() => { document.getElementById('registration')?.scrollIntoView({ behavior: 'smooth' }); }} className="inline-flex items-center gap-3 bg-brand-900 text-white text-base md:text-lg font-semibold pl-8 pr-2 py-2 rounded-full hover:bg-brand-gold hover:text-brand-900 transition-all duration-200 group shadow-lg">
@@ -140,12 +140,6 @@ const WorkshopPage: React.FC = () => {
                   <div className="bg-white rounded-full p-2 group-hover:bg-brand-900 transition-colors"><ArrowRight className="w-5 h-5 text-brand-900 group-hover:text-white transition-colors" /></div>
                 </button>
               </div>
-
-              {/* Floating Compliance Coins */}
-              <div className="absolute top-24 right-1/4 w-16 h-16 rounded-full bg-white/80 border-2 border-brand-gold/30 backdrop-blur-md flex items-center justify-center text-brand-900 animate-float-slow hidden md:flex"><span className="font-bold text-xs font-sora">SARS</span></div>
-              <div className="absolute bottom-36 left-1/3 w-20 h-20 rounded-full bg-white/80 border-2 border-brand-gold/30 backdrop-blur-md flex items-center justify-center text-brand-900 animate-float-delayed hidden md:flex"><span className="font-bold text-xs font-sora">CIPC</span></div>
-              <div className="absolute top-1/2 right-12 w-14 h-14 rounded-full bg-white/80 border-2 border-brand-gold/30 backdrop-blur-md flex items-center justify-center text-brand-900 animate-float-slow hidden md:flex"><span className="font-bold text-xs font-sora">CIBA</span></div>
-
               <div className="absolute bottom-12 right-12 hidden lg:block z-20">
                 <div className="p-6 rounded-3xl border border-brand-900/10 bg-white/80 backdrop-blur-md shadow-2xl max-w-[320px]">
                   <div className="flex items-center gap-4 mb-4">
@@ -182,14 +176,14 @@ const WorkshopPage: React.FC = () => {
               </div>
             </RevealOnScroll>
           </div>
+
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            
-            {/* Split Grid - High Impact Graphic Design Poster */}
+            {/* Split Grid - Redesigned High Impact Poster Card with Marcia Portrait (Aligned perfectly from top to prevent head crop) */}
             <div className="sm:col-span-2 lg:col-span-2">
               <RevealOnScroll width="100%">
                 <div className="rounded-[2rem] overflow-hidden shadow-2xl min-h-[420px] flex flex-col justify-between relative border border-brand-900/5 bg-brand-900 text-white">
-                  <div className="absolute inset-0 bg-cover bg-no-repeat z-0" style={{ backgroundImage: `url('${FOUNDER_URL}')`, backgroundPosition: '50% 20%' }} />
-                  <div className="absolute inset-0 bg-brand-900/80 z-10" />
+                  <div className="absolute inset-0 bg-cover bg-no-repeat z-0" style={{ backgroundImage: `url('${FOUNDER_URL}')`, backgroundPosition: '50% 15%' }} />
+                  <div className="absolute inset-0 bg-brand-900/85 z-10" />
                   <div className="relative z-20 flex flex-col justify-between h-full min-h-[380px] w-full p-8">
                     <div>
                       <span className="bg-brand-gold text-brand-900 font-black px-4 py-1.5 rounded-full text-[10px] uppercase tracking-widest">Special Session Pass</span>
