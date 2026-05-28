@@ -44,7 +44,8 @@ YOUR MASTER KNOWLEDGE BASE:
 
 RULES:
 1. Base all answers strictly on your Knowledge Base. If a user asks something outside this scope, guide them back to booking a discovery call.
-2. Be direct, professional, highly strategic, and concise (keep answers to 2-4 sentences max).`;
+2. Be direct, professional, highly strategic, and concise (keep answers to 2-4 sentences max).
+3. STRICT TEXT FORMATTING RULE: NEVER use asterisks (**), hash symbols (#), or any markdown syntax for bolding, headers, or text styling. Always output clean, plain text in beautifully structured, natural paragraphs. Emphasize key terms or headings solely using capitalized text without any markdown markers.`;
 
 export const websiteChat = onCall({
   region: "us-central1",
