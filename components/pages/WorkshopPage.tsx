@@ -192,15 +192,17 @@ const WorkshopPage: React.FC = () => {
             <RevealOnScroll delay={0.2}><p className="text-brand-900/70 text-2xl md:text-3xl leading-relaxed font-light">USD Halo is a reward-earning dollar coin that lets your savings grow securely while remaining perfectly anchored to the U.S. dollar.</p></RevealOnScroll>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            <RevealOnScroll width="100%" className="sm:col-span-2 lg:col-span-2">
-              <div className="rounded-2xl overflow-hidden shadow-xl p-7 min-h-80 flex flex-col justify-between relative border border-brand-900/5" style={{ backgroundImage: "url('https://images.higgs.ai/?default=1&output=webp&url=https%3A%2F%2Fd8j0ntlcm91z4.cloudfront.net%2Fuser_38xzZboKViGWJOttwIXH07lWA1P%2Fhf_20260423_164207_f243351d-ed59-48ec-83a0-a5e996bdbe3c.png&w=1280&q=85')", backgroundSize: 'cover', backgroundPosition: 'center' }}>
-                <div className="absolute inset-0 bg-white/80 backdrop-blur-sm z-0" />
-                <div className="relative z-10 flex flex-col justify-between h-full min-h-[260px] w-full">
-                  <h4 className="text-brand-900 text-2xl font-semibold leading-snug uppercase tracking-tight" style={{ letterSpacing: '-0.02em' }}>Savings that bloom</h4>
-                  <p className="text-brand-900/70 text-base max-w-xs font-medium leading-relaxed">Gain steady returns as your dollar tokens are routed dynamically into top-performing DeFi strategies.</p>
+            <div className="sm:col-span-2 lg:col-span-2">
+              <RevealOnScroll width="100%">
+                <div className="rounded-2xl overflow-hidden shadow-xl p-7 min-h-80 flex flex-col justify-between relative border border-brand-900/5" style={{ backgroundImage: "url('https://images.higgs.ai/?default=1&output=webp&url=https%3A%2F%2Fd8j0ntlcm91z4.cloudfront.net%2Fuser_38xzZboKViGWJOttwIXH07lWA1P%2Fhf_20260423_164207_f243351d-ed59-48ec-83a0-a5e996bdbe3c.png&w=1280&q=85')", backgroundSize: 'cover', backgroundPosition: 'center' }}>
+                  <div className="absolute inset-0 bg-white/80 backdrop-blur-sm z-0" />
+                  <div className="relative z-10 flex flex-col justify-between h-full min-h-[260px] w-full">
+                    <h4 className="text-brand-900 text-2xl font-semibold leading-snug uppercase tracking-tight" style={{ letterSpacing: '-0.02em' }}>Savings that bloom</h4>
+                    <p className="text-brand-900/70 text-base max-w-xs font-medium leading-relaxed">Gain steady returns as your dollar tokens are routed dynamically into top-performing DeFi strategies.</p>
+                  </div>
                 </div>
-              </div>
-            </RevealOnScroll>
+              </RevealOnScroll>
+            </div>
             <RevealOnScroll width="100%">
               <div className="bg-brand-900 rounded-2xl p-7 min-h-80 flex flex-col justify-between shadow-xl border border-white/10 relative overflow-hidden group hover:border-brand-gold transition-colors">
                 <h4 className="text-white text-2xl font-semibold leading-tight uppercase tracking-tight">Always fluid,<br/>always pegged.</h4>
