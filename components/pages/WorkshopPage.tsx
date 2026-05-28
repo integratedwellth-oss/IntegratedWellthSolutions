@@ -80,8 +80,8 @@ const WorkshopPage: React.FC = () => {
   };
 
   const getRiskProfile = (finalScore: number) => {
-    if (finalScore >= 25) return { label: "LOW RISK", color: "text-emerald-500", desc: "Your basic compliance is solid. Book a free discovery call to secure your operations." };
-    if (finalScore >= 12) return { label: "MODERATE RISK", color: "text-brand-gold", desc: "Critical administrative gaps exist. Let's trace and clean them up." };
+    if (finalScore >= 25) return { label: "LOW RISK", color: "text-emerald-500", desc: "Your basic compliance is solid. Book a free discovery call to audit your setup." };
+    if (finalScore >= 12) return { label: "MODERATE RISK", color: "text-brand-gold", desc: "Critical gaps exist. Let's trace and clean them up." };
     return { label: "HIGH RISK", color: "text-rose-500", desc: "Your entity is exposed to penalties. Immediate action is required." };
   };
 
@@ -90,14 +90,13 @@ const WorkshopPage: React.FC = () => {
       <style>{`
         @keyframes marquee { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
         .marquee-track { display: flex; width: max-content; animation: marquee 22s linear infinite; }
-        .marquee-track:hover { animation-play-state: paused; }
         @keyframes float-slow { 0%, 100% { transform: translateY(0px) rotate(0deg); } 50% { transform: translateY(-15px) rotate(3deg); } }
         @keyframes float-delayed { 0%, 100% { transform: translateY(0px) rotate(0deg); } 50% { transform: translateY(-10px) rotate(-3deg); } }
         .animate-float-slow { animation: float-slow 7s ease-in-out infinite; }
         .animate-float-delayed { animation: float-delayed 8s ease-in-out infinite; }
       `}</style>
 
-      <div className="h-screen flex flex-col overflow-hidden relative">
+      <div className="min-h-screen flex flex-col relative">
         <nav className="absolute top-0 left-0 right-0 z-20 px-6 py-5 bg-transparent">
           <div className="max-w-[88rem] mx-auto flex items-center justify-between">
             <div className="flex items-center gap-3 cursor-pointer" onClick={() => window.location.hash = '#home'}>
@@ -128,14 +127,14 @@ const WorkshopPage: React.FC = () => {
           </div>
         )}
 
-        <section className="flex-1 px-6 pt-20 pb-6 flex items-end relative z-10">
+        <section className="flex-1 px-4 md:px-6 pt-24 pb-12 flex items-center relative z-10">
           <div className="max-w-[88rem] mx-auto w-full">
-            <div className="relative w-full rounded-2xl overflow-hidden shadow-2xl" style={{ height: 'calc(100vh - 96px)' }}>
+            <div className="relative w-full rounded-2xl overflow-hidden shadow-2xl min-h-[80vh] md:h-[calc(100vh-120px)] flex flex-col justify-center">
               <video autoPlay muted loop playsInline className="w-full h-full object-cover absolute inset-0" src="https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260423_183428_ab5e672a-f608-4dcb-b319-f3e040f02e2d.mp4" />
               <div className="absolute inset-0 bg-gradient-to-r from-[#F5F5F5]/95 via-[#F5F5F5]/60 to-transparent z-0" />
-              <div className="relative z-10 flex flex-col items-start justify-start h-full p-12 pt-36 max-w-2xl">
-                <h1 className="text-brand-900 text-5xl md:text-6xl lg:text-7xl font-semibold leading-tight mb-4 uppercase tracking-tighter" style={{ letterSpacing: '-0.04em' }}>Sovereign<br/>Governance</h1>
-                <p className="text-brand-900/80 text-base md:text-lg mb-8 leading-relaxed font-medium max-w-md">An intensive systems training track for South African founders to navigate regulatory frameworks, insulate personal wealth, and qualify for enterprise tenders.</p>
+              <div className="relative z-10 flex flex-col items-start justify-start h-full p-6 md:p-12 pt-28 max-w-2xl">
+                <h1 className="text-brand-900 text-4xl md:text-6xl lg:text-7xl font-semibold leading-tight mb-4 uppercase tracking-tighter" style={{ letterSpacing: '-0.04em' }}>Sovereign<br/>Governance</h1>
+                <p className="text-brand-900/80 text-sm md:text-lg mb-8 leading-relaxed font-medium max-w-md">An intensive systems training track for South African founders to navigate regulatory frameworks, insulate personal wealth, and qualify for enterprise tenders.</p>
                 <button onClick={() => { document.getElementById('registration')?.scrollIntoView({ behavior: 'smooth' }); }} className="inline-flex items-center gap-3 bg-brand-900 text-white text-base md:text-lg font-semibold pl-8 pr-2 py-2 rounded-full hover:bg-brand-gold hover:text-brand-900 transition-all duration-200 group shadow-lg">
                   <span className="uppercase tracking-widest text-xs font-bold">Register Now</span>
                   <div className="bg-white rounded-full p-2 group-hover:bg-brand-900 transition-colors"><ArrowRight className="w-5 h-5 text-brand-900 group-hover:text-white transition-colors" /></div>
@@ -164,7 +163,7 @@ const WorkshopPage: React.FC = () => {
         </section>
       </div>
 
-      <section className="bg-[#F5F5F5] px-6 py-24 border-t border-brand-900/5">
+      <section className="bg-[#F5F5F5] px-4 md:px-6 py-24 border-t border-brand-900/5">
         <div className="max-w-[88rem] mx-auto">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-12 mb-16 items-start">
             <RevealOnScroll>
@@ -184,26 +183,38 @@ const WorkshopPage: React.FC = () => {
             </RevealOnScroll>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            
+            {/* Split Grid - High Impact Graphic Design Poster */}
             <div className="sm:col-span-2 lg:col-span-2">
               <RevealOnScroll width="100%">
-                <div className="rounded-2xl overflow-hidden shadow-2xl p-8 min-h-[420px] flex flex-col justify-between relative border border-brand-900/5 bg-brand-900 text-white">
-                  <div className="absolute inset-0 bg-cover bg-no-repeat z-0" style={{ backgroundImage: `url('${FOUNDER_URL}')`, backgroundPosition: '50% 25%' }} />
+                <div className="rounded-[2rem] overflow-hidden shadow-2xl min-h-[420px] flex flex-col justify-between relative border border-brand-900/5 bg-brand-900 text-white">
+                  <div className="absolute inset-0 bg-cover bg-no-repeat z-0" style={{ backgroundImage: `url('${FOUNDER_URL}')`, backgroundPosition: '50% 20%' }} />
                   <div className="absolute inset-0 bg-brand-900/80 z-10" />
-                  <div className="relative z-20 flex flex-col justify-between h-full min-h-[360px] w-full">
+                  <div className="relative z-20 flex flex-col justify-between h-full min-h-[380px] w-full p-8">
                     <div>
-                      <span className="text-brand-gold text-[10px] font-black uppercase tracking-[0.2em]">Next Workshop Session</span>
-                      <h4 className="text-xl font-bold uppercase tracking-tight mt-2 text-white">GOVERNANCE, RECORDKEEPING AND COMPLIANCE WORKSHOP</h4>
+                      <span className="bg-brand-gold text-brand-900 font-black px-4 py-1.5 rounded-full text-[10px] uppercase tracking-widest">Special Session Pass</span>
+                      <h4 className="text-xl md:text-2xl font-black uppercase mt-4 leading-tight">GOVERNANCE, RECORDKEEPING AND COMPLIANCE WORKSHOP</h4>
                     </div>
-                    <div className="space-y-2 border-t border-white/10 pt-4">
-                      <p className="text-sm font-medium text-white/80"><strong className="text-brand-gold font-bold">Date:</strong> {nextEventDate}</p>
-                      <p className="text-sm font-medium text-white/80"><strong className="text-brand-gold font-bold">Time:</strong> 18h00 - 20h00 SAST</p>
-                      <p className="text-sm font-medium text-white/80"><strong className="text-brand-gold font-bold">Platform:</strong> Online Session</p>
-                      <p className="text-sm font-medium text-white/80"><strong className="text-brand-gold font-bold">Investment:</strong> R250 Per Person</p>
+                    <div className="space-y-4 border-t border-white/10 pt-6">
+                      <div className="flex justify-between items-center bg-[#f4f1ea]/10 p-3 rounded-xl border border-white/5">
+                        <span className="text-xs opacity-70">Sovereign Investment</span>
+                        <div className="text-right">
+                          <span className="text-xs opacity-50 line-through mr-2">R750.00</span>
+                          <span className="text-xl font-black text-brand-gold">R250 ONLY</span>
+                        </div>
+                      </div>
+                      <div className="grid grid-cols-2 gap-4 text-xs font-bold uppercase tracking-wider text-white/90">
+                        <div><strong className="text-brand-gold">Date:</strong> {nextEventDate}</div>
+                        <div><strong className="text-brand-gold">Time:</strong> 18h00 - 20h00</div>
+                        <div><strong className="text-brand-gold">Platform:</strong> Online Session</div>
+                        <div><strong className="text-brand-gold">Seats:</strong> Limited 50 Slots</div>
+                      </div>
                     </div>
                   </div>
                 </div>
               </RevealOnScroll>
             </div>
+            
             <RevealOnScroll width="100%">
               <div className="bg-brand-900 rounded-2xl p-7 min-h-80 flex flex-col justify-between shadow-xl border border-white/10 relative overflow-hidden group hover:border-brand-gold transition-colors">
                 <h4 className="text-white text-2xl font-semibold leading-tight uppercase tracking-tight">Avoid Fines &<br/>Deregistration</h4>
@@ -313,7 +324,7 @@ const WorkshopPage: React.FC = () => {
           </div>
           <RevealOnScroll width="100%">
             <WorkshopRegistrationForm 
-              eventName="Governance, Recordkeeping & Compliance Workshop"
+              eventName="GOVERNANCE, RECORDKEEPING AND COMPLIANCE WORKSHOP"
               eventDate={`${nextEventDate}, 18h00 - 20h00`}
               eventLink="https://calendly.com/marcia-kgaphola/new-meeting"
             />
