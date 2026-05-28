@@ -93,13 +93,20 @@ const WorkshopPage: React.FC = () => {
         @keyframes marquee { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
         .marquee-track { display: flex; width: max-content; animation: marquee 22s linear infinite; }
         .marquee-track:hover { animation-play-state: paused; }
-        @keyframes float-slow { 0%, 100% { transform: translateY(0px) rotate(0deg); } 50% { transform: translateY(-15px) rotate(3deg); } }
-        @keyframes float-delayed { 0%, 100% { transform: translateY(0px) rotate(0deg); } 50% { transform: translateY(-10px) rotate(-3deg); } }
-        .animate-float-slow { animation: float-slow 7s ease-in-out infinite; }
-        .animate-float-delayed { animation: float-delayed 8s ease-in-out infinite; }
+        @keyframes float-upward {
+          0% { transform: translateY(110vh) rotate(0deg); opacity: 0; }
+          10% { opacity: 0.6; }
+          90% { opacity: 0.6; }
+          100% { transform: translateY(-10vh) rotate(360deg); opacity: 0; }
+        }
+        .animate-coin-1 { animation: float-upward 14s linear infinite; }
+        .animate-coin-2 { animation: float-upward 18s linear infinite; animation-delay: 3s; }
+        .animate-coin-3 { animation: float-upward 16s linear infinite; animation-delay: 6s; }
+        .animate-coin-4 { animation: float-upward 20s linear infinite; animation-delay: 9s; }
+        .animate-coin-5 { animation: float-upward 15s linear infinite; animation-delay: 12s; }
       `}</style>
 
-      <div className="min-h-screen flex flex-col relative">
+      <div className="min-h-screen flex flex-col relative overflow-hidden">
         <nav className="absolute top-0 left-0 right-0 z-20 px-6 py-5 bg-transparent">
           <div className="max-w-[88rem] mx-auto flex items-center justify-between">
             <div className="flex items-center gap-3 cursor-pointer" onClick={() => window.location.hash = '#home'}>
@@ -130,31 +137,27 @@ const WorkshopPage: React.FC = () => {
           </div>
         )}
 
-        {/* Hero Section with Floating Coins Background Image */}
+        {/* Hero Section with Gravity-Defying Floating Coins Background */}
         <section className="flex-1 px-4 md:px-6 pt-24 pb-12 flex items-center relative z-10">
           <div className="max-w-[88rem] mx-auto w-full">
             <div className="relative w-full rounded-2xl overflow-hidden shadow-2xl min-h-[80vh] md:h-[calc(100vh-120px)] flex flex-col justify-center">
               <div className="absolute inset-0 bg-cover bg-center z-0" style={{ backgroundImage: `url('${COIN_BACKGROUND}')` }} />
               <div className="absolute inset-0 bg-gradient-to-r from-[#F5F5F5]/95 via-[#F5F5F5]/60 to-transparent z-10" />
-              <div className="relative z-20 flex flex-col items-start justify-start h-full p-6 md:p-12 pt-28 max-w-2xl">
+              
+              {/* Gravity-Defying Floating Seals */}
+              <div className="absolute left-[8%] w-16 h-16 rounded-full bg-white/80 border-2 border-brand-gold/40 backdrop-blur-md flex items-center justify-center text-brand-900 shadow-xl animate-coin-1 pointer-events-none z-20"><span className="font-bold text-xs font-sora">SARS</span></div>
+              <div className="absolute left-[30%] w-20 h-20 rounded-full bg-white/80 border-2 border-brand-gold/40 backdrop-blur-md flex items-center justify-center text-brand-900 shadow-xl animate-coin-2 pointer-events-none z-20"><span className="font-bold text-xs font-sora">CIPC</span></div>
+              <div className="absolute right-[25%] w-14 h-14 rounded-full bg-white/80 border-2 border-brand-gold/40 backdrop-blur-md flex items-center justify-center text-brand-900 shadow-xl animate-coin-3 pointer-events-none z-20"><span className="font-bold text-xs font-sora">CIBA</span></div>
+              <div className="absolute right-[8%] w-18 h-18 rounded-full bg-white/80 border-2 border-brand-gold/40 backdrop-blur-md flex items-center justify-center text-brand-900 shadow-xl animate-coin-4 pointer-events-none z-20"><span className="font-bold text-xs font-sora">IWS</span></div>
+              <div className="absolute left-[45%] w-16 h-16 rounded-full bg-white/80 border-2 border-brand-gold/40 backdrop-blur-md flex items-center justify-center text-brand-900 shadow-xl animate-coin-5 pointer-events-none z-20"><span className="font-bold text-xs font-sora">ZOHO</span></div>
+
+              <div className="relative z-30 flex flex-col items-start justify-start h-full p-6 md:p-12 pt-28 max-w-2xl">
                 <h1 className="text-brand-900 text-4xl md:text-6xl lg:text-7xl font-semibold leading-tight mb-4 uppercase tracking-tighter" style={{ letterSpacing: '-0.04em' }}>Sovereign<br/>Governance</h1>
                 <p className="text-brand-900/80 text-sm md:text-lg mb-8 leading-relaxed font-medium max-w-md">An intensive systems training track for South African founders to navigate regulatory frameworks, insulate personal wealth, and qualify for enterprise tenders.</p>
                 <button onClick={() => { document.getElementById('registration')?.scrollIntoView({ behavior: 'smooth' }); }} className="inline-flex items-center gap-3 bg-brand-900 text-white text-base md:text-lg font-semibold pl-8 pr-2 py-2 rounded-full hover:bg-brand-gold hover:text-brand-900 transition-all duration-200 group shadow-lg">
                   <span className="uppercase tracking-widest text-xs font-bold">Register Now</span>
                   <div className="bg-white rounded-full p-2 group-hover:bg-brand-900 transition-colors"><ArrowRight className="w-5 h-5 text-brand-900 group-hover:text-white transition-colors" /></div>
                 </button>
-              </div>
-              <div className="absolute bottom-12 right-12 hidden lg:block z-20">
-                <div className="p-6 rounded-3xl border border-brand-900/10 bg-white/80 backdrop-blur-md shadow-2xl max-w-[320px]">
-                  <div className="flex items-center gap-4 mb-4">
-                    <div className="w-12 h-12 rounded-xl bg-brand-900 text-brand-gold flex items-center justify-center shadow-inner"><ShieldCheck size={24} /></div>
-                    <div className="flex flex-col">
-                      <span className="text-[9px] font-black text-brand-900/40 uppercase tracking-[0.2em] leading-none">Status</span>
-                      <span className="text-[10px] font-bold text-emerald-600 uppercase tracking-widest mt-1">SARS Shield Active</span>
-                    </div>
-                  </div>
-                  <p className="text-lg font-bold text-brand-900 leading-snug">Structural Wealth Protection<br/><span className="text-brand-gold font-black italic text-sm">Defensive Corporate Guardrails</span></p>
-                </div>
               </div>
             </div>
           </div>
@@ -182,7 +185,7 @@ const WorkshopPage: React.FC = () => {
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            {/* Split Grid - Redesigned High Impact Poster Card with Marcia Portrait and Red Corner Ribbon */}
+            {/* Split Grid - High Impact Poster Card with Marcia Portrait and Red Corner Ribbon */}
             <div className="sm:col-span-2 lg:col-span-2">
               <RevealOnScroll width="100%">
                 <div className="rounded-[2rem] overflow-hidden shadow-2xl min-h-[440px] flex flex-col justify-between relative border border-brand-900/5 bg-brand-900 text-white">
