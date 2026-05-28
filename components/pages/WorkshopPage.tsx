@@ -10,14 +10,11 @@ const LogoIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
   </svg>
 );
 
-const STANDARDS_STYLES: Record<string, React.CSSProperties> = {
-  "SARS Authorized": { fontFamily: "sans-serif", fontWeight: 900, letterSpacing: "0.08em", fontSize: "12px", textTransform: "uppercase" },
-  "CIPC Compliant": { fontFamily: "Georgia, serif", fontWeight: 700, letterSpacing: "-0.01em", fontSize: "14px" },
-  "CIBA Registered": { fontFamily: "monospace", fontWeight: 700, letterSpacing: "0.1em", fontSize: "13px" },
-  "POPIA Certified": { fontFamily: "sans-serif", fontWeight: 700, letterSpacing: "0.02em", fontSize: "12px" },
-  "SME Growth": { fontFamily: "serif", fontWeight: 400, letterSpacing: "-0.02em", fontSize: "16px", fontStyle: "italic" },
-  "Tax Clearance": { fontFamily: "sans-serif", fontWeight: 800, letterSpacing: "0.05em", fontSize: "13px", textTransform: "uppercase" },
-  "Sovereign Setup": { fontFamily: "monospace", fontWeight: 600, letterSpacing: "0.15em", fontSize: "12px" }
+const REGULATORY_STYLES: Record<string, React.CSSProperties> = {
+  SARS: { fontFamily: "sans-serif", fontWeight: 900, letterSpacing: "0.15em", fontSize: "16px" },
+  CIBA: { fontFamily: "Georgia, serif", fontWeight: 700, letterSpacing: "-0.01em", fontSize: "16px" },
+  ZOHO: { fontFamily: "sans-serif", fontWeight: 800, letterSpacing: "0.08em", fontSize: "16px" },
+  CIPC: { fontFamily: "monospace", fontWeight: 800, letterSpacing: "0.12em", fontSize: "16px" }
 };
 
 const ASSESSMENT_QUESTIONS = [
@@ -47,13 +44,13 @@ const ASSESSMENT_QUESTIONS = [
   }
 ];
 
+const FOUNDER_URL = "https://res.cloudinary.com/dkyg07qvv/image/upload/v1778472133/Marcia_Kgaphola._SARS._CIPC._COMPLIANCE_e9mn4f.jpg";
+
 const WorkshopPage: React.FC = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [currentStep, setCurrentStep] = useState(0);
   const [score, setScore] = useState(0);
   const [showResults, setShowResults] = useState(false);
-
-  const standardsItems = ["SARS Authorized", "CIPC Compliant", "CIBA Registered", "POPIA Certified", "SME Growth", "Tax Clearance", "Sovereign Setup"];
 
   const getFirstMondayDate = () => {
     const now = new Date();
@@ -83,7 +80,7 @@ const WorkshopPage: React.FC = () => {
   };
 
   const getRiskProfile = (finalScore: number) => {
-    if (finalScore >= 25) return { label: "LOW RISK", color: "text-emerald-500", desc: "Your basic compliance is solid. Book a free discovery call to secure your operations." };
+    if (finalScore >= 25) return { label: "LOW RISK", color: "text-emerald-500", desc: "Your basic compliance is solid. Book a free discovery call to audit your setup." };
     if (finalScore >= 12) return { label: "MODERATE RISK", color: "text-brand-gold", desc: "Critical administrative gaps exist. Let's trace and clean them up." };
     return { label: "HIGH RISK", color: "text-rose-500", desc: "Your entity is exposed to penalties. Immediate action is required." };
   };
@@ -133,19 +130,12 @@ const WorkshopPage: React.FC = () => {
               <video autoPlay muted loop playsInline className="w-full h-full object-cover absolute inset-0" src="https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260423_183428_ab5e672a-f608-4dcb-b319-f3e040f02e2d.mp4" />
               <div className="absolute inset-0 bg-gradient-to-r from-[#F5F5F5]/95 via-[#F5F5F5]/60 to-transparent z-0" />
               <div className="relative z-10 flex flex-col items-start justify-start h-full p-12 pt-36 max-w-2xl">
-                <h1 className="text-brand-900 text-5xl md:text-6xl lg:text-7xl font-semibold leading-tight mb-4 uppercase tracking-tighter" style={{ letterSpacing: '-0.04em' }}>Governance &<br/>Compliance</h1>
+                <h1 className="text-brand-900 text-5xl md:text-6xl lg:text-7xl font-semibold leading-tight mb-4 uppercase tracking-tighter" style={{ letterSpacing: '-0.04em' }}>Sovereign<br/>Governance</h1>
                 <p className="text-brand-900/80 text-base md:text-lg mb-8 leading-relaxed font-medium max-w-md">An intensive systems training track for South African founders to navigate regulatory frameworks, insulate personal wealth, and qualify for enterprise tenders.</p>
                 <button onClick={() => { document.getElementById('registration')?.scrollIntoView({ behavior: 'smooth' }); }} className="inline-flex items-center gap-3 bg-brand-900 text-white text-base md:text-lg font-semibold pl-8 pr-2 py-2 rounded-full hover:bg-brand-gold hover:text-brand-900 transition-all duration-200 group shadow-lg">
                   <span className="uppercase tracking-widest text-xs font-bold">Register Now</span>
                   <div className="bg-white rounded-full p-2 group-hover:bg-brand-900 transition-colors"><ArrowRight className="w-5 h-5 text-brand-900 group-hover:text-white transition-colors" /></div>
                 </button>
-                <div className="mt-24 w-full max-w-md overflow-hidden border-t border-brand-900/10 pt-6">
-                  <div className="marquee-track">
-                    {standardsItems.concat(standardsItems).map((item, idx) => (
-                      <span key={idx} className="mx-7 shrink-0 text-brand-900/60 whitespace-nowrap transition-colors hover:text-brand-gold cursor-default" style={STANDARDS_STYLES[item]}>{item}</span>
-                    ))}
-                  </div>
-                </div>
               </div>
               <div className="absolute bottom-12 right-12 hidden lg:block z-20">
                 <div className="p-6 rounded-3xl border border-brand-900/10 bg-white/80 backdrop-blur-md shadow-2xl max-w-[320px]">
@@ -169,23 +159,36 @@ const WorkshopPage: React.FC = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-12 mb-16 items-start">
             <RevealOnScroll>
               <div>
-                <h2 className="text-brand-900 text-4xl md:text-5xl lg:text-6xl font-semibold leading-tight mb-8 uppercase tracking-tighter" style={{ letterSpacing: '-0.03em' }}>Navigate SARS & CIPC.</h2>
+                <h2 className="text-brand-900 text-4xl md:text-5xl lg:text-6xl font-semibold leading-tight mb-8 uppercase tracking-tighter" style={{ letterSpacing: '-0.03em' }}>Meet Your Guardrails.</h2>
                 <button onClick={() => { document.getElementById('registration')?.scrollIntoView({ behavior: 'smooth' }); }} className="inline-flex items-center gap-3 bg-brand-900 text-white text-base font-semibold pl-8 pr-2 py-2 rounded-full hover:bg-brand-gold hover:text-brand-900 transition-all duration-200 group shadow-md">
                   <span className="uppercase tracking-widest text-xs font-bold">Reserve Seat</span>
                   <div className="bg-white rounded-full p-2 group-hover:bg-brand-900 transition-colors"><ArrowRight className="w-4 h-4 text-brand-900 group-hover:text-white transition-colors" /></div>
                 </button>
               </div>
             </RevealOnScroll>
-            <RevealOnScroll delay={0.2}><p className="text-brand-900/70 text-2xl md:text-3xl leading-relaxed font-light">Stop operating on shaky ground. We bridge the gap between necessary compliance requirements and executive peace of mind.</p></RevealOnScroll>
+            <RevealOnScroll delay={0.2}>
+              <div className="space-y-6">
+                <p className="text-brand-900/70 text-2xl md:text-3xl leading-relaxed font-light">Stop operating on shaky ground. We bridge the gap between financial compliance and executive peace of mind.</p>
+                <p className="text-brand-900/60 text-base leading-relaxed">Prerequisite company filings and clean, audit-ready data trails are required for capital integration and procurement.</p>
+              </div>
+            </RevealOnScroll>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             <div className="sm:col-span-2 lg:col-span-2">
               <RevealOnScroll width="100%">
-                <div className="rounded-2xl overflow-hidden shadow-xl p-7 min-h-80 flex flex-col justify-between relative border border-brand-900/5" style={{ backgroundImage: "url('https://images.unsplash.com/photo-1450133064473-71024230f91b?auto=format&fit=crop&q=80&w=1200')", backgroundSize: 'cover', backgroundPosition: 'center' }}>
-                  <div className="absolute inset-0 bg-white/80 backdrop-blur-sm z-0" />
-                  <div className="relative z-10 flex flex-col justify-between h-full min-h-[260px] w-full">
-                    <h4 className="text-brand-900 text-2xl font-semibold leading-snug uppercase tracking-tight" style={{ letterSpacing: '-0.02em' }}>Tender & Funding Ready</h4>
-                    <p className="text-brand-900/70 text-base max-w-xs font-medium leading-relaxed">Prerequisite company filings and clean, audit-ready data trails required for capital integration and procurement.</p>
+                <div className="rounded-2xl overflow-hidden shadow-xl p-8 min-h-[380px] flex flex-col justify-between relative border border-brand-900/5 bg-brand-900 text-white" style={{ backgroundImage: `url('${FOUNDER_URL}')`, backgroundSize: 'cover', backgroundPosition: 'center' }}>
+                  <div className="absolute inset-0 bg-brand-900/80 z-0" />
+                  <div className="relative z-10 flex flex-col justify-between h-full min-h-[320px] w-full">
+                    <div>
+                      <span className="text-brand-gold text-[10px] font-black uppercase tracking-[0.2em]">Next Workshop Session</span>
+                      <h4 className="text-2xl font-semibold leading-tight uppercase tracking-tight mt-2 text-white">Governance & Compliance</h4>
+                    </div>
+                    <div className="space-y-2 border-t border-white/10 pt-4">
+                      <p className="text-sm font-medium text-white/80"><strong className="text-brand-gold font-bold">Date:</strong> {nextEventDate}</p>
+                      <p className="text-sm font-medium text-white/80"><strong className="text-brand-gold font-bold">Time:</strong> 18h00 - 20h00 SAST</p>
+                      <p className="text-sm font-medium text-white/80"><strong className="text-brand-gold font-bold">Platform:</strong> Online Session (Zoom)</p>
+                      <p className="text-sm font-medium text-white/80"><strong className="text-brand-gold font-bold">Investment:</strong> R250 Per Person</p>
+                    </div>
                   </div>
                 </div>
               </RevealOnScroll>
@@ -202,6 +205,22 @@ const WorkshopPage: React.FC = () => {
                 <p className="text-brand-100/60 text-base font-medium leading-relaxed">Decouple your corporate entity from your personal assets with robust accounting structures and legal protection templates.</p>
               </div>
             </RevealOnScroll>
+          </div>
+        </div>
+      </section>
+
+      <section className="bg-[#F5F5F5] px-6 py-12 border-b border-brand-900/5">
+        <div className="max-w-[88rem] mx-auto grid grid-cols-1 md:grid-cols-4 gap-8 items-center">
+          <div className="md:col-span-1"><p className="text-brand-900/70 text-base leading-relaxed font-bold uppercase tracking-wide text-xs">Aligned with Industry Standards</p></div>
+          <div className="md:col-span-3 overflow-hidden py-4">
+            <div className="marquee-track">
+              {["SARS", "CIBA", "ZOHO", "CIPC", "SARS", "CIBA", "ZOHO", "CIPC"].map((item, idx) => (
+                <div key={idx} className="mx-10 flex items-center gap-3 shrink-0">
+                  <span className="text-brand-gold" style={REGULATORY_STYLES[item]}>{item}</span>
+                  <span className="text-[9px] font-black text-brand-900/40 uppercase tracking-widest">Verified Entity</span>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       </section>
@@ -256,7 +275,7 @@ const WorkshopPage: React.FC = () => {
           <RevealOnScroll width="100%">
             <div className="text-center mb-16">
               <h2 className="text-4xl md:text-5xl font-semibold text-brand-900 tracking-tighter uppercase">Workshop Curriculum</h2>
-              <p className="text-lg text-brand-900/60 font-medium mt-2">Actionable system architecture for South African builders.</p>
+              <p className="text-lg text-brand-900/60 font-medium mt-2">Actionable system architecture for modern integrations.</p>
             </div>
             <div className="grid md:grid-cols-3 gap-8">
               {[
