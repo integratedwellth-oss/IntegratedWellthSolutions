@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { ArrowRight, ShieldCheck, Zap, Menu, X, Calendar, Clock, MapPin, CheckCircle2, HelpCircle, AlertTriangle } from 'lucide-react';
-import RevealOnScroll from '../components/RevealOnScroll';
+import RevealOnScroll from '../RevealOnScroll';
 import Button from '../Button';
 import WorkshopRegistrationForm from '../WorkshopRegistrationForm';
 
@@ -341,7 +341,7 @@ const WorkshopPage: React.FC = () => {
             <WorkshopRegistrationForm 
               eventName="USD Halo Yield & Compliance Integration Intensive"
               eventDate={`${nextEventDate}, 18h00 - 20h00`}
-              eventLink="https://zoom.us/j/iws-halo-intensive"
+              eventLink="https://calendly.com/marcia-kgaphola/new-meeting"
             />
           </RevealOnScroll>
         </div>
