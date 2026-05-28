@@ -1,6 +1,7 @@
 import React from 'react';
+import Philosophy from '../Philosophy';
 import RevealOnScroll from '../RevealOnScroll';
-import { Target, Linkedin, Mail, ShieldCheck } from 'lucide-react';
+import { Target, Mail, ShieldCheck } from 'lucide-react';
 import Button from '../Button';
 
 const TEAM_HERO_IMAGE = "https://res.cloudinary.com/dka0498ns/image/upload/v1772709343/ai-search-optimization-speaker-happy-hunter-digital.jpg_n02szo.jpg";
@@ -37,9 +38,9 @@ const TeamPage: React.FC = () => {
   return (
     <div className="flex flex-col bg-[#F5F5F5] font-sans text-brand-900 selection:bg-brand-gold/20 antialiased min-h-screen">
       
-      {/* 1. Cinematic Hero Banner */}
+      {/* 1. Cinematic Hero Banner - Adjusted top-alignment to prevent head cropping */}
       <section className="relative h-[65vh] flex items-center justify-center overflow-hidden bg-brand-900">
-        <div className="absolute inset-0 bg-cover bg-center opacity-40 z-0" style={{ backgroundImage: `url('${TEAM_HERO_IMAGE}')` }} />
+        <div className="absolute inset-0 bg-cover bg-no-repeat opacity-40 z-0" style={{ backgroundImage: `url('${TEAM_HERO_IMAGE}')`, backgroundPosition: 'center 10%' }} />
         <div className="absolute inset-0 bg-gradient-to-b from-brand-900/50 via-brand-900/85 to-brand-900 z-10" />
         <div className="relative z-20 max-w-5xl mx-auto px-6 text-center space-y-6">
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-[#d4af37]/30 bg-[#d4af37]/10 mb-2">
@@ -59,16 +60,10 @@ const TeamPage: React.FC = () => {
       <section className="py-24 bg-white border-b border-gray-100">
         <div className="max-w-7xl mx-auto px-6">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-16 items-center">
-            
-            {/* Portrait - Top Aligned to Prevent Cutoff */}
             <div className="lg:col-span-5 relative">
               <RevealOnScroll>
                 <div className="relative z-10 rounded-[3rem] overflow-hidden shadow-2xl border-8 border-slate-50">
-                  <img 
-                    src={MARCIA_PORTRAIT} 
-                    alt="Marcia Kgaphola" 
-                    className="w-full h-auto max-h-[550px] object-cover object-top" 
-                  />
+                  <img src={MARCIA_PORTRAIT} alt="Marcia Kgaphola" className="w-full h-auto max-h-[550px] object-cover object-top" />
                   <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-brand-900/95 to-transparent p-8">
                     <p className="text-white font-black uppercase tracking-widest text-lg">Marcia Kgaphola</p>
                     <p className="text-[#d4af37] text-xs font-bold uppercase tracking-widest mt-1">Founder & Leader</p>
@@ -76,26 +71,19 @@ const TeamPage: React.FC = () => {
                 </div>
               </RevealOnScroll>
             </div>
-
-            {/* Profile Information */}
             <div className="lg:col-span-7 space-y-8">
               <RevealOnScroll delay={0.2}>
                 <div className="space-y-4">
                   <span className="text-brand-gold text-xs font-black uppercase tracking-[0.4em] block">The Founder's Insight</span>
                   <h2 className="text-4xl md:text-5xl font-sora font-black text-brand-900 uppercase tracking-tighter">Marcia Kgaphola</h2>
-                  <p className="text-[#d4af37] font-bold text-sm uppercase tracking-wider leading-relaxed">
-                    Founder, Leader & Tax Practitioner
-                  </p>
-                  <p className="text-gray-400 font-bold text-xs uppercase tracking-wide leading-relaxed">
-                    Chartered Business Accountant (CIBA) · Hons Psychological Counselling · Risk & Project Management
-                  </p>
+                  <p className="text-[#d4af37] font-bold text-sm uppercase tracking-wider leading-relaxed">Founder, Leader & Tax Practitioner</p>
+                  <p className="text-gray-400 font-bold text-xs uppercase tracking-wide leading-relaxed">Chartered Business Accountant (CIBA) · Hons Psychological Counselling · Risk & Project Management</p>
                 </div>
                 <div className="text-lg md:text-xl text-brand-900/70 font-medium leading-relaxed italic border-l-4 border-[#d4af37] pl-8 py-2 mt-6">
                   "Principal architect merging financial integrity (IQ) with psychological resilience (EQ). Specializes in structural intervention, tax planning, and decoupling founder identities from operational friction."
                 </div>
               </RevealOnScroll>
             </div>
-
           </div>
         </div>
       </section>
@@ -111,22 +99,12 @@ const TeamPage: React.FC = () => {
             {TEAM_MEMBERS.map((member, idx) => (
               <RevealOnScroll key={idx} delay={idx * 0.1} width="100%">
                 <div className="group relative flex flex-col h-full bg-white rounded-[2.5rem] overflow-hidden border border-brand-900/5 hover:border-[#d4af37] transition-all duration-500 hover:shadow-2xl">
-                  
-                  {/* Portrait Container - object-top prevents cut-off heads */}
                   <div className="relative aspect-[3/4] overflow-hidden bg-brand-900/5">
-                    <img 
-                      src={member.image} 
-                      alt={member.name} 
-                      className="w-full h-full object-cover object-top grayscale group-hover:grayscale-0 transition-all duration-700 scale-105 group-hover:scale-100" 
-                    />
+                    <img src={member.image} alt={member.name} className="w-full h-full object-cover object-top grayscale group-hover:grayscale-0 transition-all duration-700 scale-105 group-hover:scale-100" />
                     <div className="absolute inset-0 bg-gradient-to-t from-brand-900/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-6">
-                      <a href={`mailto:${member.email}`} className="w-12 h-12 rounded-xl bg-[#d4af37] text-brand-900 flex items-center justify-center hover:bg-white transition-colors shadow-2xl">
-                        <Mail size={20} />
-                      </a>
+                      <a href={`mailto:${member.email}`} className="w-12 h-12 rounded-xl bg-[#d4af37] text-brand-900 flex items-center justify-center hover:bg-white transition-colors shadow-2xl"><Mail size={20} /></a>
                     </div>
                   </div>
-
-                  {/* Member Info */}
                   <div className="p-8 flex flex-col flex-grow justify-between space-y-4">
                     <div className="space-y-2">
                       <h3 className="text-2xl font-black text-brand-900 leading-tight uppercase tracking-tighter">{member.name}</h3>
@@ -135,7 +113,6 @@ const TeamPage: React.FC = () => {
                     </div>
                     <p className="text-brand-900/60 text-sm leading-relaxed border-t border-gray-100 pt-4 font-medium">{member.bio}</p>
                   </div>
-
                 </div>
               </RevealOnScroll>
             ))}
@@ -147,12 +124,8 @@ const TeamPage: React.FC = () => {
       <section className="py-24 bg-white border-t border-brand-900/5">
         <div className="max-w-4xl mx-auto px-6 text-center space-y-8">
           <h2 className="text-3xl md:text-4xl font-black uppercase text-brand-900">Work directly with Marcia</h2>
-          <p className="text-brand-900/60 text-base max-w-lg mx-auto font-medium leading-relaxed">
-            Looking for a strategic partner to guide your business through CIPC, SARS, and operational scaling complexities? Connect directly with our founder.
-          </p>
-          <Button size="lg" onClick={() => window.open('https://calendly.com/marcia-kgaphola/new-meeting', '_blank')}>
-            Schedule an Onboarding Call
-          </Button>
+          <p className="text-brand-900/60 text-base max-w-lg mx-auto font-medium leading-relaxed">Looking for a strategic partner to guide your business through CIPC, SARS, and operational scaling complexities? Connect directly with our founder.</p>
+          <Button size="lg" onClick={() => window.open('https://calendly.com/marcia-kgaphola/new-meeting', '_blank')}>Schedule an Onboarding Call</Button>
         </div>
       </section>
 
