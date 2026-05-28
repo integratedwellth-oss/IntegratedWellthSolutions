@@ -80,7 +80,7 @@ const WorkshopPage: React.FC = () => {
   };
 
   const getRiskProfile = (finalScore: number) => {
-    if (finalScore >= 25) return { label: "LOW RISK", color: "text-emerald-500", desc: "Your basic compliance is solid. Book a free discovery call to audit your setup." };
+    if (finalScore >= 25) return { label: "LOW RISK", color: "text-emerald-500", desc: "Your basic compliance is solid. Book a free discovery call to secure your operations." };
     if (finalScore >= 12) return { label: "MODERATE RISK", color: "text-brand-gold", desc: "Critical administrative gaps exist. Let's trace and clean them up." };
     return { label: "HIGH RISK", color: "text-rose-500", desc: "Your entity is exposed to penalties. Immediate action is required." };
   };
@@ -91,6 +91,10 @@ const WorkshopPage: React.FC = () => {
         @keyframes marquee { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
         .marquee-track { display: flex; width: max-content; animation: marquee 22s linear infinite; }
         .marquee-track:hover { animation-play-state: paused; }
+        @keyframes float-slow { 0%, 100% { transform: translateY(0px) rotate(0deg); } 50% { transform: translateY(-15px) rotate(3deg); } }
+        @keyframes float-delayed { 0%, 100% { transform: translateY(0px) rotate(0deg); } 50% { transform: translateY(-10px) rotate(-3deg); } }
+        .animate-float-slow { animation: float-slow 7s ease-in-out infinite; }
+        .animate-float-delayed { animation: float-delayed 8s ease-in-out infinite; }
       `}</style>
 
       <div className="h-screen flex flex-col overflow-hidden relative">
@@ -137,6 +141,12 @@ const WorkshopPage: React.FC = () => {
                   <div className="bg-white rounded-full p-2 group-hover:bg-brand-900 transition-colors"><ArrowRight className="w-5 h-5 text-brand-900 group-hover:text-white transition-colors" /></div>
                 </button>
               </div>
+
+              {/* Floating Compliance Coins */}
+              <div className="absolute top-24 right-1/4 w-16 h-16 rounded-full bg-white/80 border-2 border-brand-gold/30 backdrop-blur-md flex items-center justify-center text-brand-900 animate-float-slow hidden md:flex"><span className="font-bold text-xs font-sora">SARS</span></div>
+              <div className="absolute bottom-36 left-1/3 w-20 h-20 rounded-full bg-white/80 border-2 border-brand-gold/30 backdrop-blur-md flex items-center justify-center text-brand-900 animate-float-delayed hidden md:flex"><span className="font-bold text-xs font-sora">CIPC</span></div>
+              <div className="absolute top-1/2 right-12 w-14 h-14 rounded-full bg-white/80 border-2 border-brand-gold/30 backdrop-blur-md flex items-center justify-center text-brand-900 animate-float-slow hidden md:flex"><span className="font-bold text-xs font-sora">CIBA</span></div>
+
               <div className="absolute bottom-12 right-12 hidden lg:block z-20">
                 <div className="p-6 rounded-3xl border border-brand-900/10 bg-white/80 backdrop-blur-md shadow-2xl max-w-[320px]">
                   <div className="flex items-center gap-4 mb-4">
@@ -176,17 +186,18 @@ const WorkshopPage: React.FC = () => {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             <div className="sm:col-span-2 lg:col-span-2">
               <RevealOnScroll width="100%">
-                <div className="rounded-2xl overflow-hidden shadow-xl p-8 min-h-[380px] flex flex-col justify-between relative border border-brand-900/5 bg-brand-900 text-white" style={{ backgroundImage: `url('${FOUNDER_URL}')`, backgroundSize: 'cover', backgroundPosition: 'center' }}>
-                  <div className="absolute inset-0 bg-brand-900/80 z-0" />
-                  <div className="relative z-10 flex flex-col justify-between h-full min-h-[320px] w-full">
+                <div className="rounded-2xl overflow-hidden shadow-2xl p-8 min-h-[420px] flex flex-col justify-between relative border border-brand-900/5 bg-brand-900 text-white">
+                  <div className="absolute inset-0 bg-cover bg-no-repeat z-0" style={{ backgroundImage: `url('${FOUNDER_URL}')`, backgroundPosition: '50% 25%' }} />
+                  <div className="absolute inset-0 bg-brand-900/80 z-10" />
+                  <div className="relative z-20 flex flex-col justify-between h-full min-h-[360px] w-full">
                     <div>
                       <span className="text-brand-gold text-[10px] font-black uppercase tracking-[0.2em]">Next Workshop Session</span>
-                      <h4 className="text-2xl font-semibold leading-tight uppercase tracking-tight mt-2 text-white">Governance & Compliance</h4>
+                      <h4 className="text-xl font-bold uppercase tracking-tight mt-2 text-white">GOVERNANCE, RECORDKEEPING AND COMPLIANCE WORKSHOP</h4>
                     </div>
                     <div className="space-y-2 border-t border-white/10 pt-4">
                       <p className="text-sm font-medium text-white/80"><strong className="text-brand-gold font-bold">Date:</strong> {nextEventDate}</p>
                       <p className="text-sm font-medium text-white/80"><strong className="text-brand-gold font-bold">Time:</strong> 18h00 - 20h00 SAST</p>
-                      <p className="text-sm font-medium text-white/80"><strong className="text-brand-gold font-bold">Platform:</strong> Online Session (Zoom)</p>
+                      <p className="text-sm font-medium text-white/80"><strong className="text-brand-gold font-bold">Platform:</strong> Online Session</p>
                       <p className="text-sm font-medium text-white/80"><strong className="text-brand-gold font-bold">Investment:</strong> R250 Per Person</p>
                     </div>
                   </div>
@@ -275,7 +286,7 @@ const WorkshopPage: React.FC = () => {
           <RevealOnScroll width="100%">
             <div className="text-center mb-16">
               <h2 className="text-4xl md:text-5xl font-semibold text-brand-900 tracking-tighter uppercase">Workshop Curriculum</h2>
-              <p className="text-lg text-brand-900/60 font-medium mt-2">Actionable system architecture for modern integrations.</p>
+              <p className="text-lg text-brand-900/60 font-medium mt-2">Actionable system architecture for South African builders.</p>
             </div>
             <div className="grid md:grid-cols-3 gap-8">
               {[
