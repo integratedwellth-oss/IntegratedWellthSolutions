@@ -94,10 +94,10 @@ const WorkshopPage: React.FC = () => {
         .marquee-track { display: flex; width: max-content; animation: marquee 22s linear infinite; }
         .marquee-track:hover { animation-play-state: paused; }
         @keyframes float-upward {
-          0% { transform: translateY(110vh) rotate(0deg); opacity: 0; }
-          10% { opacity: 0.6; }
-          90% { opacity: 0.6; }
-          100% { transform: translateY(-10vh) rotate(360deg); opacity: 0; }
+          0% { transform: translateY(110vh) rotate(0deg) scale(0.8); opacity: 0; }
+          10% { opacity: 0.7; }
+          90% { opacity: 0.7; }
+          100% { transform: translateY(-10vh) rotate(360deg) scale(1.1); opacity: 0; }
         }
         .animate-coin-1 { animation: float-upward 14s linear infinite; }
         .animate-coin-2 { animation: float-upward 18s linear infinite; animation-delay: 3s; }
@@ -144,12 +144,12 @@ const WorkshopPage: React.FC = () => {
               <div className="absolute inset-0 bg-cover bg-center z-0" style={{ backgroundImage: `url('${COIN_BACKGROUND}')` }} />
               <div className="absolute inset-0 bg-gradient-to-r from-[#F5F5F5]/95 via-[#F5F5F5]/60 to-transparent z-10" />
               
-              {/* Gravity-Defying Floating Seals */}
-              <div className="absolute left-[8%] w-16 h-16 rounded-full bg-white/80 border-2 border-brand-gold/40 backdrop-blur-md flex items-center justify-center text-brand-900 shadow-xl animate-coin-1 pointer-events-none z-20"><span className="font-bold text-xs font-sora">SARS</span></div>
-              <div className="absolute left-[30%] w-20 h-20 rounded-full bg-white/80 border-2 border-brand-gold/40 backdrop-blur-md flex items-center justify-center text-brand-900 shadow-xl animate-coin-2 pointer-events-none z-20"><span className="font-bold text-xs font-sora">CIPC</span></div>
-              <div className="absolute right-[25%] w-14 h-14 rounded-full bg-white/80 border-2 border-brand-gold/40 backdrop-blur-md flex items-center justify-center text-brand-900 shadow-xl animate-coin-3 pointer-events-none z-20"><span className="font-bold text-xs font-sora">CIBA</span></div>
-              <div className="absolute right-[8%] w-18 h-18 rounded-full bg-white/80 border-2 border-brand-gold/40 backdrop-blur-md flex items-center justify-center text-brand-900 shadow-xl animate-coin-4 pointer-events-none z-20"><span className="font-bold text-xs font-sora">IWS</span></div>
-              <div className="absolute left-[45%] w-16 h-16 rounded-full bg-white/80 border-2 border-brand-gold/40 backdrop-blur-md flex items-center justify-center text-brand-900 shadow-xl animate-coin-5 pointer-events-none z-20"><span className="font-bold text-xs font-sora">ZOHO</span></div>
+              {/* Gravity-Defying Pure Metallic Floating Coins */}
+              <div className="absolute left-[8%] w-16 h-16 rounded-full bg-gradient-to-r from-slate-300 via-white to-slate-400 border-2 border-brand-gold/40 shadow-2xl animate-coin-1 pointer-events-none z-20" />
+              <div className="absolute left-[30%] w-20 h-20 rounded-full bg-gradient-to-r from-slate-300 via-white to-slate-400 border-2 border-brand-gold/40 shadow-2xl animate-coin-2 pointer-events-none z-20" />
+              <div className="absolute right-[25%] w-14 h-14 rounded-full bg-gradient-to-r from-slate-300 via-white to-slate-400 border-2 border-brand-gold/40 shadow-2xl animate-coin-3 pointer-events-none z-20" />
+              <div className="absolute right-[8%] w-18 h-18 rounded-full bg-gradient-to-r from-slate-300 via-white to-slate-400 border-2 border-brand-gold/40 shadow-2xl animate-coin-4 pointer-events-none z-20" />
+              <div className="absolute left-[45%] w-16 h-16 rounded-full bg-gradient-to-r from-slate-300 via-white to-slate-400 border-2 border-brand-gold/40 shadow-2xl animate-coin-5 pointer-events-none z-20" />
 
               <div className="relative z-30 flex flex-col items-start justify-start h-full p-6 md:p-12 pt-28 max-w-2xl">
                 <h1 className="text-brand-900 text-4xl md:text-6xl lg:text-7xl font-semibold leading-tight mb-4 uppercase tracking-tighter" style={{ letterSpacing: '-0.04em' }}>Sovereign<br/>Governance</h1>
@@ -185,7 +185,7 @@ const WorkshopPage: React.FC = () => {
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            {/* Split Grid - High Impact Poster Card with Marcia Portrait and Red Corner Ribbon */}
+            {/* Split Grid - Redesigned High Impact Poster Card with Marcia Portrait and Red Corner Ribbon */}
             <div className="sm:col-span-2 lg:col-span-2">
               <RevealOnScroll width="100%">
                 <div className="rounded-[2rem] overflow-hidden shadow-2xl min-h-[440px] flex flex-col justify-between relative border border-brand-900/5 bg-brand-900 text-white">
