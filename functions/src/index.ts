@@ -1,4 +1,5 @@
 import { onCall, HttpsError } from "firebase-functions/v2/https";
+import { GoogleGenerativeAI } from "@google/generative-ai";
 
 const SYSTEM_PROMPT = `You are the official digital advisor for Integrated Wellth Solutions (IWS), a strategic business consultancy merging technical accounting precision (IQ) with psychological counseling (EQ) for South African founders.
 
@@ -53,8 +54,6 @@ export const websiteChat = onCall({
   secrets: ["DEEPSEEK_API_KEY"],
 }, async (request) => {
   const DEEPSEEK_API_KEY = (process.env.DEEPSEEK_API_KEY || "").trim();
-  
-  // Safe runtime diagnostic logging to verify key length and prefix
   console.log("DeepSeek Secret Diagnostics - Key Length:", DEEPSEEK_API_KEY.length, "Valid prefix (sk-):", DEEPSEEK_API_KEY.startsWith("sk-"));
 
   const message = request.data.message;
@@ -112,6 +111,51 @@ export const websiteChat = onCall({
     if (error instanceof HttpsError) {
       throw error;
     }
+    throw new HttpsError("internal", error.message || "An unexpected error occurred processing the chat request.");
+  }
+});
+
+export const geminiChat = onCall({
+  region: "us-central1",
+  cors: true,
+  secrets: ["GEMINI_API_KEY"],
+}, async (request) => {
+  const GEMINI_API_KEY = (process.env.GEMINI_API_KEY || "").trim();
+  const message = request.data.message;
+  const history = request.data.history || [];
+
+  if (!message) {
+    throw new HttpsError("invalid-argument", "Message is required.");
+  }
+  if (!GEMINI_API_KEY) {
+    console.error("GEMINI_API_KEY environment variable is missing or empty.");
+    throw new HttpsError("failed-precondition", "Gemini API key is not configured in Server Secrets.");
+  }
+
+  try {
+    const genAI = new GoogleGenerativeAI(GEMINI_API_KEY);
+    const model = genAI.getGenerativeModel(
+      { model: "gemini-3.1-flash-lite-preview" },
+      { apiVersion: "v1beta", baseUrl: "https://generativelanguage.googleapis.com/v1beta" }
+    );
+
+    const chatSession = model.startChat({
+      history: history.map((m: any) => ({
+        role: m.role === 'model' || m.role === 'bot' || m.role === 'assistant' ? 'model' : 'user',
+        parts: [{ text: m.text || m.content || "" }]
+      }))
+    });
+
+    const result = await chatSession.sendMessage(message);
+    const replyText = result.response.text();
+
+    if (!replyText) {
+      throw new HttpsError("internal", "Invalid response from Gemini API.");
+    }
+
+    return { reply: replyText.trim() };
+  } catch (error: any) {
+    console.error("Runtime exception in geminiChat execution:", error);
     throw new HttpsError("internal", error.message || "An unexpected error occurred processing the chat request.");
   }
 });
