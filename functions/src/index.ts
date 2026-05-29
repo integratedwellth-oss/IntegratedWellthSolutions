@@ -1,5 +1,4 @@
 import { onCall, HttpsError } from "firebase-functions/v2/https";
-import { GoogleGenerativeAI } from "@google/generative-ai";
 
 const SYSTEM_PROMPT = `You are the official digital advisor for Integrated Wellth Solutions (IWS), a strategic business consultancy merging technical accounting precision (IQ) with psychological counseling (EQ) for South African founders.
 
@@ -46,7 +45,7 @@ YOUR MASTER KNOWLEDGE BASE:
 RULES:
 1. Base all answers strictly on your Knowledge Base. If a user asks something outside this scope, guide them back to booking a discovery call.
 2. Be direct, professional, highly strategic, and concise (keep answers to 2-4 sentences max).
-3. STRICT TEXT FORMATTING RULE: NEVER use asterisks (**), hash symbols (#), or any markdown syntax for bolding, headers, or text styling. Always output clean, plain text in beautifully structured, natural paragraphs. Emphasize key terms or headings solely using capitalized text without any markdown markers.`;
+3. STRICT TEXT FORMATTING RULE: NEVER use asterisks, hash symbols, or any markdown syntax for bolding, headers, or text styling. Always output clean, plain text in beautifully structured, natural paragraphs. Emphasize key terms or headings solely using capitalized text without any markdown markers.`;
 
 export const websiteChat = onCall({
   region: "us-central1",
@@ -111,51 +110,6 @@ export const websiteChat = onCall({
     if (error instanceof HttpsError) {
       throw error;
     }
-    throw new HttpsError("internal", error.message || "An unexpected error occurred processing the chat request.");
-  }
-});
-
-export const geminiChat = onCall({
-  region: "us-central1",
-  cors: true,
-  secrets: ["GEMINI_API_KEY"],
-}, async (request) => {
-  const GEMINI_API_KEY = (process.env.GEMINI_API_KEY || "").trim();
-  const message = request.data.message;
-  const history = request.data.history || [];
-
-  if (!message) {
-    throw new HttpsError("invalid-argument", "Message is required.");
-  }
-  if (!GEMINI_API_KEY) {
-    console.error("GEMINI_API_KEY environment variable is missing or empty.");
-    throw new HttpsError("failed-precondition", "Gemini API key is not configured in Server Secrets.");
-  }
-
-  try {
-    const genAI = new GoogleGenerativeAI(GEMINI_API_KEY);
-    const model = genAI.getGenerativeModel(
-      { model: "gemini-3.1-flash-lite-preview" },
-      { apiVersion: "v1beta", baseUrl: "https://generativelanguage.googleapis.com/v1beta" }
-    );
-
-    const chatSession = model.startChat({
-      history: history.map((m: any) => ({
-        role: m.role === 'model' || m.role === 'bot' || m.role === 'assistant' ? 'model' : 'user',
-        parts: [{ text: m.text || m.content || "" }]
-      }))
-    });
-
-    const result = await chatSession.sendMessage(message);
-    const replyText = result.response.text();
-
-    if (!replyText) {
-      throw new HttpsError("internal", "Invalid response from Gemini API.");
-    }
-
-    return { reply: replyText.trim() };
-  } catch (error: any) {
-    console.error("Runtime exception in geminiChat execution:", error);
     throw new HttpsError("internal", error.message || "An unexpected error occurred processing the chat request.");
   }
 });
