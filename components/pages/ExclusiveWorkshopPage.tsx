@@ -1,8 +1,7 @@
 import React, { useRef } from 'react';
 import { motion, useScroll, useTransform, Variants } from 'framer-motion';
 import Button from '../Button';
-import WorkshopRegistrationForm from '../WorkshopRegistrationForm';
-import { Monitor, Tag, ChevronRight, Calculator, TrendingUp, BrainCircuit } from 'lucide-react';
+import { Monitor, Tag, ChevronRight, Calculator, TrendingUp, BrainCircuit, XCircle } from 'lucide-react';
 
 const FOUNDER_URL = "https://res.cloudinary.com/dkyg07qvv/image/upload/v1778472133/Marcia_Kgaphola._SARS._CIPC._COMPLIANCE_e9mn4f.jpg";
 const TREE_LOGO_URL = "https://res.cloudinary.com/dka0498ns/image/upload/v1765747786/favicon_ofkkb1.png";
@@ -35,31 +34,31 @@ const ExclusiveWorkshopPage: React.FC = () => {
             </motion.div>
             
             <motion.h1 variants={fadeUp} className="text-4xl md:text-5xl lg:text-6xl font-sora font-black tracking-tighter uppercase leading-[1.1] text-brand-900">
-              Governance & <br className="hidden md:block"/> 
-              <span className="text-brand-900">Compliance</span>
+              Governance & <br className="hidden md:block"/> <span className="text-brand-900">Compliance</span>
             </motion.h1>
             
             <motion.div variants={fadeUp} className="flex items-center gap-4 font-black tracking-widest uppercase text-lg md:text-2xl text-brand-900">
-              <span>CIPC</span>
-              <span className="text-brand-gold">|</span>
-              <span>SARS</span>
-              <span className="text-brand-gold">|</span>
-              <span>Labour</span>
+              <span>CIPC</span><span className="text-brand-gold">|</span><span>SARS</span><span className="text-brand-gold">|</span><span>Labour</span>
             </motion.div>
 
             <motion.div variants={fadeUp} whileHover={{ scale: 1.02 }} className="bg-brand-900 text-white p-6 rounded-r-3xl rounded-l-md shadow-2xl inline-block mt-8 border-l-8 border-brand-gold relative overflow-hidden">
               <div className="absolute -right-10 -top-10 opacity-10"><Calculator size={120} /></div>
-              <p className="text-2xl md:text-3xl font-black tracking-tight mb-2">1st June, 18h00–19h00</p>
-              <div className="flex flex-wrap items-center gap-4 text-sm font-bold tracking-widest uppercase text-brand-gold mt-4 relative z-10">
-                <span className="flex items-center gap-2"><Monitor size={16} /> Online Session</span>
-                <span className="w-1.5 h-1.5 rounded-full bg-white/30 hidden sm:block"></span>
-                <span className="flex items-center gap-2"><Tag size={16} /> Cost: R100 Per Person</span>
+              <div className="relative z-10">
+                <div className="inline-flex bg-red-500 text-white px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest mb-3">
+                  Registration Closed
+                </div>
+                <p className="text-2xl md:text-3xl font-black tracking-tight mb-2 opacity-50 line-through">1st June, 18h00–19h00</p>
+                <div className="flex flex-wrap items-center gap-4 text-sm font-bold tracking-widest uppercase text-brand-gold mt-4">
+                  <span className="flex items-center gap-2"><Monitor size={16} /> Online Session</span>
+                  <span className="w-1.5 h-1.5 rounded-full bg-white/30 hidden sm:block"></span>
+                  <span className="flex items-center gap-2 text-red-400"><XCircle size={16} /> Fully Booked</span>
+                </div>
               </div>
             </motion.div>
 
             <motion.div variants={fadeUp} className="pt-8">
               <Button onClick={() => { document.getElementById('registration')?.scrollIntoView({ behavior: 'smooth' }); }} className="rounded-full py-5 px-10 text-sm font-black uppercase tracking-widest bg-brand-gold text-brand-900 hover:bg-brand-900 hover:text-white shadow-xl transition-all flex items-center">
-                Secure Your Seat Now <ChevronRight size={18} className="ml-2" />
+                View Alternatives <ChevronRight size={18} className="ml-2" />
               </Button>
             </motion.div>
           </motion.div>
@@ -67,8 +66,8 @@ const ExclusiveWorkshopPage: React.FC = () => {
           <motion.div variants={fadeUp} className="relative h-[600px] rounded-[3rem] overflow-hidden shadow-2xl border-4 border-white">
             <motion.img style={{ y: imageY, scale: 1.1 }} src={FOUNDER_URL} alt="Marcia Kgaphola" className="w-full h-full object-cover origin-bottom" />
             <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-brand-900 to-transparent p-8 pt-32">
-               <p className="text-white font-black uppercase tracking-widest text-xl">Marcia Kgaphola</p>
-               <p className="text-brand-gold font-bold text-xs uppercase tracking-widest">Principal Architect</p>
+              <p className="text-white font-black uppercase tracking-widest text-xl">Marcia Kgaphola</p>
+              <p className="text-brand-gold font-bold text-xs uppercase tracking-widest">Principal Architect</p>
             </div>
           </motion.div>
         </div>
@@ -81,12 +80,8 @@ const ExclusiveWorkshopPage: React.FC = () => {
           </motion.p>
           <motion.div variants={fadeUp} className="w-24 h-1 bg-brand-gold/30 mx-auto rounded-full"></motion.div>
           <motion.div variants={fadeUp} className="space-y-6">
-            <p className="text-xl md:text-2xl font-bold leading-relaxed text-white/90">
-              Can't participate in tenders or excluded from funding?
-            </p>
-            <p className="text-lg md:text-xl font-medium leading-relaxed text-brand-gold">
-              Master the triad of compliance to secure your business opportunities.
-            </p>
+            <p className="text-xl md:text-2xl font-bold leading-relaxed text-white/90">Can't participate in tenders or excluded from funding?</p>
+            <p className="text-lg md:text-xl font-medium leading-relaxed text-brand-gold">Master the triad of compliance to secure your business opportunities.</p>
           </motion.div>
         </div>
       </motion.section>
@@ -105,12 +100,8 @@ const ExclusiveWorkshopPage: React.FC = () => {
               { icon: <BrainCircuit size={32} />, title: "Organizational Psychology", subtitle: "Labour Dynamics", desc: "Structuring PAYE, UIF, and SDL. We align your payroll compliance with human behavior to protect your workforce and prevent compounding penalties." }
             ].map((module, idx) => (
               <motion.div key={idx} variants={fadeUp} whileHover={{ y: -10 }} className="bg-gray-50 p-10 rounded-[2.5rem] shadow-sm border border-brand-900/5 hover:shadow-xl hover:border-brand-gold transition-all duration-300 relative overflow-hidden group">
-                <div className="absolute -right-4 -top-4 opacity-5 group-hover:opacity-10 group-hover:scale-110 transition-all duration-500 text-brand-900">
-                  {module.icon}
-                </div>
-                <div className="w-16 h-16 bg-brand-900 text-brand-gold rounded-2xl flex items-center justify-center mb-6 shadow-md">
-                  {module.icon}
-                </div>
+                <div className="absolute -right-4 -top-4 opacity-5 group-hover:opacity-10 group-hover:scale-110 transition-all duration-500 text-brand-900">{module.icon}</div>
+                <div className="w-16 h-16 bg-brand-900 text-brand-gold rounded-2xl flex items-center justify-center mb-6 shadow-md">{module.icon}</div>
                 <h3 className="text-xl font-black text-brand-900 uppercase tracking-tight mb-1">{module.title}</h3>
                 <p className="text-brand-gold font-bold text-xs uppercase tracking-widest mb-4">{module.subtitle}</p>
                 <p className="text-brand-900/70 leading-relaxed font-medium text-sm relative z-10">{module.desc}</p>
@@ -120,19 +111,31 @@ const ExclusiveWorkshopPage: React.FC = () => {
         </div>
       </motion.section>
 
+      {/* Replaced Registration Form with Sold Out State */}
       <motion.section initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} className="py-32 bg-[#f4f1ea]" id="registration">
         <div className="max-w-7xl mx-auto px-6 lg:px-8">
           <div className="text-center mb-16">
-            <h2 className="text-4xl md:text-6xl font-sora font-black text-brand-900 tracking-tighter uppercase">Secure Your <br/> <span className="text-brand-gold italic">Seat.</span></h2>
-            <p className="text-lg text-brand-900/60 mt-6 font-medium max-w-2xl mx-auto">Complete the registration protocol below to reserve your spot and receive the meeting link.</p>
+            <h2 className="text-4xl md:text-6xl font-sora font-black text-brand-900 tracking-tighter uppercase">Workshop <br/> <span className="text-brand-gold italic">Sold Out.</span></h2>
+            <p className="text-lg text-brand-900/60 mt-6 font-medium max-w-2xl mx-auto">All available seats for this exclusive session have been filled. Group registration is now officially closed.</p>
           </div>
           
-          {/* SURGICAL FIX: Passing the explicit new Link and Data payload to front end so the DB receives the correct link on submission */}
-          <WorkshopRegistrationForm 
-            eventName="IntegratedWellth Governance & Compliance"
-            eventDate="Monday, June 1 · 4:00 – 5:00pm (UTC)"
-            eventLink="https://meet.google.com/wpw-zjng-jof"
-          />
+          <div className="bg-white rounded-[3rem] p-12 md:p-20 shadow-2xl text-center border-t-8 border-brand-900 max-w-4xl mx-auto relative overflow-hidden">
+            <div className="absolute top-0 right-0 w-64 h-64 bg-brand-gold/5 rounded-full blur-[80px] pointer-events-none"></div>
+            <div className="absolute bottom-0 left-0 w-64 h-64 bg-brand-900/5 rounded-full blur-[80px] pointer-events-none"></div>
+            
+            <div className="relative z-10">
+              <div className="w-20 h-20 bg-rose-50 rounded-full flex items-center justify-center mx-auto mb-8 border border-rose-100">
+                <XCircle size={40} className="text-rose-500" />
+              </div>
+              <h3 className="text-3xl md:text-4xl font-black text-brand-900 uppercase tracking-tighter mb-4">Maximum Capacity Reached</h3>
+              <p className="text-brand-900/60 font-medium leading-relaxed mb-10 max-w-xl mx-auto text-lg">
+                We strictly cap these sessions to ensure high-fidelity strategic interaction. While you missed this cohort, you don't have to put your compliance on hold. Secure your blueprint through a private, 1-on-1 strategy session.
+              </p>
+              <Button onClick={() => window.open('https://calendly.com/marcia-kgaphola/new-meeting', '_blank')} size="lg" className="rounded-full px-12 py-6 bg-brand-900 text-white font-black uppercase tracking-widest hover:bg-brand-gold hover:text-brand-900 transition-all shadow-xl">
+                Book Private 1-on-1 Session
+              </Button>
+            </div>
+          </div>
         </div>
       </motion.section>
 
