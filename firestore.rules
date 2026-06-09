@@ -1,17 +1,49 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
+
+    // USER PROFILES — own data only
+    match /users/{userId} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+    }
+
+    // FINANCIAL HEALTH SCORES — strictly private
+    match /financial_health_scores/{userId} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+    }
+
+    // ASSESSMENTS (psychological) — POPIA special category, own only
+    match /assessments/{docId} {
+      allow create: if true; // anonymous intake form
+      allow read, update, delete: if request.auth != null &&
+        resource.data.userId == request.auth.uid;
+    }
+
+    // WAR ROOM / SOVEREIGNTY PROTOCOL — own sessions only
+    match /war_room_sessions/{sessionId} {
+      allow read, write: if request.auth != null &&
+        resource.data.userId == request.auth.uid;
+      allow create: if request.auth != null &&
+        request.resource.data.userId == request.auth.uid;
+    }
+
+    // WORKSHOP REGISTRATIONS — public create, own read
+    match /workshop_registrations/{docId} {
+      allow create: if true;
+      allow read: if request.auth != null &&
+        resource.data.email == request.auth.token.email;
+      allow update, delete: if false;
+    }
+
+    // MAIL — write-only trigger
+    match /mail/{docId} {
+      allow create: if true;
+      allow read, update, delete: if false;
+    }
+
+    // CATCH-ALL — deny
     match /{document=**} {
-      allow read, write: if request.auth != null;
-    }
-    match /workshop_registrations/{document} {
-      allow create: if true;
-    }
-    match /assessments/{document} {
-      allow create: if true;
-    }
-    match /mail/{document} {
-      allow create: if true;
+      allow read, write: if false;
     }
   }
 }
