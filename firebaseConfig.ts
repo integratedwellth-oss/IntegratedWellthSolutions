@@ -15,12 +15,14 @@ const firebaseConfig = {
   measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID
 };
 
-let app: FirebaseApp | null = null;
-let db: Firestore | null = null;
-let auth: Auth | null = null;
-let storage: FirebaseStorage | null = null;
-let analytics: Analytics | null = null;
-let functionsInstance: Functions | null = null;
+const dummyApp = { name: "shield-active" } as unknown as FirebaseApp;
+
+let app: FirebaseApp = dummyApp;
+let db: Firestore = null as unknown as Firestore;
+let auth: Auth = { onAuthStateChanged: () => () => {}, currentUser: null } as unknown as Auth;
+let storage: FirebaseStorage = null as unknown as FirebaseStorage;
+let analytics: Analytics = null as unknown as Analytics;
+let functionsInstance: Functions = null as unknown as Functions;
 
 try {
   if (firebaseConfig.apiKey && firebaseConfig.apiKey !== "undefined") {
