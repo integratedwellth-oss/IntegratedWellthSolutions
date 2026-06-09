@@ -1,11 +1,29 @@
 rules_version = '2';
 service firebase.storage {
   match /b/{bucket}/o {
-    match /{allPaths=**} {
-      // SURGICAL FIX: Simplified rules to allow public uploads without authentication.
-      // Removed complex metadata checks that were failing the preflight.
-      allow write: if request.resource.size < 5 * 1024 * 1024;
+
+    // User-uploaded documents (reports, assessments) — owner only
+    match /users/{userId}/{allPaths=**} {
+      allow read, write: if request.auth != null
+        && request.auth.uid == userId
+        && request.resource.size < 10 * 1024 * 1024;
+    }
+
+    // Generated PDF exports — owner can read, Cloud Function writes
+    match /reports/{userId}/{allPaths=**} {
+      allow read: if request.auth != null && request.auth.uid == userId;
+      allow write: if false; // Cloud Function only via Admin SDK
+    }
+
+    // Public assets (branding, summit materials)
+    match /public/{allPaths=**} {
       allow read: if true;
+      allow write: if false;
+    }
+
+    // Catch-all — deny everything else
+    match /{allPaths=**} {
+      allow read, write: if false;
     }
   }
 }
