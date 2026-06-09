@@ -1,9 +1,9 @@
 import { initializeApp, getApps, FirebaseApp } from "firebase/app";
-import { getAnalytics } from "firebase/analytics";
+import { getAnalytics, Analytics } from "firebase/analytics";
 import { getFirestore, Firestore } from "firebase/firestore";
 import { getAuth, Auth } from "firebase/auth";
 import { getFunctions, Functions } from "firebase/functions";
-import { getStorage, FirebaseStorage } from "firebase/storage"; // SURGICAL FIX: Added Storage
+import { getStorage, FirebaseStorage } from "firebase/storage";
 
 const firebaseConfig = {
   apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
@@ -15,13 +15,12 @@ const firebaseConfig = {
   measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID
 };
 
-const dummyApp = { name: 'shield-active' } as unknown as FirebaseApp;
-let app: FirebaseApp = dummyApp;
-let db: Firestore | any = null;
-let auth: Auth | any = { onAuthStateChanged: () => () => {}, currentUser: null };
-let storage: FirebaseStorage | any = null; // SURGICAL FIX: Storage instance
-let analytics: any = null;
-let functionsInstance: Functions | any = null;
+let app: FirebaseApp | null = null;
+let db: Firestore | null = null;
+let auth: Auth | null = null;
+let storage: FirebaseStorage | null = null;
+let analytics: Analytics | null = null;
+let functionsInstance: Functions | null = null;
 
 try {
   if (firebaseConfig.apiKey && firebaseConfig.apiKey !== "undefined") {
@@ -33,7 +32,7 @@ try {
     
     db = getFirestore(app);
     auth = getAuth(app);
-    storage = getStorage(app); // SURGICAL FIX: Initialize Storage
+    storage = getStorage(app);
     functionsInstance = getFunctions(app, 'us-central1');
     
     if (typeof window !== 'undefined' && firebaseConfig.measurementId) {
