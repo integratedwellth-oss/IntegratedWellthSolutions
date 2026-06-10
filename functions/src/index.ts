@@ -1,115 +1,170 @@
-import { onCall, HttpsError } from "firebase-functions/v2/https";
+import { onCall, onRequest, HttpsError } from "firebase-functions/v2/https";
+import * as admin from "firebase-admin";
+import { SYSTEM_PROMPT } from "./prompt";
 
-const SYSTEM_PROMPT = `You are the official digital advisor for Integrated Wellth Solutions (IWS), a strategic business consultancy merging technical accounting precision (IQ) with psychological counseling (EQ) for South African founders.
+if (!admin.apps.length) {
+  admin.initializeApp();
+}
 
-YOUR MASTER KNOWLEDGE BASE:
+const dbAdmin = admin.firestore();
 
-1. EXECUTIVE TEAM:
-- Marcia Kgaphola (Founder, Leader & Tax Practitioner): Chartered Business Accountant (CIBA), Hons Psychological Counselling, Risk and Project Management.
-- Enias Mafokoane (Executive Coach): Leadership Advisor & Mindset Strategist.
-- Thabo Motsumi (Digital Marketing, Automation & Web Development): SEO & Google My Business optimization expert.
-- Lazarus Kaseke (Chartered Accountant): Corporate taxation, forensic audits, and financial controls.
+const sendMetaMessage = async (toNumber: string, text: string) => {
+  const WHATSAPP_TOKEN = (process.env.WHATSAPP_TOKEN || "").trim();
+  const PHONE_NUMBER_ID = (process.env.PHONE_NUMBER_ID || "").trim();
 
-2. EXCLUSIVE SERVICES & PACKAGES:
-- System Configuration & Setup: R2,625 once-off (was R3,500). Includes chart of accounts, bank integrations, bills setup, and open balances.
-- Monthly Review & Journal Entries: R1,125/month (was R1,500). Includes expense review, reconciliations, journal entries, management accounts.
-- Monthly Bookkeeping: R1,875/month (was R2,500). Full bookkeeping, management accounts, CIPC annual returns, and annual statements.
-- Annual Financial Statements & Returns: R4,500/annum (was R6,000). Turnover reviews, SARS tax returns, and CIPC annual returns.
-- Onboarding Gateway: Clients "Invest Now" on the services page, pay via secure EFT, upload their Proof of Payment, and get confirmed via automated email.
+  if (!WHATSAPP_TOKEN || !PHONE_NUMBER_ID) {
+    console.error("Meta credentials missing in server environment variables.");
+    return;
+  }
 
-3. STATUTORY COMPLIANCE CALENDAR DEADLINES:
-- EMP501 Interim Reconciliation: Bi-annual payroll reconciliation (critical audit trigger if incorrect).
-- Section 18A Third Party Data: Submission of donor data to SARS for NGOs/NPOs.
-- Provisional Tax (IRP6) 3rd Period: Voluntary top-up to avoid Section 89quat interest.
-- Provisional Tax (IRP6) 1st Period (2027): First estimation for the tax year.
-- CIPC Annual Returns: Mandatory annual declarations. Failure triggers automatic deregistration.
+  await fetch(`https://graph.facebook.com/v21.0/${PHONE_NUMBER_ID}/messages`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": `Bearer ${WHATSAPP_TOKEN}`
+    },
+    body: JSON.stringify({
+      messaging_product: "whatsapp",
+      recipient_type: "individual",
+      to: toNumber,
+      type: "text",
+      text: { preview_url: true, body: text }
+    })
+  });
+};
 
-4. WORKSHOPS & EVENTS:
-- Upcoming: GOVERNANCE, RECORDKEEPING AND COMPLIANCE WORKSHOP. Occurs on the First Monday of every single month, starting Monday, 6 July 2026. Time: 18h00 - 20h00 SAST. Location: Secure Online Session. Investment cost: R250 per person (66% off regular R750). Focuses on CIPC, SARS, and Labour compliance.
-- Past: Financial Clarity Summit 2026 (28 February 2026, Munyaka Estate, Waterfall City, Midrand).
+const callDeepSeek = async (messages: any[]) => {
+  const DEEPSEEK_API_KEY = (process.env.DEEPSEEK_API_KEY || "").trim();
+  const response = await fetch("https://api.deepseek.com/v1/chat/completions", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": `Bearer ${DEEPSEEK_API_KEY}`
+    },
+    body: JSON.stringify({
+      model: "deepseek-chat",
+      messages,
+      temperature: 0.2,
+      max_tokens: 450
+    })
+  });
 
-5. INTERACTIVE CONVERSATIONAL COMPLIANCE ASSESSMENT PROTOCOL:
-- If a user asks to check compliance, asks "Is my business SARS compliant?", or requests an audit/assessment:
-  - Phase A: State: "Let's run a quick 3-step compliance check of your entity right here. Question 1: Do you maintain strictly separated bank accounts for your business and personal expenses?"
-  - Phase B (After they answer Q1): "Understood. Question 2: Are all of your tax returns (SARS/VAT/PAYE) fully up to date with no backlogs?"
-  - Phase C (After they answer Q2): "Got it. Question 3: Is your CIPC Annual Return paid and currently up to date?"
-  - Phase D (After they answer Q3): Calculate their Risk Profile based on their answers:
-    - If all 3 are 'Yes', status is LOW RISK.
-    - If 1 or 2 are 'No/Unsure', status is MODERATE RISK.
-    - If all 3 are 'No/Unsure', status is HIGH RISK.
-    - Present their status and direct them to secure their entity by booking a free onboarding discovery call with Marcia Kgaphola at the master booking link: https://calendly.com/marcia-kgaphola/new-meeting.
-
-6. CONVERSION PROTOCOL (PRIMARY CALL TO ACTION):
-- Always guide users to book a free 30-minute discovery call / onboarding consultation with Marcia Kgaphola at the unified booking link: https://calendly.com/marcia-kgaphola/new-meeting.
-
-RULES:
-1. Base all answers strictly on your Knowledge Base. If a user asks something outside this scope, guide them back to booking a discovery call.
-2. Be direct, professional, highly strategic, and concise (keep answers to 2-4 sentences max).
-3. STRICT TEXT FORMATTING RULE: NEVER use asterisks, hash symbols, or any markdown syntax for bolding, headers, or text styling. Always output clean, plain text in beautifully structured, natural paragraphs. Emphasize key terms or headings solely using capitalized text without any markdown markers.`;
+  if (!response.ok) return "PROTOCOL INTERRUPTED: DeepSeek connection failed.";
+  const data = await response.json() as any;
+  return data?.choices?.[0]?.message?.content || "";
+};
 
 export const websiteChat = onCall({
   region: "us-central1",
   cors: true,
   secrets: ["DEEPSEEK_API_KEY"],
 }, async (request) => {
-  const DEEPSEEK_API_KEY = (process.env.DEEPSEEK_API_KEY || "").trim();
-  console.log("DeepSeek Secret Diagnostics - Key Length:", DEEPSEEK_API_KEY.length, "Valid prefix (sk-):", DEEPSEEK_API_KEY.startsWith("sk-"));
-
   const message = request.data.message;
   const history = request.data.history;
 
-  if (!message) {
-    throw new HttpsError("invalid-argument", "Message is required.");
-  }
-  
-  if (!DEEPSEEK_API_KEY) {
-    console.error("DEEPSEEK_API_KEY environment variable is missing or empty.");
-    throw new HttpsError("failed-precondition", "DeepSeek API key is not configured in Server Secrets.");
-  }
+  if (!message) throw new HttpsError("invalid-argument", "Message is required.");
 
   try {
     const messages = [
       { role: "system", content: SYSTEM_PROMPT },
       ...(history || []).map((m: any) => ({
-        role: (m.role === 'model' || m.role === 'bot' || m.role === 'assistant') ? 'assistant' : 'user',
+        role: (m.role === "model" || m.role === "bot" || m.role === "assistant") ? "assistant" : "user",
         content: m.text || m.content
       })),
       { role: "user", content: message }
     ];
 
-    const response = await fetch("https://api.deepseek.com/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${DEEPSEEK_API_KEY}`
-      },
-      body: JSON.stringify({
-        model: "deepseek-chat",
-        messages,
-        temperature: 0.2,
-        max_tokens: 500
-      })
-    });
-
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error("DeepSeek API error response:", response.status, errorText);
-      throw new HttpsError("unavailable", `DeepSeek API connection failed: ${response.status}`);
-    }
-
-    const data = await response.json() as any;
-    const replyText = data?.choices?.[0]?.message?.content;
-
-    if (!replyText) {
-      throw new HttpsError("internal", "Invalid response payload returned from DeepSeek API.");
-    }
-
-    return { reply: replyText.trim() };
+    const reply = await callDeepSeek(messages);
+    return { reply: reply.trim() };
   } catch (error: any) {
-    console.error("Runtime exception in websiteChat execution:", error);
-    if (error instanceof HttpsError) {
-      throw error;
+    throw new HttpsError("internal", error.message || "An unexpected error occurred.");
+  }
+});
+
+export const whatsappWebhook = onRequest({
+  region: "us-central1",
+  secrets: ["DEEPSEEK_API_KEY", "WHATSAPP_TOKEN", "PHONE_NUMBER_ID", "WHATSAPP_VERIFY_TOKEN", "ADMIN_PHONE_NUMBER"],
+}, async (request, response) => {
+  if (request.method === "GET") {
+    const mode = request.query["hub.mode"];
+    const token = request.query["hub.verify_token"];
+    const challenge = request.query["hub.challenge"];
+    const VERIFY_TOKEN = (process.env.WHATSAPP_VERIFY_TOKEN || "").trim();
+
+    if (mode === "subscribe" && token === VERIFY_TOKEN) {
+      response.status(200).send(challenge);
+      return;
     }
-    throw new HttpsError("internal", error.message || "An unexpected error occurred processing the chat request.");
+    response.status(403).end();
+    return;
+  }
+
+  const entry = request.body.entry?.[0];
+  const changes = entry?.changes?.[0];
+  const value = changes?.value;
+  const message = value?.messages?.[0];
+  const contact = value?.contacts?.[0];
+
+  if (!message) {
+    response.status(200).end();
+    return;
+  }
+
+  const fromNumber = message.from;
+  const userMessage = (message.text?.body || "").trim();
+  const senderName = contact?.profile?.name || "Client";
+
+  try {
+    const claimsSnapshot = await dbAdmin.collection("verified_claims").get();
+    let matchedClaim: any = null;
+    for (const doc of claimsSnapshot.docs) {
+      const data = doc.data();
+      const keywords = data.keywords || [];
+      if (keywords.some((k: string) => userMessage.toLowerCase().includes(k.toLowerCase()))) {
+        matchedClaim = data;
+        break;
+      }
+    }
+
+    if (matchedClaim && matchedClaim.isHighIntent) {
+      await dbAdmin.collection("prospects").add({
+        phone: fromNumber,
+        name: senderName,
+        interest: matchedClaim.title || userMessage,
+        timestamp: admin.firestore.FieldValue.serverTimestamp()
+      });
+      const adminPhone = (process.env.ADMIN_PHONE_NUMBER || "").trim();
+      if (adminPhone) {
+        await sendMetaMessage(adminPhone, `ALERT: High-intent lead engaged.\nName: ${senderName}\nPhone: ${fromNumber}\nQuery: ${userMessage}`);
+      }
+    }
+
+    let matchedReply = "";
+    if (matchedClaim) {
+      matchedReply = matchedClaim.response;
+    } else {
+      const sessionRef = dbAdmin.collection("whatsapp_sessions").doc(fromNumber).collection("messages");
+      const historySnapshot = await sessionRef.orderBy("timestamp", "desc").limit(10).get();
+      const history = historySnapshot.docs.map(doc => doc.data()).reverse();
+
+      const messages = [
+        { role: "system", content: SYSTEM_PROMPT },
+        ...history.map((h: any) => ({ role: h.role, content: h.content })),
+        { role: "user", content: userMessage }
+      ];
+
+      const replyText = await callDeepSeek(messages);
+      matchedReply = replyText;
+
+      const timestampObj = admin.firestore.FieldValue.serverTimestamp();
+      await sessionRef.add({ role: "user", content: userMessage, timestamp: timestampObj });
+      await sessionRef.add({ role: "assistant", content: replyText, timestamp: timestampObj });
+    }
+
+    await sendMetaMessage(fromNumber, matchedReply);
+    response.status(200).end();
+  } catch (error) {
+    console.error("Meta WhatsApp Webhook Execution Error:", error);
+    response.status(500).end();
   }
 });
