@@ -4,13 +4,21 @@ import { Zap, Calendar } from 'lucide-react';
 const NewsTicker: React.FC = () => {
   // Compliance deadlines pulled from Calendar Page, styled for urgency
   const feedItems = [
-    "DEADLINE: FEB 28 | IRP6 2ND PERIOD PAYMENT DUE",
-    "ALERT: MAR 31 | CIPC ANNUAL RETURNS MANDATORY",
-    "APR 07: EMP201 PAYROLL SUBMISSION",
-    "MAY 31: EMP501 INTERIM RECONCILIATION - AUDIT SENSITIVE",
-    "JUN 30: VOLUNTARY IRP6 TOP-UP WINDOW",
-    "JUL 01: INDIVIDUAL TAX FILING OPENS",
-    "VAT THRESHOLD INCREASED TO R2.3M - REVIEW NOW"
+    "CRITICAL: JUL 12 | SARS AUTO-ASSESSMENTS ROLLOUT - VERIFY NOW",
+    "DEADLINE: JUL 07 | MONTHLY EMP201 SUBMISSION & PAYMENT DUE",
+    "ALERT: JUL 13 | SARS INDIVIDUAL TAX SEASON OPENS",
+    "DEADLINE: JUL 31 | CIT (ITR14) FOR COMPANIES WITH JAN YEAR-END",
+    "DEADLINE: AUG 31 | FIRST PROVISIONAL TAX (IRP6) & CIT (FEB YEAR-END) DUE",
+    "ALERT: SEP 15 | EMP501 INTERIM RECONCILIATION WINDOW OPENS",
+    "ALERT: SEP 19 | TRUST TAX RETURN (ITR12T) SEASON OPENS",
+    "DEADLINE: OCT 23 | ITR12 NON-PROVISIONAL FILING via eFILING CLOSING",
+    "DEADLINE: OCT 31 | EMP501 MID-YEAR EMPLOYER INTERIM RECON SUBMISSION",
+    "CRITICAL: JAN 22 | SARS PROVISIONAL TAXPAYERS & TRUSTS (ITR12T) CLOSING",
+    "DEADLINE: FEB 26 | SECOND PROVISIONAL TAX (IRP6) DUE (FEB YEAR-END)",
+    "TAX UPDATE: MANDATORY IRP5 TAX ID VALIDATION NOW ENFORCED BY SARS",
+    "TAX UPDATE: SEC 20A LOSS RING-FENCING THRESHOLD LOWERED TO 39% FOR INDIVIDUALS",
+    "TAX UPDATE: COMPULSORY VAT REGISTRATION THRESHOLD INCREASED TO R2.0M",
+    "PRACTICE INFO: SARS TAX PRACTITIONER MODERNISATION PHASE 1 NOW ACTIVE"
   ];
 
   return (
@@ -31,10 +39,10 @@ const NewsTicker: React.FC = () => {
                   </div>
                 )}
                 <span className="flex items-center gap-8">
-                  {/* Highlighting items that include DEADLINE, DUE, or ALERT */}
-                  {(item.includes('DEADLINE') || item.includes('DUE') || item.includes('ALERT')) ? (
+                  {/* Highlighting items that include DEADLINE, DUE, ALERT, or CRITICAL */}
+                  {(item.includes('DEADLINE') || item.includes('DUE') || item.includes('ALERT') || item.includes('CRITICAL')) ? (
                     <span className="flex items-center gap-3 text-rose-400">
-                      <Calendar size={12} className="text-rose-400" />
+                      <Calendar size={12} className="text-rose-400 animate-pulse" />
                       {item}
                     </span>
                   ) : (

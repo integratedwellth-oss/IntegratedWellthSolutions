@@ -4,39 +4,20 @@ import { ShieldCheck, AlertTriangle, Clock, Building2, User, Landmark, HelpCircl
 import Button from '../Button';
 import BusinessTracker from '../BusinessTracker';
 
-const SCHEDULE = [
-  { month: 'May 2026', deadlines: [
-    { day: '31', entity: 'Employers', task: 'EMP501 Interim Reconciliation', risk: 'Critical', desc: 'Bi-annual payroll reconciliation. Major audit trigger if incorrect.' },
-    { day: '31', entity: 'NPOs', task: 'Section 18A Third Party Data', risk: 'High', desc: 'Submission of donor data to SARS.' },
-  ]},
-  { month: 'June 2026', deadlines: [
-    { day: '30', entity: 'Corporate', task: 'Provisional Tax (IRP6) 3rd Period', risk: 'Medium', desc: 'Voluntary top-up to avoid Section 89quat interest.' },
-  ]},
-  { month: 'July 2026', deadlines: [
-    { day: '01', entity: 'Individuals', task: 'Tax Season Opens (Filing)', risk: 'Low', desc: '2026 Filing season official open date.' },
-  ]},
-  { month: 'August 2026', deadlines: [
-    { day: '31', entity: 'Provisional Taxpayers', task: 'Provisional Tax (IRP6) 1st Period (2027)', risk: 'High', desc: 'First estimation for the 2027 tax year.' },
-  ]},
-  { month: 'October 2026', deadlines: [
-    { day: '23', entity: 'Individuals (Non-Provisional)', task: 'ITR12 – eFiling Deadline', risk: 'Critical', desc: 'Final deadline for non-provisional individual taxpayers filing via eFiling.' },
-  ]},
-  { month: 'November 2026', deadlines: [
-    { day: '30', entity: 'Employers', task: 'EMP501 Annual Reconciliation', risk: 'Critical', desc: 'Second bi-annual payroll reconciliation. Discrepancies trigger assessments.' },
-  ]},
-];
-
-const FAQS = [
-  { q: 'How will the 2026 VAT threshold increase affect my small business?', a: 'Effective 1 April 2026, the compulsory VAT registration threshold increases from R1 million to R2.3 million. If your rolling 12-month turnover sits below this threshold, you may apply for VAT deregistration — reducing your monthly admin and cash-flow burden. The voluntary registration threshold also increased from R50,000 to R120,000.' },
-  { q: 'Why is my SARS eFiling status showing Pending instead of Submitted?', a: 'A Pending status means SARS is verifying your registration details (2–21 working days) or awaiting supporting documentation. A Processing status means your return has been flagged for audit or verification, which can take up to 21 business days for a standard check or 90 days for a full audit.' },
-  { q: 'Can I file my CIPC Annual Return without a Beneficial Ownership declaration?', a: 'No. The CIPC enforces a hard-stop: you cannot file your Annual Return unless your Beneficial Ownership declaration is up to date. For simpler entities, the CIPC Optimised System allows a simplified securities register to be completed online without uploading physical mandate documents.' },
-  { q: 'I am a social media influencer. Does SARS track my income?', a: 'Yes. Under its Modernisation 3.0 framework, SARS uses AI and data-driven insights to profile risk with a specific focus on the gig and social media economies. Influencer income is taxed as that of an independent contractor or sole proprietor and must be declared at your marginal rate.' },
-  { q: 'What happens if I miss a provisional tax deadline?', a: 'Missing the first or second provisional tax period attracts a 10% penalty on the underpayment, plus interest at the prescribed rate. If your estimate is more than 20% below the basic amount, SARS may impose additional underestimation penalties. Timely submission with a reasonable estimate is critical.' },
-];
+import { SCHEDULE, FAQS } from '../ComplianceCalendarData';
 
 const ComplianceCalendarPage: React.FC = () => {
   const TREE_HERO_URL = 'https://res.cloudinary.com/dka0498ns/image/upload/f_auto,q_auto/v1772373342/Profuse_Beauty_Logo_Tree_z1nc3c.png';
   const [openFaq, setOpenFaq] = useState<number | null>(null);
+
+  const getDaysRemaining = (dateStr?: string) => {
+    if (!dateStr) return null;
+    const now = new Date();
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const due = new Date(dateStr);
+    const diffTime = due.getTime() - today.getTime();
+    return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+  };
 
   return (
     <div className="bg-slate-50 font-sans text-brand-900 selection:bg-brand-gold selection:text-brand-900 pb-20">
@@ -81,29 +62,46 @@ const ComplianceCalendarPage: React.FC = () => {
                     <h3 className="text-2xl font-black text-brand-900 uppercase tracking-tight">{monthGroup.month}</h3>
                   </div>
                   <div className="md:w-3/4 space-y-6">
-                    {monthGroup.deadlines.map((item: any, i: number) => (
-                      <div key={i} className="flex flex-col sm:flex-row gap-6 items-start sm:items-center">
-                        <div className="flex-shrink-0 w-16 h-16 bg-brand-50 rounded-2xl flex flex-col items-center justify-center border border-brand-900/10 group-hover:border-brand-gold/50 transition-colors">
-                          <span className="text-2xl font-black text-brand-900 leading-none">{item.day}</span>
-                          <span className="text-[10px] font-bold uppercase text-brand-900/40">Day</span>
-                        </div>
-                        <div className="flex-grow">
-                          <div className="flex items-center gap-3 mb-1">
-                            <span className={`px-2 py-0.5 rounded text-[9px] font-black uppercase tracking-widest border ${
-                              item.risk === 'Critical' ? 'bg-rose-50 text-rose-600 border-rose-200' :
-                              item.risk === 'High' ? 'bg-orange-50 text-orange-600 border-orange-200' :
-                              'bg-emerald-50 text-emerald-600 border-emerald-200'
-                            }`}>{item.risk} Priority</span>
-                            <span className="text-[10px] font-bold text-brand-900/40 uppercase tracking-widest flex items-center gap-1">
-                              {item.entity === 'Corporate' ? <Building2 size={10} /> : item.entity === 'Individuals' ? <User size={10} /> : <Landmark size={10} />}
-                              {item.entity}
-                            </span>
+                    {monthGroup.deadlines.map((item: any, i: number) => {
+                      const daysLeft = item.date ? getDaysRemaining(item.date) : null;
+                      const isUrgent = daysLeft !== null && daysLeft >= 0 && daysLeft <= 30;
+
+                      return (
+                        <div key={i} className={`flex flex-col sm:flex-row gap-6 items-start sm:items-center p-4 rounded-3xl transition-all duration-300 ${
+                          isUrgent ? 'border border-rose-500/20 bg-rose-500/[0.02] border-l-4 border-l-rose-500' : ''
+                        }`}>
+                          <div className={`flex-shrink-0 w-16 h-16 rounded-2xl flex flex-col items-center justify-center border transition-colors ${
+                            isUrgent 
+                              ? 'bg-rose-50 border-rose-500 text-rose-600' 
+                              : 'bg-brand-50 border-brand-900/10 text-brand-900 group-hover:border-brand-gold/50'
+                          }`}>
+                            <span className={`text-2xl font-black leading-none ${isUrgent ? 'text-rose-600' : 'text-brand-900'}`}>{item.day}</span>
+                            <span className={`text-[10px] font-bold uppercase ${isUrgent ? 'text-rose-500/60' : 'text-brand-900/40'}`}>Day</span>
                           </div>
-                          <h4 className="text-lg font-bold text-brand-900">{item.task}</h4>
-                          <p className="text-sm text-brand-900/60 mt-1">{item.desc}</p>
+                          <div className="flex-grow">
+                            <div className="flex flex-wrap items-center gap-3 mb-1">
+                              <span className={`px-2 py-0.5 rounded text-[9px] font-black uppercase tracking-widest border ${
+                                item.risk === 'Critical' ? 'bg-rose-50 text-rose-600 border-rose-200' :
+                                item.risk === 'High' ? 'bg-orange-50 text-orange-600 border-orange-200' :
+                                'bg-emerald-50 text-emerald-600 border-emerald-200'
+                              }`}>{item.risk} Priority</span>
+                              <span className="text-[10px] font-bold text-brand-900/40 uppercase tracking-widest flex items-center gap-1">
+                                {item.entity === 'Corporate' ? <Building2 size={10} /> : item.entity === 'Individuals' ? <User size={10} /> : <Landmark size={10} />}
+                                {item.entity}
+                              </span>
+                              {isUrgent && (
+                                <span className="px-2 py-0.5 rounded text-[9px] font-black uppercase tracking-widest bg-rose-600 text-white border border-rose-600 animate-pulse flex items-center gap-1">
+                                  <span className="w-1 h-1 rounded-full bg-white animate-ping"></span>
+                                  {daysLeft === 0 ? 'DUE TODAY' : `Due in ${daysLeft} days`}
+                                </span>
+                              )}
+                            </div>
+                            <h4 className="text-lg font-bold text-brand-900">{item.task}</h4>
+                            <p className="text-sm text-brand-900/60 mt-1">{item.desc}</p>
+                          </div>
                         </div>
-                      </div>
-                    ))}
+                      );
+                    })}
                   </div>
                 </div>
               </div>
