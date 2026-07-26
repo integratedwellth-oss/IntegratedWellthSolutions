@@ -12,16 +12,9 @@ const ADMIN_EMAILS: string[] = [
 interface LeadItem {
   id: string;
   timestamp?: { toDate: () => Date };
-  name?: string;
-  fullName?: string;
-  enterprise?: string;
-  businessName?: string;
-  email?: string;
-  segment?: string;
-  persona?: string;
-  eventName?: string;
-  status?: string;
-  proofOfPaymentUrl?: string;
+  name?: string; fullName?: string; enterprise?: string; businessName?: string;
+  email?: string; segment?: string; persona?: string; eventName?: string;
+  status?: string; proofOfPaymentUrl?: string;
   intelligence_report?: Array<{ q: string; a: string }>;
 }
 
