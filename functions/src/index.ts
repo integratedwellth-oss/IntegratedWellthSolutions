@@ -1,6 +1,8 @@
 import { onCall, onRequest, HttpsError } from "firebase-functions/v2/https";
+import type { CallableRequest } from "firebase-functions/v2/https";
+import type { Request, Response } from "firebase-functions/v2/https";
 import * as admin from "firebase-admin";
-import { SYSTEM_PROMPT } from "./prompt";
+import { SYSTEM_PROMPT } from "./prompt.js";
 
 if (!admin.apps.length) {
   admin.initializeApp();
@@ -14,15 +16,20 @@ const dbAdmin = admin.firestore();
 const stripPII = (text: string): string => {
   if (!text) return "";
   return text
-    .replace(/[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}/g, "[EMAIL]")
+    .replace(/\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b/g, "[EMAIL]")
     .replace(/(\+27|0)[6-8][0-9]{8}/g, "[PHONE]")
-    .replace(/\d{13}/g, "[ID_NUMBER]")      // SA ID numbers
-    .replace(/\d{10,11}/g, "[TAX_NUMBER]");   // SARS tax numbers
+    .replace(/\b\d{13}\b/g, "[ID_NUMBER]")      // SA ID numbers
+    .replace(/\b\d{10,11}\b/g, "[TAX_NUMBER]");   // SARS tax numbers
 };
 
 // ========================
 // RATE LIMITER
 // ========================
+interface RateLimitData {
+  count: number;
+  windowStart: admin.firestore.Timestamp;
+}
+
 const checkRateLimit = async (
   uid: string | undefined,
   ip: string
@@ -37,7 +44,7 @@ const checkRateLimit = async (
     return true;
   }
 
-  const data = doc.data()!;
+  const data = doc.data() as RateLimitData;
   const windowStart = data.windowStart.toDate();
   const diffMinutes = (now.toDate().getTime() - windowStart.getTime()) / 60000;
 
@@ -58,7 +65,7 @@ const checkRateLimit = async (
 // ========================
 // META WHATSAPP HELPER
 // ========================
-const sendMetaMessage = async (toNumber: string, text: string) => {
+const sendMetaMessage = async (toNumber: string, text: string): Promise<void> => {
   const WHATSAPP_TOKEN = (process.env.WHATSAPP_TOKEN || "").trim();
   const PHONE_NUMBER_ID = (process.env.PHONE_NUMBER_ID || "").trim();
 
@@ -86,13 +93,18 @@ const sendMetaMessage = async (toNumber: string, text: string) => {
 // ========================
 // DEEPSEEK API CALL (SANITIZED)
 // ========================
-const callDeepSeek = async (messages: any[]) => {
+interface ChatMessage {
+  role: string;
+  content: string;
+}
+
+const callDeepSeek = async (messages: ChatMessage[]): Promise<string> => {
   const DEEPSEEK_API_KEY = (process.env.DEEPSEEK_API_KEY || "").trim();
 
   // Strip PII from all messages before sending to DeepSeek
   const sanitizedMessages = messages.map((m) => ({
     role: m.role,
-    content: stripPII(m.content || m.text || ""),
+    content: stripPII(m.content || ""),
   }));
 
   const response = await fetch("https://api.deepseek.com/v1/chat/completions", {
@@ -110,7 +122,9 @@ const callDeepSeek = async (messages: any[]) => {
   });
 
   if (!response.ok) return "PROTOCOL INTERRUPTED: DeepSeek connection failed.";
-  const data = await response.json() as any;
+  const data = await response.json() as {
+    choices?: Array<{ message?: { content?: string } }>;
+  };
   return data?.choices?.[0]?.message?.content || "";
 };
 
@@ -120,10 +134,9 @@ const callDeepSeek = async (messages: any[]) => {
 export const websiteChat = onCall({
   region: "us-central1",
   cors: true,
-  secrets: ["DEEPSEEK_API_KEY"],
-}, async (request) => {
-  const message = request.data.message;
-  const history = request.data.history;
+}, async (request: CallableRequest) => {
+  const message = request.data.message as string;
+  const history = request.data.history as Array<{ role: string; text?: string; content?: string }> | undefined;
   const uid = request.auth?.uid;
   const ip = request.rawRequest.ip || "unknown";
 
@@ -136,11 +149,11 @@ export const websiteChat = onCall({
   }
 
   try {
-    const messages = [
+    const messages: ChatMessage[] = [
       { role: "system", content: SYSTEM_PROMPT },
-      ...(history || []).map((m: any) => ({
+      ...(history || []).map((m) => ({
         role: (m.role === "model" || m.role === "bot" || m.role === "assistant") ? "assistant" : "user",
-        content: m.text || m.content
+        content: m.text || m.content || ""
       })),
       { role: "user", content: message }
     ];
@@ -167,8 +180,7 @@ export const websiteChat = onCall({
 // ========================
 export const whatsappWebhook = onRequest({
   region: "us-central1",
-  secrets: ["DEEPSEEK_API_KEY", "WHATSAPP_TOKEN", "PHONE_NUMBER_ID", "WHATSAPP_VERIFY_TOKEN", "ADMIN_PHONE_NUMBER"],
-}, async (request, response) => {
+}, async (request: Request, response: Response) => {
   if (request.method === "GET") {
     const mode = request.query["hub.mode"];
     const token = request.query["hub.verify_token"];
@@ -194,13 +206,13 @@ export const whatsappWebhook = onRequest({
     return;
   }
 
-  const fromNumber = message.from;
+  const fromNumber = message.from as string;
   const userMessage = (message.text?.body || "").trim();
   const senderName = contact?.profile?.name || "Client";
 
   try {
     const claimsSnapshot = await dbAdmin.collection("verified_claims").get();
-    let matchedClaim: any = null;
+    let matchedClaim: admin.firestore.DocumentData | null = null;
     for (const doc of claimsSnapshot.docs) {
       const data = doc.data();
       const keywords = data.keywords || [];
@@ -229,11 +241,11 @@ export const whatsappWebhook = onRequest({
     } else {
       const sessionRef = dbAdmin.collection("whatsapp_sessions").doc(fromNumber).collection("messages");
       const historySnapshot = await sessionRef.orderBy("timestamp", "desc").limit(10).get();
-      const history = historySnapshot.docs.map(doc => doc.data()).reverse();
+      const history = historySnapshot.docs.map((doc: admin.firestore.QueryDocumentSnapshot) => doc.data()).reverse();
 
-      const messages = [
+      const messages: ChatMessage[] = [
         { role: "system", content: SYSTEM_PROMPT },
-        ...history.map((h: any) => ({ role: h.role, content: h.content })),
+        ...history.map((h: admin.firestore.DocumentData) => ({ role: h.role as string, content: h.content as string })),
         { role: "user", content: userMessage }
       ];
 
