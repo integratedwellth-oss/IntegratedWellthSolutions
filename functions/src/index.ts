@@ -1,8 +1,6 @@
 import { onCall, onRequest, HttpsError } from "firebase-functions/v2/https";
-import type { CallableRequest } from "firebase-functions/v2/https";
-import type { Request, Response } from "firebase-functions/v2/https";
 import * as admin from "firebase-admin";
-import { SYSTEM_PROMPT } from "./prompt.js";
+import { SYSTEM_PROMPT } from "./prompt";
 
 if (!admin.apps.length) {
   admin.initializeApp();
@@ -18,8 +16,8 @@ const stripPII = (text: string): string => {
   return text
     .replace(/\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b/g, "[EMAIL]")
     .replace(/(\+27|0)[6-8][0-9]{8}/g, "[PHONE]")
-    .replace(/\b\d{13}\b/g, "[ID_NUMBER]")      // SA ID numbers
-    .replace(/\b\d{10,11}\b/g, "[TAX_NUMBER]");   // SARS tax numbers
+    .replace(/\b\d{13}\b/g, "[ID_NUMBER]")
+    .replace(/\b\d{10,11}\b/g, "[TAX_NUMBER]");
 };
 
 // ========================
@@ -54,7 +52,6 @@ const checkRateLimit = async (
   }
 
   if (data.count >= 30) {
-    // 30 requests per hour per user/IP
     return false;
   }
 
@@ -101,7 +98,6 @@ interface ChatMessage {
 const callDeepSeek = async (messages: ChatMessage[]): Promise<string> => {
   const DEEPSEEK_API_KEY = (process.env.DEEPSEEK_API_KEY || "").trim();
 
-  // Strip PII from all messages before sending to DeepSeek
   const sanitizedMessages = messages.map((m) => ({
     role: m.role,
     content: stripPII(m.content || ""),
@@ -131,10 +127,11 @@ const callDeepSeek = async (messages: ChatMessage[]): Promise<string> => {
 // ========================
 // WEBSITE CHAT (SECURED)
 // ========================
+// NOTE: No "secrets" config — uses process.env to avoid Secret Manager billing requirement
 export const websiteChat = onCall({
   region: "us-central1",
   cors: true,
-}, async (request: CallableRequest) => {
+}, async (request) => {
   const message = request.data.message as string;
   const history = request.data.history as Array<{ role: string; text?: string; content?: string }> | undefined;
   const uid = request.auth?.uid;
@@ -142,7 +139,6 @@ export const websiteChat = onCall({
 
   if (!message) throw new HttpsError("invalid-argument", "Message is required.");
 
-  // Rate limit check
   const allowed = await checkRateLimit(uid, ip);
   if (!allowed) {
     throw new HttpsError("resource-exhausted", "Rate limit exceeded. Please try again later.");
@@ -160,7 +156,6 @@ export const websiteChat = onCall({
 
     const reply = await callDeepSeek(messages);
 
-    // Audit log (sanitized)
     await dbAdmin.collection("ai_audit_logs").add({
       uid: uid || "anonymous",
       ip: ip,
@@ -178,9 +173,10 @@ export const websiteChat = onCall({
 // ========================
 // WHATSAPP WEBHOOK
 // ========================
+// NOTE: No "secrets" config — uses process.env to avoid Secret Manager billing requirement
 export const whatsappWebhook = onRequest({
   region: "us-central1",
-}, async (request: Request, response: Response) => {
+}, async (request, response) => {
   if (request.method === "GET") {
     const mode = request.query["hub.mode"];
     const token = request.query["hub.verify_token"];
@@ -241,11 +237,11 @@ export const whatsappWebhook = onRequest({
     } else {
       const sessionRef = dbAdmin.collection("whatsapp_sessions").doc(fromNumber).collection("messages");
       const historySnapshot = await sessionRef.orderBy("timestamp", "desc").limit(10).get();
-      const history = historySnapshot.docs.map((doc: admin.firestore.QueryDocumentSnapshot) => doc.data()).reverse();
+      const history = historySnapshot.docs.map((d) => d.data() as admin.firestore.DocumentData).reverse();
 
       const messages: ChatMessage[] = [
         { role: "system", content: SYSTEM_PROMPT },
-        ...history.map((h: admin.firestore.DocumentData) => ({ role: h.role as string, content: h.content as string })),
+        ...history.map((h) => ({ role: h.role as string, content: h.content as string })),
         { role: "user", content: userMessage }
       ];
 
