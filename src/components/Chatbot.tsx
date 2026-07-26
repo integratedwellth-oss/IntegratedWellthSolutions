@@ -1,6 +1,6 @@
-import React, { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { MessageSquare, X, Bot, Loader2 } from 'lucide-react';
-import { functions } from '@/firebaseConfig'; 
+import { functions } from '@/firebaseConfig';
 import { httpsCallable } from 'firebase/functions';
 
 interface Message {
@@ -8,19 +8,28 @@ interface Message {
   text: string;
 }
 
-export const Chatbot: React.FC = () => {
+export default function Chatbot() {
   const [open, setOpen] = useState(false);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
 
   const [messages, setMessages] = useState<Message[]>([
-    { role: 'bot', text: 'Hello! I am the Integrated Wellth Advisor. How can I help you achieve financial and psychological sovereignty today?' }
+    {
+      role: 'bot',
+      text: 'Hello! I am the Integrated Wellth Advisor. How can I help you achieve financial and psychological sovereignty today?',
+    },
   ]);
 
   useEffect(() => {
     const saved = localStorage.getItem('iws_chat_history');
-    if (saved) setMessages(JSON.parse(saved));
+    if (saved) {
+      try {
+        setMessages(JSON.parse(saved));
+      } catch {
+        // ignore corrupt localStorage
+      }
+    }
   }, []);
 
   useEffect(() => {
@@ -36,22 +45,36 @@ export const Chatbot: React.FC = () => {
     setInput('');
     const currentHistory = [...messages];
 
-    setMessages(prev => [...prev, { role: 'user', text: userMsg }]);
+    setMessages((prev) => [...prev, { role: 'user', text: userMsg }]);
     setLoading(true);
 
     try {
       if (!functions) {
-        console.error("CRITICAL: Firebase Functions instance is null. Production environment variables are missing.");
-        throw new Error("Initialization Failed");
+        console.error(
+          'CRITICAL: Firebase Functions instance is null. Production environment variables are missing.'
+        );
+        throw new Error('Initialization Failed');
       }
 
       const chatCall = httpsCallable(functions, 'websiteChat');
-      const response = await chatCall({ message: userMsg, history: currentHistory }) as any;
+      const response = (await chatCall({
+        message: userMsg,
+        history: currentHistory,
+      })) as { data?: { reply?: string } };
 
-      setMessages(prev => [...prev, { role: 'bot', text: response.data?.reply || "Connection lost." }]);
+      setMessages((prev) => [
+        ...prev,
+        { role: 'bot', text: response.data?.reply || 'Connection lost.' },
+      ]);
     } catch (err: any) {
-      console.error("Chat Call Failed:", err);
-      setMessages(prev => [...prev, { role: 'bot', text: "System Configuration Error: Missing production environment keys. Please deploy with VITE_ variables." }]);
+      console.error('Chat Call Failed:', err);
+      setMessages((prev) => [
+        ...prev,
+        {
+          role: 'bot',
+          text: 'System Configuration Error: Missing production environment keys. Please deploy with VITE_ variables.',
+        },
+      ]);
     } finally {
       setLoading(false);
     }
@@ -62,31 +85,38 @@ export const Chatbot: React.FC = () => {
       <button
         onClick={() => setOpen(!open)}
         className="fixed bottom-6 right-6 z-50 bg-[#134e4a] text-[#d4af37] p-4 rounded-full shadow-lg hover:scale-110 transition-transform border-2 border-[#d4af37]"
+        aria-label={open ? 'Close chat' : 'Open chat'}
       >
         {open ? <X size={24} /> : <MessageSquare size={24} />}
       </button>
 
       {open && (
         <div className="fixed bottom-24 right-6 z-50 w-[calc(100vw-3rem)] sm:w-80 md:w-96 bg-white border border-gray-200 rounded-2xl shadow-2xl flex flex-col overflow-hidden max-h-[600px] animate-fade-in">
-
           <div className="bg-[#134e4a] p-4 flex items-center justify-between">
             <div className="flex items-center gap-2 text-white">
               <Bot size={20} className="text-[#d4af37]" />
-              <span className="font-bold text-sm tracking-widest uppercase">Wellth Advisor</span>
+              <span className="font-bold text-sm tracking-widest uppercase">
+                Wellth Advisor
+              </span>
             </div>
             <div className="flex items-center gap-2">
-              <span className="w-2 h-2 bg-emerald-400 rounded-full animate-pulse"></span>
-              <span className="text-[10px] text-white/70 font-medium uppercase tracking-widest">Online</span>
+              <span className="w-2 h-2 bg-emerald-400 rounded-full animate-pulse" />
+              <span className="text-[10px] text-white/70 font-medium uppercase tracking-widest">
+                Online
+              </span>
             </div>
           </div>
 
           <div className="flex-1 p-4 overflow-y-auto h-80 space-y-4 bg-gray-50">
             {messages.map((m, i) => (
-              <div key={i} className={`flex w-full ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-                <div 
+              <div
+                key={i}
+                className={`flex w-full ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}
+              >
+                <div
                   className={`max-w-[85%] p-3 rounded-xl text-sm leading-relaxed ${
-                    m.role === 'user' 
-                      ? 'bg-[#134e4a] text-white rounded-tr-sm' 
+                    m.role === 'user'
+                      ? 'bg-[#134e4a] text-white rounded-tr-sm'
                       : 'bg-white border border-gray-200 text-gray-800 rounded-tl-sm shadow-sm'
                   }`}
                 >
@@ -107,17 +137,20 @@ export const Chatbot: React.FC = () => {
             <div ref={scrollRef} />
           </div>
 
-          <form onSubmit={sendMessage} className="p-3 bg-white border-t border-gray-200 flex gap-2 items-center">
-            <input 
-              value={input} 
-              onChange={(e) => setInput(e.target.value)} 
-              placeholder="Ask about compliance or strategy..." 
-              className="flex-1 bg-gray-50 text-gray-800 text-sm p-3 rounded-lg border border-gray-200 focus:border-[#d4af37] outline-none transition-colors" 
-              disabled={loading} 
+          <form
+            onSubmit={sendMessage}
+            className="p-3 bg-white border-t border-gray-200 flex gap-2 items-center"
+          >
+            <input
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              placeholder="Ask about compliance or strategy..."
+              className="flex-1 bg-gray-50 text-gray-800 text-sm p-3 rounded-lg border border-gray-200 focus:border-[#d4af37] outline-none transition-colors"
+              disabled={loading}
             />
-            <button 
-              type="submit" 
-              disabled={loading || !input.trim()} 
+            <button
+              type="submit"
+              disabled={loading || !input.trim()}
               className="text-[#134e4a] hover:text-[#d4af37] p-2 disabled:opacity-50 font-bold text-sm uppercase tracking-widest"
             >
               Send
@@ -127,4 +160,4 @@ export const Chatbot: React.FC = () => {
       )}
     </>
   );
-};
+}
