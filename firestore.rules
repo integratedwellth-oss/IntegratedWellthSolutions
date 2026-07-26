@@ -12,33 +12,50 @@ service cloud.firestore {
       allow read, write: if request.auth != null && request.auth.uid == userId;
     }
 
-    // ASSESSMENTS (psychological) — POPIA special category, own only
+    // ASSESSMENTS (psychological) — POPIA special category
+    // FIX: Was allow create: if true;
     match /assessments/{docId} {
-      allow create: if true; // anonymous intake form
+      allow create: if request.auth != null;
       allow read, update, delete: if request.auth != null &&
         resource.data.userId == request.auth.uid;
     }
 
     // WAR ROOM / SOVEREIGNTY PROTOCOL — own sessions only
     match /war_room_sessions/{sessionId} {
-      allow read, write: if request.auth != null &&
-        resource.data.userId == request.auth.uid;
-      allow create: if request.auth != null &&
-        request.resource.data.userId == request.auth.uid;
+      allow read: if request.auth != null && resource.data.userId == request.auth.uid;
+      allow create: if request.auth != null && request.resource.data.userId == request.auth.uid;
+      allow update, delete: if request.auth != null && resource.data.userId == request.auth.uid;
     }
 
-    // WORKSHOP REGISTRATIONS — public create, own read
+    // WORKSHOP REGISTRATIONS — auth required
+    // FIX: Was allow create: if true;
     match /workshop_registrations/{docId} {
-      allow create: if true;
+      allow create: if request.auth != null;
       allow read: if request.auth != null &&
         resource.data.email == request.auth.token.email;
       allow update, delete: if false;
     }
 
-    // MAIL — write-only trigger
+    // MAIL — write-only trigger, auth required
+    // FIX: Was allow create: if true;
     match /mail/{docId} {
-      allow create: if true;
+      allow create: if request.auth != null;
       allow read, update, delete: if false;
+    }
+
+    // USER LOGS — admin / functions only
+    match /user_logs/{docId} {
+      allow read, write: if false;
+    }
+
+    // AI AUDIT LOGS — admin / functions only
+    match /ai_audit_logs/{docId} {
+      allow read, write: if false;
+    }
+
+    // RATE LIMITS — functions only
+    match /rate_limits/{docId} {
+      allow read, write: if false;
     }
 
     // CATCH-ALL — deny
