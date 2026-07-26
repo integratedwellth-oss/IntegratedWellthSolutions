@@ -57,7 +57,6 @@ const sendMetaMessage = async (toNumber: string, text: string): Promise<void> =>
   });
 };
 
-interface ChatMessage { role: string; content: string; }
 
 const callDeepSeek = async (messages: ChatMessage[]): Promise<string> => {
   const DEEPSEEK_API_KEY = (process.env.DEEPSEEK_API_KEY || "").trim();
@@ -83,7 +82,6 @@ export const websiteChat = onCall({ region: "us-central1", cors: true }, async (
   try {
     const messages: ChatMessage[] = [
       { role: "system", content: SYSTEM_PROMPT },
-      ...(history || []).map((m) => ({ role: (m.role === "model" || m.role === "bot" || m.role === "assistant") ? "assistant" : "user", content: m.text || m.content || "" })),
       { role: "user", content: message }
     ];
     const reply = await callDeepSeek(messages);
