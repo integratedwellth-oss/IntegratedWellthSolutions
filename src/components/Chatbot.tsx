@@ -20,7 +20,13 @@ export const Chatbot: React.FC = () => {
 
   useEffect(() => {
     const saved = localStorage.getItem('iws_chat_history');
-    if (saved) setMessages(JSON.parse(saved));
+    if (saved) {
+      try {
+        setMessages(JSON.parse(saved));
+      } catch (e) {
+        console.error("Failed to parse chat history", e);
+      }
+    }
   }, []);
 
   useEffect(() => {
@@ -40,9 +46,8 @@ export const Chatbot: React.FC = () => {
     setLoading(true);
     
     try {
-      // SURGICAL FIX: Defensive check to prevent the '_url' crash
       if (!functions) {
-        console.error("CRITICAL: Firebase Functions instance is null. Production environment variables are missing.");
+        console.error("CRITICAL: Firebase Functions instance is null.");
         throw new Error("Initialization Failed");
       }
 
@@ -52,7 +57,7 @@ export const Chatbot: React.FC = () => {
       setMessages(prev => [...prev, { role: 'bot', text: response.data?.reply || "Connection lost." }]);
     } catch (err: any) {
       console.error("Chat Call Failed:", err);
-      setMessages(prev => [...prev, { role: 'bot', text: "System Configuration Error: Missing production environment keys. Please deploy with VITE_ variables." }]);
+      setMessages(prev => [...prev, { role: 'bot', text: "System error. Please try again later." }]);
     } finally {
       setLoading(false);
     }
@@ -63,6 +68,7 @@ export const Chatbot: React.FC = () => {
       <button
         onClick={() => setOpen(!open)}
         className="fixed bottom-6 right-6 z-50 bg-[#134e4a] text-[#d4af37] p-4 rounded-full shadow-lg hover:scale-110 transition-transform border-2 border-[#d4af37]"
+        aria-label="Toggle chat"
       >
         {open ? <X size={24} /> : <MessageSquare size={24} />}
       </button>
@@ -90,8 +96,10 @@ export const Chatbot: React.FC = () => {
                       ? 'bg-[#134e4a] text-white rounded-tr-sm' 
                       : 'bg-white border border-gray-200 text-gray-800 rounded-tl-sm shadow-sm'
                   }`}
-                  dangerouslySetInnerHTML={{ __html: m.text }} 
-                />
+                >
+                  {/* SECURITY FIX: Plain text rendering prevents XSS */}
+                  <p className="whitespace-pre-wrap">{m.text}</p>
+                </div>
               </div>
             ))}
             
@@ -113,6 +121,7 @@ export const Chatbot: React.FC = () => {
               placeholder="Ask about compliance or strategy..." 
               className="flex-1 bg-gray-50 text-gray-800 text-sm p-3 rounded-lg border border-gray-200 focus:border-[#d4af37] outline-none transition-colors" 
               disabled={loading} 
+              aria-label="Chat message"
             />
             <button 
               type="submit" 
