@@ -2,6 +2,11 @@ import { onCall, onRequest, HttpsError } from "firebase-functions/v2/https";
 import * as admin from "firebase-admin";
 import { SYSTEM_PROMPT } from "./prompt";
 
+interface ChatMessage {
+  role: string;
+  content: string;
+}
+
 if (!admin.apps.length) {
   admin.initializeApp();
 }
