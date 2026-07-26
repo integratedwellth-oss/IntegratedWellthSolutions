@@ -12,8 +12,7 @@ service cloud.firestore {
       allow read, write: if request.auth != null && request.auth.uid == userId;
     }
 
-    // ASSESSMENTS (psychological) — POPIA special category
-    // FIX: Was allow create: if true;
+    // ASSESSMENTS (psychological) — POPIA special category, auth required
     match /assessments/{docId} {
       allow create: if request.auth != null;
       allow read, update, delete: if request.auth != null &&
@@ -27,33 +26,30 @@ service cloud.firestore {
       allow update, delete: if request.auth != null && resource.data.userId == request.auth.uid;
     }
 
-    // WORKSHOP REGISTRATIONS — auth required
-    // FIX: Was allow create: if true;
+    // WORKSHOP REGISTRATIONS — auth required, own read
     match /workshop_registrations/{docId} {
       allow create: if request.auth != null;
-      allow read: if request.auth != null &&
-        resource.data.email == request.auth.token.email;
+      allow read: if request.auth != null && resource.data.email == request.auth.token.email;
       allow update, delete: if false;
     }
 
     // MAIL — write-only trigger, auth required
-    // FIX: Was allow create: if true;
     match /mail/{docId} {
       allow create: if request.auth != null;
       allow read, update, delete: if false;
     }
 
-    // USER LOGS — admin / functions only
+    // USER LOGS — admin only (Cloud Functions / Admin SDK)
     match /user_logs/{docId} {
       allow read, write: if false;
     }
 
-    // AI AUDIT LOGS — admin / functions only
+    // AI AUDIT LOGS — admin only
     match /ai_audit_logs/{docId} {
       allow read, write: if false;
     }
 
-    // RATE LIMITS — functions only
+    // RATE LIMITS — system only
     match /rate_limits/{docId} {
       allow read, write: if false;
     }
