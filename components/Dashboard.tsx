@@ -1,3 +1,4 @@
+import type { FC } from 'react';
 import { useState, useEffect } from 'react';
 import { onAuthStateChanged, type User } from 'firebase/auth';
 import { auth, db } from '../firebaseConfig';
@@ -34,7 +35,7 @@ interface LeadItem {
   intelligence_report?: Array<{ q: string; a: string }>;
 }
 
-export default function Dashboard() {
+const Dashboard: FC = () => {
   const [user, setUser] = useState<User | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
   const [warRoomLeads, setWarRoomLeads] = useState<LeadItem[]>([]);
@@ -326,4 +327,6 @@ export default function Dashboard() {
       </div>
     </div>
   );
-}
+};
+
+export default Dashboard;
