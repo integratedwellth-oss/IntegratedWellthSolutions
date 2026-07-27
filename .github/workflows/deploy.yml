@@ -15,22 +15,26 @@ jobs:
         with:
           node-version: '20'
 
-      - name: Clean install root dependencies
+      # ─── ROOT: Frontend deps ───
+      - name: Install root dependencies
         run: |
           rm -rf node_modules package-lock.json
           npm install
 
-      - name: Clean install functions dependencies
+      # ─── FUNCTIONS: Backend deps ───
+      - name: Install functions dependencies
         run: |
           cd functions
           rm -rf node_modules package-lock.json
           npm install
 
+      # ─── FUNCTIONS: Build TypeScript → lib/index.js ───
       - name: Build Cloud Functions
         run: |
           cd functions
           npm run build
 
+      # ─── ROOT: Build frontend ───
       - name: Build frontend
         run: npm run build
 
