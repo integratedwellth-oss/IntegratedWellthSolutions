@@ -2,6 +2,7 @@ import { onCall, onRequest, HttpsError } from "firebase-functions/v2/https";
 import * as admin from "firebase-admin";
 import * as crypto from "crypto";
 import { SYSTEM_PROMPT } from "./prompt";
+import { encryptDocumentFields, decryptDocumentFields } from "./crypto";
 
 interface ChatMessage {
   role: string;
@@ -14,7 +15,7 @@ if (!admin.apps.length) {
 
 const dbAdmin = admin.firestore();
 
-// ─── PII Stripper (preserved from previous fix) ───
+// ─── PII Stripper (preserved) ───
 const stripPII = (text: string): string => {
   if (!text) return "";
   return text
@@ -29,12 +30,10 @@ interface RateLimitData {
   windowStart: admin.firestore.Timestamp;
 }
 
-// ─── Firestore-safe doc ID sanitizer ───
 const sanitizeDocId = (id: string): string => {
   return id.replace(/[./:#\[\]]/g, "_").substring(0, 1500);
 };
 
-// ─── Rate Limiter (preserved from previous fix) ───
 const checkRateLimit = async (uid: string | undefined, ip: string): Promise<boolean> => {
   const docId = sanitizeDocId(uid || ip);
   const ref = dbAdmin.collection("rate_limits").doc(docId);
@@ -56,7 +55,6 @@ const checkRateLimit = async (uid: string | undefined, ip: string): Promise<bool
   return true;
 };
 
-// ─── Meta webhook HMAC-SHA256 signature verifier ───
 const verifyMetaSignature = (body: string, signature: string | undefined, appSecret: string): boolean => {
   if (!signature || !appSecret) return false;
   const expected = crypto.createHmac("sha256", appSecret).update(body, "utf8").digest("hex");
@@ -114,15 +112,18 @@ const callDeepSeek = async (messages: ChatMessage[]): Promise<string> => {
   return data?.choices?.[0]?.message?.content || "";
 };
 
-// ─── Allowed origins for callable CORS ───
 const ALLOWED_ORIGINS = [
   "https://integratedwellthsolutions.web.app",
   "https://integratedwellthsolutions.firebaseapp.com",
 ];
 
-// ─── websiteChat: hardened callable ───
+// ─── websiteChat: hardened callable with App Check enforcement ───
 export const websiteChat = onCall(
-  { region: "us-central1", cors: ALLOWED_ORIGINS },
+  {
+    region: "us-central1",
+    cors: ALLOWED_ORIGINS,
+    enforceAppCheck: true, // ─── SECURITY: Reject calls without valid App Check token ───
+  },
   async (request) => {
     const message = request.data.message as string;
     const history = request.data.history as Array<{ role: string; text?: string; content?: string }> | undefined;
@@ -167,7 +168,18 @@ export const whatsappWebhook = onRequest(
   async (request, response) => {
     const ip = request.ip || "unknown";
 
-    // GET: Meta subscription verification
+    // ─── SECURITY: Manual App Check verification for HTTP functions ───
+    const appCheckToken = request.get("X-Firebase-AppCheck");
+    if (appCheckToken) {
+      try {
+        await admin.appCheck().verifyToken(appCheckToken);
+      } catch {
+        console.warn("[App Check] Invalid token from IP:", ip);
+        // Don't block — Meta webhooks don't send App Check tokens
+        // This is defense-in-depth for non-Meta callers
+      }
+    }
+
     if (request.method === "GET") {
       const mode = request.query["hub.mode"];
       const token = request.query["hub.verify_token"];
@@ -181,7 +193,6 @@ export const whatsappWebhook = onRequest(
       return;
     }
 
-    // ─── Rate limit webhook by IP ───
     const webhookAllowed = await checkRateLimit(undefined, ip);
     if (!webhookAllowed) {
       console.warn("Webhook rate limit exceeded for IP:", ip);
@@ -189,7 +200,6 @@ export const whatsappWebhook = onRequest(
       return;
     }
 
-    // ─── Verify Meta webhook signature ───
     if (request.method === "POST") {
       const signature = request.get("X-Hub-Signature-256");
       const APP_SECRET = (process.env.META_APP_SECRET || "").trim();
@@ -277,4 +287,61 @@ export const whatsappWebhook = onRequest(
   }
 );
 
+// ─── getAdminData: Secure endpoint for Dashboard (decrypts sensitive fields) ───
+export const getAdminData = onCall(
+  {
+    region: "us-central1",
+    cors: ALLOWED_ORIGINS,
+    enforceAppCheck: true,
+  },
+  async (request) => {
+    const uid = request.auth?.uid;
+    if (!uid) {
+      throw new HttpsError("unauthenticated", "You must be signed in.");
+    }
+
+    // Verify admin claim
+    const user = await admin.auth().getUser(uid);
+    const adminEmails = [
+      "enquiries@integratedwellth.co.za",
+      "marcia@integratedwellth.co.za",
+    ];
+    const isAdmin = user.customClaims?.admin === true || adminEmails.includes(user.email || "");
+
+    if (!isAdmin) {
+      throw new HttpsError("permission-denied", "Admin access required.");
+    }
+
+    const collectionName = request.data.collection as string;
+    const limit = Math.min(Number(request.data.limit) || 100, 500);
+
+    if (!collectionName || !["war_room_leads", "assessments", "workshop_registrations"].includes(collectionName)) {
+      throw new HttpsError("invalid-argument", "Invalid collection name.");
+    }
+
+    try {
+      const snapshot = await dbAdmin
+        .collection(collectionName)
+        .orderBy("timestamp", "desc")
+        .limit(limit)
+        .get();
+
+      const docs = snapshot.docs.map((doc) => {
+        const data = doc.data();
+        // Decrypt sensitive fields before returning
+        const decrypted = decryptDocumentFields(data);
+        return { id: doc.id, ...decrypted };
+      });
+
+      return { data: docs };
+    } catch (error: any) {
+      console.error("getAdminData failed:", error);
+      throw new HttpsError("internal", error.message || "Failed to fetch data.");
+    }
+  }
+);
+
 export * from "./monitoring";
+export * from "./admin";
+export * from "./retention";
+export * from "./triggers";
