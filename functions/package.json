@@ -1,3 +1,6 @@
+cd /workspaces/IntegratedWellthSolutions/functions
+
+cat > package.json << 'EOF'
 {
   "name": "functions",
   "description": "Cloud Functions for Firebase",
@@ -18,7 +21,8 @@
     "firebase-functions": "5.0.0"
   },
   "devDependencies": {
-    "typescript": "5.0.0"
+    "typescript": "5.3.3"
   },
   "private": true
 }
+EOF
