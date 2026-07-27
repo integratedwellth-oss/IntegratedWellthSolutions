@@ -15,12 +15,23 @@ jobs:
         with:
           node-version: '20'
 
-      - name: Clean install dependencies
+      - name: Clean install dependencies (root)
         run: |
           rm -rf node_modules package-lock.json
           npm install
 
-      - name: Build
+      - name: Clean install dependencies (functions)
+        run: |
+          cd functions
+          rm -rf node_modules package-lock.json
+          npm install
+
+      - name: Build Cloud Functions
+        run: |
+          cd functions
+          npm run build
+
+      - name: Build frontend
         run: npm run build
 
       - name: Deploy to Firebase
