@@ -23,18 +23,10 @@ jobs:
       - name: Build
         run: npm run build
 
-      - name: Deploy to Firebase Hosting
+      - name: Deploy to Firebase
         uses: w9jds/firebase-action@v15.15.0
         with:
-          args: deploy --only hosting
-        env:
-          GCP_SA_KEY: ${{ secrets.GCP_SA_KEY }}
-          PROJECT_ID: integratedwellthsolutions
-
-      - name: Deploy Firebase Functions
-        uses: w9jds/firebase-action@v15.15.0
-        with:
-          args: deploy --only functions
+          args: deploy --only hosting,functions
         env:
           GCP_SA_KEY: ${{ secrets.GCP_SA_KEY }}
           PROJECT_ID: integratedwellthsolutions
