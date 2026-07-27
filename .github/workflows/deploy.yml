@@ -15,12 +15,12 @@ jobs:
         with:
           node-version: '20'
 
-      - name: Clean install dependencies (root)
+      - name: Clean install root dependencies
         run: |
           rm -rf node_modules package-lock.json
           npm install
 
-      - name: Clean install dependencies (functions)
+      - name: Clean install functions dependencies
         run: |
           cd functions
           rm -rf node_modules package-lock.json
