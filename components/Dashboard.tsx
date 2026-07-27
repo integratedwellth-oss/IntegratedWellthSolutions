@@ -2,7 +2,16 @@ import type { FC } from 'react';
 import { useState, useEffect } from 'react';
 import { onAuthStateChanged, type User } from 'firebase/auth';
 import { auth, db } from '../firebaseConfig';
-import { collection, query, orderBy, getDocs, doc, updateDoc, addDoc } from 'firebase/firestore';
+import {
+  collection,
+  query,
+  orderBy,
+  getDocs,
+  doc,
+  updateDoc,
+  addDoc,
+  serverTimestamp,
+} from 'firebase/firestore';
 
 const ADMIN_EMAILS: string[] = [
   'enquiries@integratedwellth.co.za',
@@ -12,14 +21,22 @@ const ADMIN_EMAILS: string[] = [
 interface LeadItem {
   id: string;
   timestamp?: { toDate: () => Date };
-  name?: string; fullName?: string; enterprise?: string; businessName?: string;
-  email?: string; segment?: string; persona?: string; eventName?: string;
-  status?: string; proofOfPaymentUrl?: string;
+  name?: string;
+  fullName?: string;
+  enterprise?: string;
+  businessName?: string;
+  email?: string;
+  segment?: string;
+  persona?: string;
+  eventName?: string;
+  status?: string;
+  proofOfPaymentUrl?: string;
   intelligence_report?: Array<{ q: string; a: string }>;
 }
 
 const Dashboard: FC = () => {
   const [user, setUser] = useState<User | null>(null);
+  const [isAdmin, setIsAdmin] = useState(false);
   const [warRoomLeads, setWarRoomLeads] = useState<LeadItem[]>([]);
   const [assessments, setAssessments] = useState<LeadItem[]>([]);
   const [registrations, setRegistrations] = useState<LeadItem[]>([]);
@@ -27,15 +44,14 @@ const Dashboard: FC = () => {
   const [loading, setLoading] = useState(true);
   const [selectedLead, setSelectedLead] = useState<LeadItem | null>(null);
 
-  // Derive admin authorization status directly from the user object
-  const isAdmin = user?.email ? ADMIN_EMAILS.includes(user.email.toLowerCase()) : false;
-
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
       setUser(currentUser);
-      if (currentUser && currentUser.email && ADMIN_EMAILS.includes(currentUser.email.toLowerCase())) {
+      if (currentUser && ADMIN_EMAILS.includes(currentUser.email || '')) {
+        setIsAdmin(true);
         void fetchData();
       } else {
+        setIsAdmin(false);
         setLoading(false);
       }
     });
@@ -45,17 +61,32 @@ const Dashboard: FC = () => {
   const fetchData = async () => {
     setLoading(true);
     try {
-      const wrQuery = query(collection(db, 'war_room_leads'), orderBy('timestamp', 'desc'));
+      const wrQuery = query(
+        collection(db, 'war_room_leads'),
+        orderBy('timestamp', 'desc')
+      );
       const wrSnap = await getDocs(wrQuery);
-      setWarRoomLeads(wrSnap.docs.map((doc) => ({ id: doc.id, ...doc.data() }) as LeadItem));
-      
-      const assQuery = query(collection(db, 'assessments'), orderBy('timestamp', 'desc'));
+      setWarRoomLeads(
+        wrSnap.docs.map((doc) => ({ id: doc.id, ...doc.data() }) as LeadItem)
+      );
+
+      const assQuery = query(
+        collection(db, 'assessments'),
+        orderBy('timestamp', 'desc')
+      );
       const assSnap = await getDocs(assQuery);
-      setAssessments(assSnap.docs.map((doc) => ({ id: doc.id, ...doc.data() }) as LeadItem));
-      
-      const regQuery = query(collection(db, 'workshop_registrations'), orderBy('timestamp', 'desc'));
+      setAssessments(
+        assSnap.docs.map((doc) => ({ id: doc.id, ...doc.data() }) as LeadItem)
+      );
+
+      const regQuery = query(
+        collection(db, 'workshop_registrations'),
+        orderBy('timestamp', 'desc')
+      );
       const regSnap = await getDocs(regQuery);
-      setRegistrations(regSnap.docs.map((doc) => ({ id: doc.id, ...doc.data() }) as LeadItem));
+      setRegistrations(
+        regSnap.docs.map((doc) => ({ id: doc.id, ...doc.data() }) as LeadItem)
+      );
     } catch (err) {
       console.error(err);
     }
@@ -65,13 +96,15 @@ const Dashboard: FC = () => {
   const handleVerifyRegistration = async (reg: LeadItem) => {
     if (!db || !reg.id) return;
     try {
-      await updateDoc(doc(db, 'workshop_registrations', reg.id), { status: 'verified' });
+      await updateDoc(doc(db, 'workshop_registrations', reg.id), {
+        status: 'verified',
+      });
       await addDoc(collection(db, 'mail'), {
         to: reg.email,
         message: {
           subject: 'Your Exclusive Access: IntegratedWellth Governance & Compliance',
-          html: `<div style="font-family:sans-serif;max-width:600px;margin:0 auto;"><h2 style="color:#134e4a;">Registration Confirmed</h2><p>Hi ${reg.fullName || reg.name},</p><p>Your payment has been successfully verified.</p><p><strong>Date:</strong> Monday, June 1</p><p><strong>Time:</strong> 4:00 – 5:00pm (UTC)</p><a href="https://meet.google.com/your-meeting-link" style="display:inline-block;background:#134e4a;color:#d4af37;padding:12px 24px;text-decoration:none;border-radius:6px;margin-top:16px;">Join Google Meet Session</a></div>`
-        }
+          html: `<div style="font-family:sans-serif;max-width:600px;margin:0 auto;"><h2 style="color:#134e4a;">Registration Confirmed</h2><p>Hi ${reg.fullName || reg.name},</p><p>Your payment has been successfully verified.</p><p><strong>Date:</strong> Monday, June 1</p><p><strong>Time:</strong> 4:00 – 5:00pm (UTC)</p><a href="https://meet.google.com/your-meeting-link" style="display:inline-block;background:#134e4a;color:#d4af37;padding:12px 24px;text-decoration:none;border-radius:6px;margin-top:16px;">Join Google Meet Session</a></div>`,
+        },
       });
       void fetchData();
     } catch (error) {
@@ -98,14 +131,25 @@ const Dashboard: FC = () => {
 
     if (activeTab === 'registrations') {
       return data.map((item) => (
-        <tr key={item.id} className="border-b border-gray-100 hover:bg-gray-50">
+        <tr
+          key={item.id}
+          className="border-b border-gray-100 hover:bg-gray-50"
+        >
           <td className="p-3 text-sm">
-            {item.timestamp?.toDate ? item.timestamp.toDate().toLocaleDateString() : 'N/A'}
+            {item.timestamp?.toDate
+              ? item.timestamp.toDate().toLocaleDateString()
+              : 'N/A'}
           </td>
-          <td className="p-3 text-sm font-medium">{item.fullName || item.name}</td>
+          <td className="p-3 text-sm font-medium">
+            {item.fullName || item.name}
+          </td>
           <td className="p-3 text-sm">{item.email}</td>
-          <td className="p-3 text-sm">{item.businessName || item.enterprise}</td>
-          <td className="p-3 text-sm">{item.eventName || 'June 1st Event'}</td>
+          <td className="p-3 text-sm">
+            {item.businessName || item.enterprise}
+          </td>
+          <td className="p-3 text-sm">
+            {item.eventName || 'June 1st Event'}
+          </td>
           <td className="p-3 text-sm">
             {item.status === 'verified' ? (
               <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-emerald-100 text-emerald-700">
@@ -148,11 +192,19 @@ const Dashboard: FC = () => {
         onClick={() => setSelectedLead(item)}
       >
         <td className="p-3 text-sm">
-          {item.timestamp?.toDate ? item.timestamp.toDate().toLocaleDateString() : 'N/A'}
+          {item.timestamp?.toDate
+            ? item.timestamp.toDate().toLocaleDateString()
+            : 'N/A'}
         </td>
-        <td className="p-3 text-sm font-medium">{item.name || item.fullName}</td>
-        <td className="p-3 text-sm">{item.enterprise || item.businessName}</td>
-        <td className="p-3 text-sm">{item.segment || item.persona}</td>
+        <td className="p-3 text-sm font-medium">
+          {item.name || item.fullName}
+        </td>
+        <td className="p-3 text-sm">
+          {item.enterprise || item.businessName}
+        </td>
+        <td className="p-3 text-sm">
+          {item.segment || item.persona}
+        </td>
         <td className="p-3 text-sm">
           <button className="text-[#134e4a] hover:text-[#d4af37] text-xs font-medium uppercase tracking-wider">
             View
@@ -187,13 +239,13 @@ const Dashboard: FC = () => {
   if (!isAdmin) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="bg-white p-8 rounded-xl shadow-lg border border-red-100 text-center max-w-md">
-          <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
-            <span className="text-2xl">🔒</span>
-          </div>
-          <h2 className="text-xl font-bold text-red-600 mb-2">Access Denied</h2>
-          <p className="text-gray-600">
+        <div className="text-center bg-white p-10 rounded-2xl shadow-lg max-w-md border border-rose-100">
+          <h2 className="text-2xl font-bold text-rose-600">Access Denied</h2>
+          <p className="mt-4 text-gray-600">
             You do not have permission to view the Intelligence Hub.
+          </p>
+          <p className="mt-2 text-sm text-gray-400">
+            Signed in as: {user.email}
           </p>
         </div>
       </div>
@@ -205,12 +257,16 @@ const Dashboard: FC = () => {
       <div className="max-w-7xl mx-auto">
         <div className="flex items-center justify-between mb-8">
           <div>
-            <h2 className="text-3xl font-bold text-[#134e4a]">Intelligence Hub</h2>
+            <h2 className="text-3xl font-bold text-[#134e4a]">
+              Intelligence Hub
+            </h2>
             <p className="text-sm text-gray-500 mt-1">{user.email}</p>
           </div>
           <div className="flex items-center gap-2">
             <span className="w-2 h-2 bg-emerald-400 rounded-full animate-pulse" />
-            <span className="text-xs text-gray-500 uppercase tracking-widest">Live Data</span>
+            <span className="text-xs text-gray-500 uppercase tracking-widest">
+              Live Data
+            </span>
           </div>
         </div>
 
@@ -255,7 +311,9 @@ const Dashboard: FC = () => {
                 </th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-50">{renderTableData()}</tbody>
+            <tbody className="divide-y divide-gray-50">
+              {renderTableData()}
+            </tbody>
           </table>
         </div>
 
@@ -276,7 +334,12 @@ const Dashboard: FC = () => {
                   onClick={() => setSelectedLead(null)}
                   className="text-gray-400 hover:text-gray-600"
                 >
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg
+                    className="w-5 h-5"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
                     <path
                       strokeLinecap="round"
                       strokeLinejoin="round"
@@ -292,11 +355,14 @@ const Dashboard: FC = () => {
               <h4 className="text-sm font-bold text-[#134e4a] uppercase tracking-wider mb-2">
                 Full Discovery Brief
               </h4>
-              {selectedLead.intelligence_report && Array.isArray(selectedLead.intelligence_report) ? (
+              {selectedLead.intelligence_report &&
+              Array.isArray(selectedLead.intelligence_report) ? (
                 <div className="space-y-3">
                   {selectedLead.intelligence_report.map((item, idx) => (
                     <div key={idx} className="bg-gray-50 p-3 rounded-lg">
-                      <p className="text-xs font-semibold text-[#134e4a] mb-1">{item.q}</p>
+                      <p className="text-xs font-semibold text-[#134e4a] mb-1">
+                        {item.q}
+                      </p>
                       <p className="text-sm text-gray-700">{item.a}</p>
                     </div>
                   ))}
