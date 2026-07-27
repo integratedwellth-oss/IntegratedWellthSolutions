@@ -9,26 +9,14 @@
     "preview": "vite preview"
   },
   "dependencies": {
-<<<<<<< HEAD
-    "@google/generative-ai": "latest",
-    "firebase": "^11.1.0",
-    "framer-motion": "^12.24.7",
-    "jspdf": "^2.5.1",
-    "jspdf-autotable": "^3.8.2",
-    "lucide-react": "^0.561.0",
-    "react": "^19.0.0",
-    "react-dom": "^19.0.0",
-    "swiper": "^12.1.2"
-=======
     "firebase": "11.1.0",
-    "framer-motion": "12.24.7",
+    "framer-motion": "11.18.2",
     "jspdf": "2.5.1",
     "jspdf-autotable": "3.8.2",
     "lucide-react": "0.561.0",
     "react": "19.0.0",
     "react-dom": "19.0.0",
     "swiper": "11.2.4"
->>>>>>> 37f097b6461e8253c95f6f3b695b500d4134e185
   },
   "devDependencies": {
     "@types/react": "19.0.0",
@@ -39,5 +27,8 @@
     "tailwindcss": "3.4.1",
     "typescript": "5.3.3",
     "vite": "5.1.4"
+  },
+  "overrides": {
+    "dompurify": "^3.2.5"
   }
 }
