@@ -16,19 +16,10 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig);
 
-// ─── SECURITY: Initialize App Check with reCAPTCHA v3 ───
-// Prevents abuse of callable functions from non-app origins
-const recaptchaSiteKey = import.meta.env.VITE_RECAPTCHA_SITE_KEY;
-if (recaptchaSiteKey) {
-  initializeAppCheck(app, {
-    provider: new ReCaptchaV3Provider(recaptchaSiteKey),
-    isTokenAutoRefreshEnabled: true,
-  });
-} else if (import.meta.env.DEV) {
-  console.warn(
-    '[App Check] VITE_RECAPTCHA_SITE_KEY not set. App Check is disabled in development.'
-  );
-}
+initializeAppCheck(app, {
+  provider: new ReCaptchaV3Provider('6LfUmGgtAAAAAFFk2W6-LUAYAHnH3XTjcRp6oZkz'),
+  isTokenAutoRefreshEnabled: true,
+});
 
 export const auth = getAuth(app);
 export const db = getFirestore(app);
