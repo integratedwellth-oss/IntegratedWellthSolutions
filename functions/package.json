@@ -1,6 +1,3 @@
-cd /workspaces/IntegratedWellthSolutions/functions
-
-cat > package.json << 'EOF'
 {
   "name": "functions",
   "description": "Cloud Functions for Firebase",
@@ -25,4 +22,3 @@ cat > package.json << 'EOF'
   },
   "private": true
 }
-EOF
