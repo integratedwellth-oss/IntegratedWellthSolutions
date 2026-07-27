@@ -1,0 +1,35 @@
+name: Security Audit
+on:
+  pull_request:
+    branches: [main]
+jobs:
+  firestore_rules_check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check Firestore rules for anonymous access
+        run: |
+          echo "Checking firestore.rules..."
+          if grep -n "allow create: if true" firestore.rules; then
+            echo "SECURITY ERROR: Anonymous write found!"
+            exit 1
+          fi
+          if grep -n "allow read, write: if true" firestore.rules | grep -q "document"; then
+            echo "SECURITY ERROR: Catch-all allows all access!"
+            exit 1
+          fi
+          echo "Firestore rules OK"
+      - name: Check for XSS vulnerabilities
+        run: |
+          if grep -rn "dangerouslySetInnerHTML" src/ components/ 2>/dev/null; then
+            echo "SECURITY ERROR: XSS vulnerability found!"
+            exit 1
+          fi
+          echo "XSS check OK"
+      - name: Check for hardcoded secrets
+        run: |
+          if grep -rn "sk-[a-zA-Z0-9]\\{20,\\}" src/ functions/src/ 2>/dev/null; then
+            echo "SECURITY ERROR: Possible API key leak!"
+            exit 1
+          fi
+          echo "Secret leak check OK"

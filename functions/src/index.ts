@@ -153,3 +153,4 @@ export const whatsappWebhook = onRequest({ region: "us-central1" }, async (reque
     response.status(500).end();
   }
 });
+export * from "./monitoring";
