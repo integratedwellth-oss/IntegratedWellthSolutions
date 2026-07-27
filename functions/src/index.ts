@@ -278,7 +278,7 @@ export const whatsappWebhook = onRequest(
 
 // ─── getAdminData: Secure endpoint for Dashboard ───
 export const getAdminData = onCall(
-  { region: "us-central1", cors: ALLOWED_ORIGINS },
+  { region: "us-central1", cors: ALLOWED_ORIGINS, enforceAppCheck: true },
   async (request) => {
     const uid = request.auth?.uid;
     if (!uid) {
