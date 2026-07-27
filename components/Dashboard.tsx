@@ -1,22 +1,20 @@
 import type { FC } from 'react';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { onAuthStateChanged, type User } from 'firebase/auth';
-import { auth, db } from '../firebaseConfig';
+import { auth, db, functions } from '../firebaseConfig';
 import {
   collection,
-  query,
-  orderBy,
-  getDocs,
   doc,
   updateDoc,
   addDoc,
   serverTimestamp,
 } from 'firebase/firestore';
+import { httpsCallable } from 'firebase/functions';
+import { RefreshCw, Shield, Users, FileText, Calendar, X, Eye } from 'lucide-react';
 
-const ADMIN_EMAILS: string[] = [
-  'enquiries@integratedwellth.co.za',
-  'marcia@integratedwellth.co.za',
-];
+// ─── Secure callable functions ───
+const getMyClaims = httpsCallable(functions, 'getMyClaims');
+const getAdminData = httpsCallable(functions, 'getAdminData');
 
 interface LeadItem {
   id: string;
@@ -34,64 +32,86 @@ interface LeadItem {
   intelligence_report?: Array<{ q: string; a: string }>;
 }
 
+type TabKey = 'warroom' | 'assessments' | 'registrations';
+
+const TAB_CONFIG: { key: TabKey; label: string; icon: typeof Users }[] = [
+  { key: 'warroom', label: 'War Room', icon: Users },
+  { key: 'assessments', label: 'Assessments', icon: FileText },
+  { key: 'registrations', label: 'Registrations', icon: Calendar },
+];
+
 const Dashboard: FC = () => {
   const [user, setUser] = useState<User | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [checkingAdmin, setCheckingAdmin] = useState(true);
+
   const [warRoomLeads, setWarRoomLeads] = useState<LeadItem[]>([]);
   const [assessments, setAssessments] = useState<LeadItem[]>([]);
   const [registrations, setRegistrations] = useState<LeadItem[]>([]);
-  const [activeTab, setActiveTab] = useState<'warroom' | 'assessments' | 'registrations'>('warroom');
+  const [activeTab, setActiveTab] = useState<TabKey>('warroom');
   const [loading, setLoading] = useState(true);
   const [selectedLead, setSelectedLead] = useState<LeadItem | null>(null);
 
+  // ─── Check auth state ───
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
       setUser(currentUser);
-      if (currentUser && ADMIN_EMAILS.includes(currentUser.email || '')) {
-        setIsAdmin(true);
-        void fetchData();
-      } else {
-        setIsAdmin(false);
+      if (!currentUser) {
+        setCheckingAdmin(false);
         setLoading(false);
       }
     });
     return () => unsubscribe();
   }, []);
 
-  const fetchData = async () => {
+  // ─── Verify admin claims ───
+  useEffect(() => {
+    if (!user) return;
+
+    const verifyAdmin = async () => {
+      try {
+        const result = (await getMyClaims({})) as {
+          data: { admin: boolean; email: string | null };
+        };
+        setIsAdmin(result.data.admin === true);
+      } catch (err) {
+        console.error('Failed to verify admin claims:', err);
+        setIsAdmin(false);
+      } finally {
+        setCheckingAdmin(false);
+      }
+    };
+
+    void verifyAdmin();
+  }, [user]);
+
+  // ─── Fetch data via secure endpoint ───
+  const fetchData = useCallback(async () => {
+    if (!isAdmin || !functions) return;
     setLoading(true);
+
     try {
-      const wrQuery = query(
-        collection(db, 'war_room_leads'),
-        orderBy('timestamp', 'desc')
-      );
-      const wrSnap = await getDocs(wrQuery);
-      setWarRoomLeads(
-        wrSnap.docs.map((doc) => ({ id: doc.id, ...doc.data() }) as LeadItem)
-      );
+      const [wrResult, assResult, regResult] = await Promise.all([
+        getAdminData({ collection: 'war_room_leads', limit: 200 }),
+        getAdminData({ collection: 'assessments', limit: 200 }),
+        getAdminData({ collection: 'workshop_registrations', limit: 200 }),
+      ]);
 
-      const assQuery = query(
-        collection(db, 'assessments'),
-        orderBy('timestamp', 'desc')
-      );
-      const assSnap = await getDocs(assQuery);
-      setAssessments(
-        assSnap.docs.map((doc) => ({ id: doc.id, ...doc.data() }) as LeadItem)
-      );
-
-      const regQuery = query(
-        collection(db, 'workshop_registrations'),
-        orderBy('timestamp', 'desc')
-      );
-      const regSnap = await getDocs(regQuery);
-      setRegistrations(
-        regSnap.docs.map((doc) => ({ id: doc.id, ...doc.data() }) as LeadItem)
-      );
+      setWarRoomLeads((wrResult.data as any).data || []);
+      setAssessments((assResult.data as any).data || []);
+      setRegistrations((regResult.data as any).data || []);
     } catch (err) {
-      console.error(err);
+      console.error('Failed to fetch admin data:', err);
     }
+
     setLoading(false);
-  };
+  }, [isAdmin]);
+
+  useEffect(() => {
+    if (isAdmin) {
+      void fetchData();
+    }
+  }, [isAdmin, fetchData]);
 
   const handleVerifyRegistration = async (reg: LeadItem) => {
     if (!db || !reg.id) return;
@@ -106,23 +126,31 @@ const Dashboard: FC = () => {
           html: `<div style="font-family:sans-serif;max-width:600px;margin:0 auto;"><h2 style="color:#134e4a;">Registration Confirmed</h2><p>Hi ${reg.fullName || reg.name},</p><p>Your payment has been successfully verified.</p><p><strong>Date:</strong> Monday, June 1</p><p><strong>Time:</strong> 4:00 – 5:00pm (UTC)</p><a href="https://meet.google.com/your-meeting-link" style="display:inline-block;background:#134e4a;color:#d4af37;padding:12px 24px;text-decoration:none;border-radius:6px;margin-top:16px;">Join Google Meet Session</a></div>`,
         },
       });
-      void fetchData();
+      void fetchData(); // Refresh after verification
     } catch (error) {
       console.error('Verification failed', error);
       alert('Failed to verify registration.');
     }
   };
 
+  const getActiveData = (): LeadItem[] => {
+    switch (activeTab) {
+      case 'warroom':
+        return warRoomLeads;
+      case 'assessments':
+        return assessments;
+      case 'registrations':
+        return registrations;
+    }
+  };
+
   const renderTableData = () => {
-    let data: LeadItem[] = [];
-    if (activeTab === 'warroom') data = warRoomLeads;
-    if (activeTab === 'assessments') data = assessments;
-    if (activeTab === 'registrations') data = registrations;
+    const data = getActiveData();
 
     if (data.length === 0) {
       return (
         <tr>
-          <td colSpan={5} className="p-6 text-center text-gray-500">
+          <td colSpan={activeTab === 'registrations' ? 7 : 5} className="p-6 text-center text-gray-500">
             No Data Streams for this Segment
           </td>
         </tr>
@@ -131,25 +159,16 @@ const Dashboard: FC = () => {
 
     if (activeTab === 'registrations') {
       return data.map((item) => (
-        <tr
-          key={item.id}
-          className="border-b border-gray-100 hover:bg-gray-50"
-        >
+        <tr key={item.id} className="border-b border-gray-100 hover:bg-gray-50">
           <td className="p-3 text-sm">
             {item.timestamp?.toDate
               ? item.timestamp.toDate().toLocaleDateString()
               : 'N/A'}
           </td>
-          <td className="p-3 text-sm font-medium">
-            {item.fullName || item.name}
-          </td>
+          <td className="p-3 text-sm font-medium">{item.fullName || item.name}</td>
           <td className="p-3 text-sm">{item.email}</td>
-          <td className="p-3 text-sm">
-            {item.businessName || item.enterprise}
-          </td>
-          <td className="p-3 text-sm">
-            {item.eventName || 'June 1st Event'}
-          </td>
+          <td className="p-3 text-sm">{item.businessName || item.enterprise}</td>
+          <td className="p-3 text-sm">{item.eventName || 'June 1st Event'}</td>
           <td className="p-3 text-sm">
             {item.status === 'verified' ? (
               <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-emerald-100 text-emerald-700">
@@ -196,15 +215,9 @@ const Dashboard: FC = () => {
             ? item.timestamp.toDate().toLocaleDateString()
             : 'N/A'}
         </td>
-        <td className="p-3 text-sm font-medium">
-          {item.name || item.fullName}
-        </td>
-        <td className="p-3 text-sm">
-          {item.enterprise || item.businessName}
-        </td>
-        <td className="p-3 text-sm">
-          {item.segment || item.persona}
-        </td>
+        <td className="p-3 text-sm font-medium">{item.name || item.fullName}</td>
+        <td className="p-3 text-sm">{item.enterprise || item.businessName}</td>
+        <td className="p-3 text-sm">{item.segment || item.persona}</td>
         <td className="p-3 text-sm">
           <button className="text-[#134e4a] hover:text-[#d4af37] text-xs font-medium uppercase tracking-wider">
             View
@@ -214,7 +227,15 @@ const Dashboard: FC = () => {
     ));
   };
 
-  if (loading) {
+  const getTableHeaders = () => {
+    if (activeTab === 'registrations') {
+      return ['Date', 'Identity', 'Email', 'Business', 'Event', 'Status', 'Action'];
+    }
+    return ['Date', 'Identity', 'Business & Event', 'Status / Segment', 'Action'];
+  };
+
+  // ─── Loading state ───
+  if (checkingAdmin) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="text-center">
@@ -240,13 +261,12 @@ const Dashboard: FC = () => {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="text-center bg-white p-10 rounded-2xl shadow-lg max-w-md border border-rose-100">
+          <Shield className="w-12 h-12 text-rose-500 mx-auto mb-4" />
           <h2 className="text-2xl font-bold text-rose-600">Access Denied</h2>
           <p className="mt-4 text-gray-600">
             You do not have permission to view the Intelligence Hub.
           </p>
-          <p className="mt-2 text-sm text-gray-400">
-            Signed in as: {user.email}
-          </p>
+          <p className="mt-2 text-sm text-gray-400">Signed in as: {user.email}</p>
         </div>
       </div>
     );
@@ -257,35 +277,38 @@ const Dashboard: FC = () => {
       <div className="max-w-7xl mx-auto">
         <div className="flex items-center justify-between mb-8">
           <div>
-            <h2 className="text-3xl font-bold text-[#134e4a]">
-              Intelligence Hub
-            </h2>
+            <h2 className="text-3xl font-bold text-[#134e4a]">Intelligence Hub</h2>
             <p className="text-sm text-gray-500 mt-1">{user.email}</p>
           </div>
-          <div className="flex items-center gap-2">
-            <span className="w-2 h-2 bg-emerald-400 rounded-full animate-pulse" />
-            <span className="text-xs text-gray-500 uppercase tracking-widest">
-              Live Data
-            </span>
+          <div className="flex items-center gap-4">
+            <button
+              onClick={() => fetchData()}
+              disabled={loading}
+              className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 rounded-lg text-sm text-gray-700 hover:bg-gray-50 disabled:opacity-50 transition-colors"
+            >
+              <RefreshCw size={14} className={loading ? 'animate-spin' : ''} />
+              Refresh
+            </button>
+            <div className="flex items-center gap-2">
+              <span className="w-2 h-2 bg-emerald-400 rounded-full animate-pulse" />
+              <span className="text-xs text-gray-500 uppercase tracking-widest">Live Data</span>
+            </div>
           </div>
         </div>
 
         <div className="flex gap-4 mb-6 border-b border-gray-200">
-          {(['warroom', 'assessments', 'registrations'] as const).map((tab) => (
+          {TAB_CONFIG.map((tab) => (
             <button
-              key={tab}
-              onClick={() => setActiveTab(tab)}
-              className={`pb-3 text-sm font-medium uppercase tracking-wider transition-colors ${
-                activeTab === tab
+              key={tab.key}
+              onClick={() => setActiveTab(tab.key)}
+              className={`pb-3 text-sm font-medium uppercase tracking-wider transition-colors flex items-center gap-2 ${
+                activeTab === tab.key
                   ? 'text-[#134e4a] border-b-2 border-[#d4af37]'
                   : 'text-gray-400 hover:text-gray-600'
               }`}
             >
-              {tab === 'warroom'
-                ? 'War Room'
-                : tab === 'assessments'
-                ? 'Assessments'
-                : 'Registrations'}
+              <tab.icon size={14} />
+              {tab.label}
             </button>
           ))}
         </div>
@@ -294,21 +317,14 @@ const Dashboard: FC = () => {
           <table className="w-full text-left">
             <thead className="bg-gray-50 border-b border-gray-100">
               <tr>
-                <th className="p-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                  Date
-                </th>
-                <th className="p-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                  Identity
-                </th>
-                <th className="p-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                  Business & Event
-                </th>
-                <th className="p-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                  Status / Segment
-                </th>
-                <th className="p-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                  Action
-                </th>
+                {getTableHeaders().map((h) => (
+                  <th
+                    key={h}
+                    className="p-3 text-xs font-semibold text-gray-500 uppercase tracking-wider"
+                  >
+                    {h}
+                  </th>
+                ))}
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-50">
@@ -334,19 +350,7 @@ const Dashboard: FC = () => {
                   onClick={() => setSelectedLead(null)}
                   className="text-gray-400 hover:text-gray-600"
                 >
-                  <svg
-                    className="w-5 h-5"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M6 18L18 6M6 6l12 12"
-                    />
-                  </svg>
+                  <X size={20} />
                 </button>
               </div>
               <p className="text-sm text-gray-500 mb-4">
@@ -360,9 +364,7 @@ const Dashboard: FC = () => {
                 <div className="space-y-3">
                   {selectedLead.intelligence_report.map((item, idx) => (
                     <div key={idx} className="bg-gray-50 p-3 rounded-lg">
-                      <p className="text-xs font-semibold text-[#134e4a] mb-1">
-                        {item.q}
-                      </p>
+                      <p className="text-xs font-semibold text-[#134e4a] mb-1">{item.q}</p>
                       <p className="text-sm text-gray-700">{item.a}</p>
                     </div>
                   ))}
