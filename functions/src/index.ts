@@ -124,7 +124,7 @@ const ALLOWED_ORIGINS = [
 // NOTE: App Check enforcement disabled until reCAPTCHA v3 is configured.
 // To enable: add enforceAppCheck: true and initializeAppCheck in firebaseConfig.ts
 export const websiteChat = onCall(
-  { region: "us-central1", cors: ALLOWED_ORIGINS },
+  { region: "us-central1", cors: ALLOWED_ORIGINS, enforceAppCheck: true },
   async (request) => {
     const message = request.data.message as string;
     const history = request.data.history as Array<{ role: string; text?: string; content?: string }> | undefined;
@@ -278,7 +278,7 @@ export const whatsappWebhook = onRequest(
 
 // ─── getAdminData: Secure endpoint for Dashboard ───
 export const getAdminData = onCall(
-  { region: "us-central1", cors: ALLOWED_ORIGINS },
+  { region: "us-central1", cors: ALLOWED_ORIGINS, enforceAppCheck: true },
   async (request) => {
     const uid = request.auth?.uid;
     if (!uid) {
