@@ -1,0 +1,67 @@
+name: Security Audit
+
+on:
+  pull_request:
+    branches: [main]
+
+jobs:
+  firestore_rules_check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Check for dangerous Firestore rules
+        run: |
+          echo "🔍 Checking firestore.rules for security issues..."
+
+          # Check for anonymous write access (the critical vulnerability we fixed)
+          if grep -n "allow create: if true" firestore.rules; then
+            echo "❌ SECURITY ERROR: Found 'allow create: if true' in firestore.rules"
+            echo "This allows anonymous writes to your database."
+            exit 1
+          fi
+
+          # Check for overly permissive catch-all
+          if grep -n "match /{document=\*\*}" firestore.rules | grep -q "allow read, write: if true"; then
+            echo "❌ SECURITY ERROR: Catch-all rule allows all reads/writes"
+            exit 1
+          fi
+
+          # Check for missing auth checks
+          ANON_RULES=$(grep -c "allow.*if true" firestore.rules || true)
+          if [ "$ANON_RULES" -gt 0 ]; then
+            echo "⚠️ WARNING: Found $ANON_RULES rule(s) with 'if true' (anonymous access)"
+            echo "Review these carefully:"
+            grep -n "allow.*if true" firestore.rules
+          fi
+
+          echo "✅ Firestore rules security check passed"
+
+      - name: Check for dangerouslySetInnerHTML in frontend
+        run: |
+          echo "🔍 Checking for XSS vulnerabilities..."
+
+          if grep -rn "dangerouslySetInnerHTML" src/ components/ 2>/dev/null; then
+            echo "❌ SECURITY ERROR: dangerouslySetInnerHTML found - XSS risk"
+            exit 1
+          fi
+
+          echo "✅ XSS check passed"
+
+      - name: Check for hardcoded secrets in source
+        run: |
+          echo "🔍 Checking for hardcoded secrets..."
+
+          # Check for API keys in source code (should only be in .env or secrets)
+          if grep -rn "sk-[a-zA-Z0-9]\{20,\}" src/ functions/src/ components/ 2>/dev/null; then
+            echo "❌ SECURITY ERROR: Possible hardcoded API key found"
+            exit 1
+          fi
+
+          if grep -rn "EAA[a-zA-Z0-9]\{20,\}" src/ functions/src/ components/ 2>/dev/null; then
+            echo "❌ SECURITY ERROR: Possible hardcoded Meta token found"
+            exit 1
+          fi
+
+          echo "✅ Secret leak check passed"
