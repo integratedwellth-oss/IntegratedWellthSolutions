@@ -2,6 +2,8 @@ import { useState, useEffect, useRef } from 'react';
 import { MessageSquare, X, Bot, Loader2 } from 'lucide-react';
 import { functions } from '@/firebaseConfig';
 import { httpsCallable } from 'firebase/functions';
+import { getAuth } from 'firebase/auth';
+import { encryptData, decryptData } from '../../services/cryptoService';
 
 interface Message {
   role: 'user' | 'bot';
@@ -21,19 +23,37 @@ export default function Chatbot() {
     },
   ]);
 
+  // ─── SECURITY FIX: Load encrypted chat history ───
   useEffect(() => {
-    const saved = localStorage.getItem('iws_chat_history');
-    if (saved) {
-      try {
-        setMessages(JSON.parse(saved));
-      } catch {
-        // ignore corrupt localStorage
+    const loadHistory = async () => {
+      const auth = getAuth();
+      const user = auth.currentUser;
+      const saved = localStorage.getItem('iws_chat_history');
+      if (saved && user) {
+        try {
+          const decrypted = await decryptData(saved, user.uid);
+          if (decrypted && Array.isArray(decrypted)) {
+            setMessages(decrypted as Message[]);
+          }
+        } catch {
+          // ignore corrupt localStorage
+        }
       }
-    }
+    };
+    loadHistory();
   }, []);
 
+  // ─── SECURITY FIX: Save encrypted chat history ───
   useEffect(() => {
-    localStorage.setItem('iws_chat_history', JSON.stringify(messages));
+    const saveHistory = async () => {
+      const auth = getAuth();
+      const user = auth.currentUser;
+      if (user && messages.length > 1) {
+        const encrypted = await encryptData(messages, user.uid);
+        localStorage.setItem('iws_chat_history', encrypted);
+      }
+    };
+    saveHistory();
     scrollRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
@@ -120,12 +140,11 @@ export default function Chatbot() {
                       : 'bg-white border border-gray-200 text-gray-800 rounded-tl-sm shadow-sm'
                   }`}
                 >
-                  {/* SECURITY FIX: Render as plain text instead of raw HTML */}
+                  {/* SECURITY FIX: Render as plain text, NEVER dangerouslySetInnerHTML */}
                   <p className="whitespace-pre-wrap">{m.text}</p>
                 </div>
               </div>
             ))}
-
             {loading && (
               <div className="flex justify-start">
                 <div className="bg-white border border-gray-200 text-gray-500 text-xs p-3 rounded-xl rounded-tl-sm flex items-center gap-2 shadow-sm">
