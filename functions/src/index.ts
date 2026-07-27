@@ -112,18 +112,19 @@ const callDeepSeek = async (messages: ChatMessage[]): Promise<string> => {
   return data?.choices?.[0]?.message?.content || "";
 };
 
+// ─── SECURITY: All allowed origins for CORS ───
 const ALLOWED_ORIGINS = [
   "https://integratedwellthsolutions.web.app",
   "https://integratedwellthsolutions.firebaseapp.com",
+  "https://integratedwellth.co.za",
+  "https://www.integratedwellth.co.za",
 ];
 
-// ─── websiteChat: hardened callable with App Check enforcement ───
+// ─── websiteChat: hardened callable ───
+// NOTE: App Check enforcement disabled until reCAPTCHA v3 is configured.
+// To enable: add enforceAppCheck: true and initializeAppCheck in firebaseConfig.ts
 export const websiteChat = onCall(
-  {
-    region: "us-central1",
-    cors: ALLOWED_ORIGINS,
-    enforceAppCheck: true, // ─── SECURITY: Reject calls without valid App Check token ───
-  },
+  { region: "us-central1", cors: ALLOWED_ORIGINS },
   async (request) => {
     const message = request.data.message as string;
     const history = request.data.history as Array<{ role: string; text?: string; content?: string }> | undefined;
@@ -167,18 +168,6 @@ export const whatsappWebhook = onRequest(
   { region: "us-central1" },
   async (request, response) => {
     const ip = request.ip || "unknown";
-
-    // ─── SECURITY: Manual App Check verification for HTTP functions ───
-    const appCheckToken = request.get("X-Firebase-AppCheck");
-    if (appCheckToken) {
-      try {
-        await admin.appCheck().verifyToken(appCheckToken);
-      } catch {
-        console.warn("[App Check] Invalid token from IP:", ip);
-        // Don't block — Meta webhooks don't send App Check tokens
-        // This is defense-in-depth for non-Meta callers
-      }
-    }
 
     if (request.method === "GET") {
       const mode = request.query["hub.mode"];
@@ -287,20 +276,15 @@ export const whatsappWebhook = onRequest(
   }
 );
 
-// ─── getAdminData: Secure endpoint for Dashboard (decrypts sensitive fields) ───
+// ─── getAdminData: Secure endpoint for Dashboard ───
 export const getAdminData = onCall(
-  {
-    region: "us-central1",
-    cors: ALLOWED_ORIGINS,
-    enforceAppCheck: true,
-  },
+  { region: "us-central1", cors: ALLOWED_ORIGINS },
   async (request) => {
     const uid = request.auth?.uid;
     if (!uid) {
       throw new HttpsError("unauthenticated", "You must be signed in.");
     }
 
-    // Verify admin claim
     const user = await admin.auth().getUser(uid);
     const adminEmails = [
       "enquiries@integratedwellth.co.za",
@@ -328,7 +312,6 @@ export const getAdminData = onCall(
 
       const docs = snapshot.docs.map((doc) => {
         const data = doc.data();
-        // Decrypt sensitive fields before returning
         const decrypted = decryptDocumentFields(data);
         return { id: doc.id, ...decrypted };
       });
