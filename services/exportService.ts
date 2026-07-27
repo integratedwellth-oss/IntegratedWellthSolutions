@@ -14,28 +14,30 @@ interface ExportData {
   }[];
 }
 
-const LOGO_URL = "https://res.cloudinary.com/dka0498ns/image/upload/v1765747786/favicon_ofkkb1.png";
+// ─── SECURITY FIX: Move Cloudinary URL to environment variable ───
+const LOGO_URL = import.meta.env.VITE_LOGO_URL || "";
 
 export const generatePDFReport = (data: ExportData, filename: string = 'IWS_Strategic_Brief.pdf') => {
   const doc = new jsPDF();
-  
-  // THE FIX: Casting to 'any' to satisfy the strict type checking of the jspdf library.
+
   const brandGold: any = [212, 175, 55];
   const brandDark: any = [19, 78, 74];
 
   // Header Background
   doc.setFillColor(brandDark[0], brandDark[1], brandDark[2]);
   doc.rect(0, 0, 210, 40, 'F');
-  
-  // IWS LOGO
-  doc.addImage(LOGO_URL, 'PNG', 15, 12, 16, 16);
+
+  // IWS LOGO — only if URL is configured
+  if (LOGO_URL) {
+    doc.addImage(LOGO_URL, 'PNG', 15, 12, 16, 16);
+  }
 
   // Title
   doc.setTextColor(255, 255, 255);
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(22);
   doc.text('INTEGRATED WELLTH SOLUTIONS', 38, 20);
-  
+
   doc.setTextColor(brandGold[0], brandGold[1], brandGold[2]);
   doc.setFontSize(10);
   doc.text('SOVEREIGNTY PROTOCOL ALPHA-1', 38, 28);
@@ -45,7 +47,7 @@ export const generatePDFReport = (data: ExportData, filename: string = 'IWS_Stra
   doc.setFontSize(18);
   doc.setFont('helvetica', 'bold');
   doc.text(data.title.toUpperCase(), 15, 55);
-  
+
   doc.setFontSize(10);
   doc.setFont('helvetica', 'normal');
   doc.text(data.subtitle, 15, 62);
@@ -63,9 +65,9 @@ export const generatePDFReport = (data: ExportData, filename: string = 'IWS_Stra
     doc.setFontSize(12);
     doc.setTextColor(brandDark[0], brandDark[1], brandDark[2]);
     doc.text(section.heading.toUpperCase(), 15, currentY);
-    
+
     currentY += 8;
-    
+
     doc.setFont('helvetica', 'normal');
     doc.setFontSize(10);
     doc.setTextColor(60, 60, 60);
@@ -108,7 +110,7 @@ export const generatePDFReport = (data: ExportData, filename: string = 'IWS_Stra
 
 export const generateCSVExport = (data: any[], filename: string = 'IWS_Export.csv') => {
   if (data.length === 0) return;
-  
+
   const headers = Object.keys(data[0]);
   const csvContent = [
     headers.join(','),

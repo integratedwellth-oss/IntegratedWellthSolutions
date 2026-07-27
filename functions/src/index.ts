@@ -1,5 +1,6 @@
 import { onCall, onRequest, HttpsError } from "firebase-functions/v2/https";
 import * as admin from "firebase-admin";
+import * as crypto from "crypto";
 import { SYSTEM_PROMPT } from "./prompt";
 
 interface ChatMessage {
@@ -13,6 +14,7 @@ if (!admin.apps.length) {
 
 const dbAdmin = admin.firestore();
 
+// ─── PII Stripper (preserved from previous fix) ───
 const stripPII = (text: string): string => {
   if (!text) return "";
   return text
@@ -27,8 +29,14 @@ interface RateLimitData {
   windowStart: admin.firestore.Timestamp;
 }
 
+// ─── Firestore-safe doc ID sanitizer ───
+const sanitizeDocId = (id: string): string => {
+  return id.replace(/[./:#\[\]]/g, "_").substring(0, 1500);
+};
+
+// ─── Rate Limiter (preserved from previous fix) ───
 const checkRateLimit = async (uid: string | undefined, ip: string): Promise<boolean> => {
-  const docId = uid || ip.replace(/\./g, "_");
+  const docId = sanitizeDocId(uid || ip);
   const ref = dbAdmin.collection("rate_limits").doc(docId);
   const now = admin.firestore.Timestamp.now();
   const doc = await ref.get();
@@ -48,6 +56,20 @@ const checkRateLimit = async (uid: string | undefined, ip: string): Promise<bool
   return true;
 };
 
+// ─── Meta webhook HMAC-SHA256 signature verifier ───
+const verifyMetaSignature = (body: string, signature: string | undefined, appSecret: string): boolean => {
+  if (!signature || !appSecret) return false;
+  const expected = crypto.createHmac("sha256", appSecret).update(body, "utf8").digest("hex");
+  try {
+    return crypto.timingSafeEqual(
+      Buffer.from(signature.replace("sha256=", "")),
+      Buffer.from(expected)
+    );
+  } catch {
+    return false;
+  }
+};
+
 const sendMetaMessage = async (toNumber: string, text: string): Promise<void> => {
   const WHATSAPP_TOKEN = (process.env.WHATSAPP_TOKEN || "").trim();
   const PHONE_NUMBER_ID = (process.env.PHONE_NUMBER_ID || "").trim();
@@ -58,99 +80,201 @@ const sendMetaMessage = async (toNumber: string, text: string): Promise<void> =>
   await fetch(`https://graph.facebook.com/v21.0/${PHONE_NUMBER_ID}/messages`, {
     method: "POST",
     headers: { "Content-Type": "application/json", "Authorization": `Bearer ${WHATSAPP_TOKEN}` },
-    body: JSON.stringify({ messaging_product: "whatsapp", recipient_type: "individual", to: toNumber, type: "text", text: { preview_url: true, body: text } })
+    body: JSON.stringify({
+      messaging_product: "whatsapp",
+      recipient_type: "individual",
+      to: toNumber,
+      type: "text",
+      text: { preview_url: false, body: text }
+    })
   });
 };
 
-
 const callDeepSeek = async (messages: ChatMessage[]): Promise<string> => {
   const DEEPSEEK_API_KEY = (process.env.DEEPSEEK_API_KEY || "").trim();
-  const sanitizedMessages = messages.map((m) => ({ role: m.role, content: stripPII(m.content || "") }));
+  const sanitizedMessages = messages.map((m) => ({
+    role: m.role,
+    content: stripPII(m.content || "")
+  }));
   const response = await fetch("https://api.deepseek.com/v1/chat/completions", {
     method: "POST",
-    headers: { "Content-Type": "application/json", "Authorization": `Bearer ${DEEPSEEK_API_KEY}` },
-    body: JSON.stringify({ model: "deepseek-chat", messages: sanitizedMessages, temperature: 0.2, max_tokens: 450 })
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": `Bearer ${DEEPSEEK_API_KEY}`
+    },
+    body: JSON.stringify({
+      model: "deepseek-chat",
+      messages: sanitizedMessages,
+      temperature: 0.2,
+      max_tokens: 450
+    })
   });
   if (!response.ok) return "PROTOCOL INTERRUPTED: DeepSeek connection failed.";
   const data = await response.json() as { choices?: Array<{ message?: { content?: string } }> };
   return data?.choices?.[0]?.message?.content || "";
 };
 
-export const websiteChat = onCall({ region: "us-central1", cors: true }, async (request) => {
-  const message = request.data.message as string;
-  const history = request.data.history as Array<{ role: string; text?: string; content?: string }> | undefined;
-  const uid = request.auth?.uid;
-  const ip = request.rawRequest.ip || "unknown";
-  if (!message) throw new HttpsError("invalid-argument", "Message is required.");
-  const allowed = await checkRateLimit(uid, ip);
-  if (!allowed) throw new HttpsError("resource-exhausted", "Rate limit exceeded. Please try again later.");
-  try {
-    const messages: ChatMessage[] = [
-      { role: "system", content: SYSTEM_PROMPT },
-      { role: "user", content: message }
-    ];
-    const reply = await callDeepSeek(messages);
-    await dbAdmin.collection("ai_audit_logs").add({ uid: uid || "anonymous", ip, sanitizedPreview: stripPII(message).substring(0, 200), replyPreview: stripPII(reply).substring(0, 200), timestamp: admin.firestore.FieldValue.serverTimestamp() });
-    return { reply: reply.trim() };
-  } catch (error: any) {
-    throw new HttpsError("internal", error.message || "An unexpected error occurred.");
-  }
-});
+// ─── Allowed origins for callable CORS ───
+const ALLOWED_ORIGINS = [
+  "https://integratedwellthsolutions.web.app",
+  "https://integratedwellthsolutions.firebaseapp.com",
+];
 
-export const whatsappWebhook = onRequest({ region: "us-central1" }, async (request, response) => {
-  if (request.method === "GET") {
-    const mode = request.query["hub.mode"];
-    const token = request.query["hub.verify_token"];
-    const challenge = request.query["hub.challenge"];
-    const VERIFY_TOKEN = (process.env.WHATSAPP_VERIFY_TOKEN || "").trim();
-    if (mode === "subscribe" && token === VERIFY_TOKEN) { response.status(200).send(challenge); return; }
-    response.status(403).end(); return;
-  }
-  const entry = request.body.entry?.[0];
-  const changes = entry?.changes?.[0];
-  const value = changes?.value;
-  const message = value?.messages?.[0];
-  const contact = value?.contacts?.[0];
-  if (!message) { response.status(200).end(); return; }
-  const fromNumber = message.from as string;
-  const userMessage = (message.text?.body || "").trim();
-  const senderName = contact?.profile?.name || "Client";
-  try {
-    const claimsSnapshot = await dbAdmin.collection("verified_claims").get();
-    let matchedClaim: admin.firestore.DocumentData | null = null;
-    for (const doc of claimsSnapshot.docs) {
-      const data = doc.data();
-      const keywords = data.keywords || [];
-      if (keywords.some((k: string) => userMessage.toLowerCase().includes(k.toLowerCase()))) { matchedClaim = data; break; }
+// ─── websiteChat: hardened callable ───
+export const websiteChat = onCall(
+  { region: "us-central1", cors: ALLOWED_ORIGINS },
+  async (request) => {
+    const message = request.data.message as string;
+    const history = request.data.history as Array<{ role: string; text?: string; content?: string }> | undefined;
+    const uid = request.auth?.uid;
+    const ip = request.rawRequest?.ip || "unknown";
+
+    if (!message) {
+      throw new HttpsError("invalid-argument", "Message is required.");
     }
-    if (matchedClaim && matchedClaim.isHighIntent) {
-      await dbAdmin.collection("prospects").add({ phone: fromNumber, name: senderName, interest: matchedClaim.title || userMessage, timestamp: admin.firestore.FieldValue.serverTimestamp() });
-      const adminPhone = (process.env.ADMIN_PHONE_NUMBER || "").trim();
-      if (adminPhone) await sendMetaMessage(adminPhone, `ALERT: High-intent lead engaged.\nName: ${senderName}\nPhone: ${fromNumber}\nQuery: ${userMessage}`);
+    if (message.length > 2000) {
+      throw new HttpsError("invalid-argument", "Message exceeds maximum length of 2000 characters.");
     }
-    let matchedReply = "";
-    if (matchedClaim) {
-      matchedReply = matchedClaim.response;
-    } else {
-      const sessionRef = dbAdmin.collection("whatsapp_sessions").doc(fromNumber).collection("messages");
-      const historySnapshot = await sessionRef.orderBy("timestamp", "desc").limit(10).get();
-      const history = historySnapshot.docs.map((d) => d.data()).reverse();
+
+    const allowed = await checkRateLimit(uid, ip);
+    if (!allowed) {
+      throw new HttpsError("resource-exhausted", "Rate limit exceeded. Please try again later.");
+    }
+
+    try {
       const messages: ChatMessage[] = [
         { role: "system", content: SYSTEM_PROMPT },
-        ...history.map((h) => ({ role: h.role as string, content: h.content as string })),
-        { role: "user", content: userMessage }
+        { role: "user", content: message }
       ];
-      const replyText = await callDeepSeek(messages);
-      matchedReply = replyText;
-      const timestampObj = admin.firestore.FieldValue.serverTimestamp();
-      await sessionRef.add({ role: "user", content: userMessage, timestamp: timestampObj });
-      await sessionRef.add({ role: "assistant", content: replyText, timestamp: timestampObj });
+      const reply = await callDeepSeek(messages);
+      await dbAdmin.collection("ai_audit_logs").add({
+        uid: uid || "anonymous",
+        ip,
+        sanitizedPreview: stripPII(message).substring(0, 200),
+        replyPreview: stripPII(reply).substring(0, 200),
+        timestamp: admin.firestore.FieldValue.serverTimestamp()
+      });
+      return { reply: reply.trim() };
+    } catch (error: any) {
+      throw new HttpsError("internal", error.message || "An unexpected error occurred.");
     }
-    await sendMetaMessage(fromNumber, matchedReply);
-    response.status(200).end();
-  } catch (error) {
-    console.error("Meta WhatsApp Webhook Execution Error:", error);
-    response.status(500).end();
   }
-});
+);
+
+// ─── whatsappWebhook: hardened HTTP handler ───
+export const whatsappWebhook = onRequest(
+  { region: "us-central1" },
+  async (request, response) => {
+    const ip = request.ip || "unknown";
+
+    // GET: Meta subscription verification
+    if (request.method === "GET") {
+      const mode = request.query["hub.mode"];
+      const token = request.query["hub.verify_token"];
+      const challenge = request.query["hub.challenge"];
+      const VERIFY_TOKEN = (process.env.WHATSAPP_VERIFY_TOKEN || "").trim();
+      if (mode === "subscribe" && token === VERIFY_TOKEN) {
+        response.status(200).send(challenge);
+        return;
+      }
+      response.status(403).end();
+      return;
+    }
+
+    // ─── Rate limit webhook by IP ───
+    const webhookAllowed = await checkRateLimit(undefined, ip);
+    if (!webhookAllowed) {
+      console.warn("Webhook rate limit exceeded for IP:", ip);
+      response.status(429).end();
+      return;
+    }
+
+    // ─── Verify Meta webhook signature ───
+    if (request.method === "POST") {
+      const signature = request.get("X-Hub-Signature-256");
+      const APP_SECRET = (process.env.META_APP_SECRET || "").trim();
+      const rawBody = (request as any).rawBody?.toString?.("utf8") || "";
+      if (!verifyMetaSignature(rawBody, signature, APP_SECRET)) {
+        console.warn("Invalid webhook signature from IP:", ip);
+        response.status(403).end();
+        return;
+      }
+    }
+
+    const entry = request.body.entry?.[0];
+    const changes = entry?.changes?.[0];
+    const value = changes?.value;
+    const message = value?.messages?.[0];
+    const contact = value?.contacts?.[0];
+    if (!message) {
+      response.status(200).end();
+      return;
+    }
+
+    const fromNumber = message.from as string;
+    const userMessage = (message.text?.body || "").trim();
+    const senderName = contact?.profile?.name || "Client";
+
+    try {
+      const claimsSnapshot = await dbAdmin.collection("verified_claims").get();
+      let matchedClaim: admin.firestore.DocumentData | null = null;
+      for (const doc of claimsSnapshot.docs) {
+        const data = doc.data();
+        const keywords = data.keywords || [];
+        if (keywords.some((k: string) => userMessage.toLowerCase().includes(k.toLowerCase()))) {
+          matchedClaim = data;
+          break;
+        }
+      }
+
+      if (matchedClaim && matchedClaim.isHighIntent) {
+        await dbAdmin.collection("prospects").add({
+          phone: fromNumber,
+          name: senderName,
+          interest: matchedClaim.title || userMessage,
+          timestamp: admin.firestore.FieldValue.serverTimestamp()
+        });
+        const adminPhone = (process.env.ADMIN_PHONE_NUMBER || "").trim();
+        if (adminPhone) {
+          await sendMetaMessage(
+            adminPhone,
+            `ALERT: High-intent lead engaged.\nName: ${senderName}\nPhone: ${fromNumber}\nQuery: ${userMessage}`
+          );
+        }
+      }
+
+      let matchedReply = "";
+      if (matchedClaim) {
+        matchedReply = matchedClaim.response;
+      } else {
+        const sessionRef = dbAdmin
+          .collection("whatsapp_sessions")
+          .doc(fromNumber)
+          .collection("messages");
+        const historySnapshot = await sessionRef
+          .orderBy("timestamp", "desc")
+          .limit(10)
+          .get();
+        const history = historySnapshot.docs.map((d) => d.data()).reverse();
+        const messages: ChatMessage[] = [
+          { role: "system", content: SYSTEM_PROMPT },
+          ...history.map((h) => ({ role: h.role as string, content: h.content as string })),
+          { role: "user", content: userMessage }
+        ];
+        const replyText = await callDeepSeek(messages);
+        matchedReply = replyText;
+        const timestampObj = admin.firestore.FieldValue.serverTimestamp();
+        await sessionRef.add({ role: "user", content: userMessage, timestamp: timestampObj });
+        await sessionRef.add({ role: "assistant", content: replyText, timestamp: timestampObj });
+      }
+
+      await sendMetaMessage(fromNumber, matchedReply);
+      response.status(200).end();
+    } catch (error) {
+      console.error("Meta WhatsApp Webhook Execution Error:", error);
+      response.status(500).end();
+    }
+  }
+);
+
 export * from "./monitoring";
