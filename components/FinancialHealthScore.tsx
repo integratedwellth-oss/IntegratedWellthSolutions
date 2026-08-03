@@ -24,6 +24,7 @@ const FinancialHealthScore: React.FC<FinancialHealthScoreProps> = ({ isModal = f
   const [formData, setFormData] = useState({ name: '', enterprise: '' });
 
   useEffect(() => {
+    if (!auth) { setIsAuthLoading(false); return; }
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
       setUser(currentUser);
       setIsAuthLoading(false);

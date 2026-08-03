@@ -35,6 +35,7 @@ const UserDashboard: React.FC<UserDashboardProps> = ({ onTriggerAssessment }) =>
   const [selectedResult, setSelectedResult] = useState<any>(null);
 
   useEffect(() => {
+    if (!auth) { setLoading(false); return; }
     let unsubscribe: (() => void) | undefined;
     const unsubscribeAuth = onAuthStateChanged(auth, (currentUser) => {
       setUser(currentUser);

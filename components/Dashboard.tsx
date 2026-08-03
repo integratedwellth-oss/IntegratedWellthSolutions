@@ -54,6 +54,7 @@ const Dashboard: FC = () => {
 
   // ─── Check auth state ───
   useEffect(() => {
+    if (!auth) { setCheckingAdmin(false); setLoading(false); return; }
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
       setUser(currentUser);
       if (!currentUser) {
