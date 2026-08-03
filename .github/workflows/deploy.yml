@@ -37,7 +37,7 @@ jobs:
       - name: Deploy to Firebase
         uses: w9jds/firebase-action@v15.15.0
         with:
-          args: deploy --only hosting,functions
+          args: deploy --only hosting,functions --force
         env:
           GCP_SA_KEY: ${{ secrets.GCP_SA_KEY }}
           PROJECT_ID: integratedwellthsolutions
