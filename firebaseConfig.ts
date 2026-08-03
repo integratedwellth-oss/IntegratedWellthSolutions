@@ -1,10 +1,12 @@
-import { initializeApp } from 'firebase/app';
-import { getAuth } from 'firebase/auth';
-import { getFirestore } from 'firebase/firestore';
-import { getStorage } from 'firebase/storage';
-import { getFunctions } from 'firebase/functions';
-import { initializeAppCheck, ReCaptchaV3Provider } from 'firebase/app-check';
+import { initializeApp, FirebaseApp } from 'firebase/app';
+import { getAuth, Auth } from 'firebase/auth';
+import { getFirestore, Firestore } from 'firebase/firestore';
+import { getStorage, FirebaseStorage } from 'firebase/storage';
+import { getFunctions, Functions } from 'firebase/functions';
 
+// Safe, fault-tolerant Firebase initialization.
+// If env vars or App Check are missing, the app still renders (demo mode)
+// instead of crashing to a blank page.
 const firebaseConfig = {
   apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
   authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
@@ -14,16 +16,49 @@ const firebaseConfig = {
   appId: import.meta.env.VITE_FIREBASE_APP_ID,
 };
 
-const app = initializeApp(firebaseConfig);
+let app: FirebaseApp | null = null;
+let authInstance: Auth | null = null;
+let dbInstance: Firestore | null = null;
+let storageInstance: FirebaseStorage | null = null;
+let functionsInstance: Functions | null = null;
 
-initializeAppCheck(app, {
-  provider: new ReCaptchaV3Provider('6LfUmGgtAAAAAFFk2W6-LUAYAHnH3XTjcRp6oZkz'),
-  isTokenAutoRefreshEnabled: true,
-});
+try {
+  if (!firebaseConfig.apiKey || !firebaseConfig.projectId) {
+    console.warn('[IWS] Firebase env vars missing - running in demo mode.');
+  } else {
+    app = initializeApp(firebaseConfig);
 
-export const auth = getAuth(app);
-export const db = getFirestore(app);
-export const storage = getStorage(app);
-export const functions = getFunctions(app);
+    // App Check: only attempt init if a key is configured for this origin.
+    // Missing/invalid reCAPTCHA key would otherwise crash the entire bundle.
+    const recaptchaKey = import.meta.env.VITE_RECAPTCHA_SITE_KEY;
+    if (recaptchaKey) {
+      import('firebase/app-check')
+        .then(({ initializeAppCheck, ReCaptchaV3Provider }) => {
+          try {
+            initializeAppCheck(app!, {
+              provider: new ReCaptchaV3Provider(recaptchaKey),
+              isTokenAutoRefreshEnabled: true,
+            });
+          } catch (e) {
+            console.warn('[IWS] App Check init failed, continuing without it.', e);
+          }
+        })
+        .catch((e) => console.warn('[IWS] App Check module load failed.', e));
+    }
+
+    authInstance = getAuth(app);
+    dbInstance = getFirestore(app);
+    storageInstance = getStorage(app);
+    functionsInstance = getFunctions(app);
+  }
+} catch (e) {
+  console.error('[IWS] Firebase initialization failed. Demo mode enabled.', e);
+}
+
+export const auth = authInstance as Auth;
+export const db = dbInstance as Firestore;
+export const storage = storageInstance as FirebaseStorage;
+export const functions = functionsInstance as Functions;
+export const isDemoMode = !app;
 
 export default app;
