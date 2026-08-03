@@ -12,3 +12,6 @@ firestore-debug.log
 # Build
 dist/
 functions/lib/
+
+# Dependencies
+node_modules/
