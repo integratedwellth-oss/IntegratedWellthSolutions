@@ -39,15 +39,18 @@ try {
     // An invalid key would crash the bundle at runtime.
     const recaptchaKey = import.meta.env.VITE_RECAPTCHA_SITE_KEY;
     if (recaptchaKey && !String(recaptchaKey).startsWith('undefined')) {
-      try {
-        const { initializeAppCheck, ReCaptchaV3Provider } = await import('firebase/app-check');
-        initializeAppCheck(app, {
-          provider: new ReCaptchaV3Provider(recaptchaKey),
-          isTokenAutoRefreshEnabled: true,
-        });
-      } catch (e) {
-        console.warn('[IWS] App Check init failed, continuing without it.', e);
-      }
+      import('firebase/app-check')
+        .then(({ initializeAppCheck, ReCaptchaV3Provider }) => {
+          try {
+            initializeAppCheck(app!, {
+              provider: new ReCaptchaV3Provider(recaptchaKey),
+              isTokenAutoRefreshEnabled: true,
+            });
+          } catch (e) {
+            console.warn('[IWS] App Check init failed, continuing without it.', e);
+          }
+        })
+        .catch((e) => console.warn('[IWS] App Check module load failed.', e));
     }
 
     const authMaybe = getAuth(app);
