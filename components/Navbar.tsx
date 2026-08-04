@@ -28,6 +28,7 @@ const Navbar: React.FC<NavbarProps> = ({ onNavigate }) => {
     { label: 'SERVICES', hash: '#services' },
     { label: 'CALENDAR', hash: '#compliance-calendar' },
     { label: 'TEAM', hash: '#team' },
+    { label: 'BLOG', hash: '#blog' },
     { label: 'GALLERY', hash: '#gallery' },
   ];
 
