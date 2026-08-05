@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import RevealOnScroll from '../RevealOnScroll';
 import NewsTicker from '../NewsTicker';
 import Button from '../Button';
+import ServicesJourney from '../ServicesJourney';
 import { ShieldCheck, Tag, CheckCircle2, ArrowRight, Loader2, Upload, Building, X } from 'lucide-react';
 import { db, storage } from '../../firebaseConfig';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
@@ -81,6 +82,7 @@ const ServicesPage: React.FC = () => {
         </div>
       </div>
       <NewsTicker />
+      <ServicesJourney />
       <section className="py-24 px-6 bg-white">
         <div className="max-w-7xl mx-auto">
           <RevealOnScroll>
