@@ -43,10 +43,10 @@ jobs:
           VITE_FIREBASE_APP_ID: ${{ secrets.VITE_FIREBASE_APP_ID }}
           VITE_RECAPTCHA_SITE_KEY: ${{ secrets.VITE_RECAPTCHA_SITE_KEY }}
 
-      - name: Deploy to Firebase
+      - name: Deploy to Firebase Hosting
         uses: w9jds/firebase-action@v15.15.0
         with:
-          args: deploy --only hosting,functions --force
+          args: deploy --only hosting --force
         env:
           GCP_SA_KEY: ${{ secrets.GCP_SA_KEY }}
           PROJECT_ID: integratedwellthsolutions
