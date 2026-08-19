@@ -46,10 +46,10 @@ const Services: React.FC = () => {
                 <h3 className="text-2xl font-black text-brand-900 mb-4 uppercase tracking-tighter leading-none">{pillar.title}</h3>
                 <p className="text-brand-900/60 leading-relaxed mb-10 flex-grow text-sm">{pillar.description}</p>
                 <button 
-                   onClick={() => window.location.hash = '#contact'}
+                   onClick={() => window.location.hash = '#services'}
                    className="flex items-center justify-between w-full text-[10px] font-black uppercase tracking-widest text-brand-900/40 group-hover:text-brand-gold transition-colors pt-6 border-t border-brand-900/5"
                 >
-                  Learn More <ArrowUpRight size={14} className="group-hover:rotate-45 transition-transform" />
+                  Explore Services <ArrowUpRight size={14} className="group-hover:rotate-45 transition-transform" />
                 </button>
               </div>
             </RevealOnScroll>

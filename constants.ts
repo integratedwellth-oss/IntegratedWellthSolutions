@@ -151,7 +151,7 @@ export const QUIZ_QUESTIONS = [
   },
   {
     category: "Founder Resilience",
-    question: "Do you have a dedicated partner/CFO to discuss strategy with?",
+    question: "Do you have a dedicated partner/CBA to discuss strategy with?",
     options: [
       { text: "Yes, I have a strategic advisor", score: 4 },
       { text: "I have an accountant, but they just do tax", score: 2 },
