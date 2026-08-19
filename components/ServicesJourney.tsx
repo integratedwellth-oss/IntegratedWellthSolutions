@@ -104,11 +104,11 @@ const PATHWAYS_DATA = [
     badge: 'Sovereign',
     badgeBg: 'bg-emerald-100 text-emerald-900',
     title: 'Sovereign Pathway',
-    subtitle: 'Fractional CFO for enterprises up to R25M annually',
+    subtitle: 'Fractional CBA for enterprises up to R25M annually',
     price: 'Custom Investment',
     period: '/ month',
     features: [
-      'Monthly Reports + Unlimited CFO Advisory Services',
+      'Monthly Reports + Unlimited CBA Advisory Services',
       'War Room structural stress-testing engine',
       'Financial Health Score & Battle Plan',
       'Priority audit defense & strategic capital allocation'
@@ -333,7 +333,7 @@ export const ServicesJourney: React.FC = () => {
                 Explore Sovereignty Pathways
               </h3>
               <p className="text-xs text-gray-500 max-w-sm mx-auto mt-1 mb-3">
-                Ongoing monthly compliance, management accounts, and fractional CFO advisory.
+                Ongoing monthly compliance, management accounts, and fractional CBA advisory.
               </p>
               <span className="inline-block px-4 py-1.5 bg-amber-50 text-amber-900 rounded-full text-[10px] font-bold uppercase tracking-wider">
                 Foundation · Ascension · Sovereign
