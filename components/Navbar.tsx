@@ -11,6 +11,7 @@ const Navbar: React.FC<NavbarProps> = ({ onNavigate }) => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
 
   useEffect(() => {
+    if (!auth) { setIsLoggedIn(false); return; }
     const unsubAuth = onAuthStateChanged(auth, (user) => setIsLoggedIn(!!user));
     setActiveHash(window.location.hash || '#home');
     return () => unsubAuth();
@@ -27,6 +28,7 @@ const Navbar: React.FC<NavbarProps> = ({ onNavigate }) => {
     { label: 'SERVICES', hash: '#services' },
     { label: 'CALENDAR', hash: '#compliance-calendar' },
     { label: 'TEAM', hash: '#team' },
+    { label: 'BLOG', hash: '#blog' },
     { label: 'GALLERY', hash: '#gallery' },
   ];
 

@@ -1,159 +1,206 @@
-import React, { useState, useRef, useEffect } from 'react';
-import { MessageSquare, X, Send, Loader2, Sparkles, Trash2 } from 'lucide-react';
+import { useState, useEffect, useRef } from 'react';
+import { MessageSquare, X, Bot, Loader2, Send } from 'lucide-react';
 import { functions } from '../firebaseConfig';
 import { httpsCallable } from 'firebase/functions';
-import { ChatMessage } from '../types';
+import { getAuth } from 'firebase/auth';
+import { encryptData, decryptData } from '../services/cryptoService';
 
-const SUGGESTIONS: Record<string, string[]> = {
-  'home': ["What is the SARS Safety Net?", "How do I join the next workshop?", "Can you fix my messy books?"],
-  'startups': ["How do I get investor-ready?", "What paperwork do I need to start?", "How do I manage my first grant?"],
-  'existing-business': ["Is my business SARS compliant?", "Why am I not making enough profit?", "How do I win bigger contracts?"],
-  'npos': ["How do I register an NPO?", "Help with donor reports", "Tax-exempt status help"],
-  'wellness': ["I'm feeling burnt out", "Tips for leader stress", "Better money habits for my team"],
-  'default': ["Show me your services", "Where is your office?", "Book a free chat"]
-};
-
-interface ChatWidgetProps {
-  currentView?: string;
+interface Message {
+  role: 'user' | 'bot';
+  text: string;
 }
 
-const ChatWidget: React.FC<ChatWidgetProps> = ({ currentView = 'home' }) => {
+const SUGGESTIONS = [
+  "What is the Sovereignty Protocol?",
+  "How do I register for the War Room?",
+  "What compliance deadlines apply to my business?",
+];
+
+export default function ChatWidget() {
   const [isOpen, setIsOpen] = useState(false);
-  const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const [messages, setMessages] = useState<Message[]>([]);
+  const [currentSuggestions, setCurrentSuggestions] = useState(SUGGESTIONS);
+  const scrollRef = useRef<HTMLDivElement>(null);
 
+  // ─── SECURITY FIX: Load encrypted chat history ───
   useEffect(() => {
-    const saved = localStorage.getItem('wellth_chat_history');
-    if (saved) setMessages(JSON.parse(saved));
+    const loadHistory = async () => {
+      const auth = getAuth();
+      const user = auth.currentUser;
+      const saved = localStorage.getItem('iws_chat_history');
+      if (saved && user) {
+        try {
+          const decrypted = await decryptData(saved, user.uid);
+          if (decrypted && Array.isArray(decrypted)) {
+            setMessages(decrypted as Message[]);
+          }
+        } catch {
+          // ignore corrupt localStorage
+        }
+      }
+    };
+    loadHistory();
   }, []);
 
+  // ─── SECURITY FIX: Save encrypted chat history ───
   useEffect(() => {
-    localStorage.setItem('wellth_chat_history', JSON.stringify(messages));
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages, isOpen]);
+    const saveHistory = async () => {
+      const auth = getAuth();
+      const user = auth.currentUser;
+      if (user && messages.length > 0) {
+        const encrypted = await encryptData(messages, user.uid);
+        localStorage.setItem('iws_chat_history', encrypted);
+      }
+    };
+    saveHistory();
+    scrollRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [messages]);
 
-  const handleSend = async (textOverride?: string) => {
-    const textToSend = textOverride || input;
-    if (!textToSend.trim()) return;
+  const handleSend = async () => {
+    if (!input.trim() || isLoading) return;
 
-    const userMsg: ChatMessage = { role: 'user', text: textToSend, timestamp: Date.now() };
-    setMessages(prev => [...prev, userMsg]);
-    if (!textOverride) setInput('');
+    const userMsg = input.trim();
+    setInput('');
+    const currentHistory = [...messages];
+
+    setMessages((prev) => [...prev, { role: 'user', text: userMsg }]);
     setIsLoading(true);
 
     try {
       if (!functions) {
-        throw new Error("Firebase Functions instance is null.");
+        throw new Error('Firebase Functions not initialized');
       }
+
       const chatCall = httpsCallable(functions, 'websiteChat');
-      const response = await chatCall({ message: textToSend, history: messages }) as any;
-      
-      setMessages(prev => [...prev, {
-        role: 'model',
-        text: response.data?.reply || "Connection lost.",
-        timestamp: Date.now()
-      }]);
-    } catch (error) {
-      console.error("Chat error:", error);
-      setMessages(prev => [...prev, {
-        role: 'model',
-        text: "Protocol fault. Please check your connection.",
-        timestamp: Date.now()
-      }]);
+      const response = (await chatCall({
+        message: userMsg,
+        history: currentHistory,
+      })) as { data?: { reply?: string } };
+
+      const replyText = response.data?.reply || 'Connection lost.';
+      setMessages((prev) => [...prev, { role: 'bot', text: replyText }]);
+    } catch (err: any) {
+      console.error('Chat Widget Error:', err);
+      setMessages((prev) => [
+        ...prev,
+        { role: 'bot', text: 'Service temporarily unavailable. Please try again later.' },
+      ]);
     } finally {
       setIsLoading(false);
     }
   };
 
-  const handleClear = () => {
-    setMessages([]);
-    localStorage.removeItem('wellth_chat_history');
-  };
-
+  // ─── SECURITY FIX: Render as plain text, NEVER dangerouslySetInnerHTML ───
   const renderMessageText = (text: string) => {
-    let cleanText = text.replace(/^#+\s*/gm, '').replace(/^\s*\*\s/gm, '• ');
-    const parts = cleanText.split(/(\*\*.*?\*\*)/g);
-    return parts.map((part, i) => {
-      if (part.startsWith('**') && part.endsWith('**')) {
-        return <strong key={i} className="font-bold text-brand-800">{part.slice(2, -2)}</strong>;
-      }
-      return part;
-    });
+    return (
+      <p className="whitespace-pre-wrap break-words text-sm leading-relaxed">
+        {text}
+      </p>
+    );
   };
-
-  const currentSuggestions = SUGGESTIONS[currentView] || SUGGESTIONS['default'];
 
   return (
-    <div className="fixed bottom-6 right-6 z-40 flex flex-col items-end font-sans">
+    <>
       {isOpen && (
-        <div className="mb-4 w-80 md:w-96 bg-white rounded-2xl shadow-2xl border border-gray-200 overflow-hidden flex flex-col h-[600px] animate-fadeIn transition-all">
-          <div className="bg-brand-900 text-white p-4 flex justify-between items-center shadow-md z-10">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center">
-                <Sparkles size={20} className="text-yellow-400" />
-              </div>
-              <div>
-                <h3 className="font-bold text-lg leading-tight tracking-tight uppercase">Advisor</h3>
-              </div>
+        <div className="fixed bottom-24 right-6 z-50 w-[calc(100vw-3rem)] sm:w-80 md:w-96 bg-white border border-gray-200 rounded-2xl shadow-2xl flex flex-col overflow-hidden max-h-[600px] animate-fade-in">
+          <div className="bg-[#134e4a] p-4 flex items-center justify-between">
+            <div className="flex items-center gap-2 text-white">
+              <Bot size={20} className="text-[#d4af37]" />
+              <span className="font-bold text-sm tracking-widest uppercase">
+                Wellth Advisor
+              </span>
             </div>
-            <div className="flex items-center gap-1">
-              <button onClick={handleClear} className="text-brand-200 hover:text-white p-2 rounded-full transition-colors">
-                <Trash2 size={18} />
-              </button>
-              <button onClick={() => setIsOpen(false)} className="text-white hover:text-brand-200 p-2 rounded-full transition-colors">
-                <X size={22} />
-              </button>
-            </div>
+            <button
+              onClick={() => setIsOpen(false)}
+              className="text-white/70 hover:text-white"
+            >
+              <X size={18} />
+            </button>
           </div>
-          <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-gray-50 scroll-smooth">
+
+          <div className="flex-1 p-4 overflow-y-auto h-80 space-y-4 bg-gray-50">
             {messages.length === 0 && (
-              <div className="text-center mt-8 px-4 animate-fadeIn">
-                <p className="text-gray-800 font-bold text-lg mb-2 uppercase tracking-tighter">Security Verification Complete</p>
-                <p className="text-gray-500 text-xs mb-6 uppercase tracking-widest opacity-50">Select Intelligence Module</p>
-                <div className="flex flex-col gap-2">
-                  {currentSuggestions.map((q, idx) => (
-                    <button key={idx} onClick={() => handleSend(q)} className="text-xs bg-white border border-gray-200 text-brand-700 hover:bg-brand-900 hover:text-white py-4 px-4 rounded-xl text-left transition-all shadow-sm flex items-center justify-between group">
-                      {q} <Send size={14} className="opacity-0 group-hover:opacity-100 transition-opacity" />
-                    </button>
-                  ))}
+              <div className="space-y-4">
+                <div className="bg-emerald-50 border border-emerald-200 rounded-lg p-3">
+                  <p className="text-xs text-emerald-700 font-medium">
+                    Security Verification Complete
+                  </p>
                 </div>
+                <p className="text-xs text-gray-500 font-medium">
+                  Select Intelligence Module
+                </p>
+                {currentSuggestions.map((q, idx) => (
+                  <button
+                    key={idx}
+                    onClick={() => {
+                      setInput(q);
+                    }}
+                    className="w-full text-left text-sm text-[#134e4a] bg-white border border-gray-200 rounded-lg p-3 hover:border-[#d4af37] transition-colors"
+                  >
+                    {q}
+                  </button>
+                ))}
               </div>
             )}
+
             {messages.map((msg, idx) => (
-              <div key={idx} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'} animate-fadeIn`}>
-                <div className={`max-w-[85%] rounded-2xl p-4 text-sm leading-relaxed shadow-sm ${msg.role === 'user' ? 'bg-brand-900 text-white' : 'bg-white border border-gray-200 text-gray-800'}`}>
+              <div
+                key={idx}
+                className={`flex w-full ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
+              >
+                <div
+                  className={`max-w-[85%] p-3 rounded-xl ${
+                    msg.role === 'user'
+                      ? 'bg-[#134e4a] text-white rounded-tr-sm'
+                      : 'bg-white border border-gray-200 text-gray-800 rounded-tl-sm shadow-sm'
+                  }`}
+                >
                   {renderMessageText(msg.text)}
                 </div>
               </div>
             ))}
-            {isLoading && <Loader2 className="animate-spin text-brand-600 w-4 h-4 mx-auto" />}
-            <div ref={messagesEndRef} />
+
+            {isLoading && (
+              <div className="flex justify-start">
+                <div className="bg-white border border-gray-200 text-gray-500 text-xs p-3 rounded-xl rounded-tl-sm flex items-center gap-2 shadow-sm">
+                  <Loader2 className="animate-spin text-[#d4af37]" size={14} />
+                  <span>Thinking...</span>
+                </div>
+              </div>
+            )}
+            <div ref={scrollRef} />
           </div>
-          <div className="p-3 bg-white border-t border-gray-100 flex gap-2 items-center">
+
+          <div className="p-3 bg-white border-t border-gray-200 flex gap-2 items-center">
             <input
-              type="text"
               value={input}
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && handleSend()}
               placeholder="Ask the Advisor..."
               className="flex-1 bg-gray-50 border border-gray-200 rounded-full px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500/20"
             />
-            <button onClick={() => handleSend()} disabled={isLoading || !input.trim()} className="bg-brand-900 text-white p-3 rounded-full hover:scale-110 disabled:opacity-30 transition-all">
-              <Send size={18} />
+            <button
+              onClick={handleSend}
+              disabled={isLoading || !input.trim()}
+              className="bg-[#134e4a] text-[#d4af37] p-3 rounded-full disabled:opacity-50 hover:scale-105 transition-transform"
+            >
+              <Send size={16} />
             </button>
           </div>
         </div>
       )}
+
       {!isOpen && (
-        <button onClick={() => setIsOpen(true)} className="bg-brand-900 text-white p-4 rounded-full shadow-xl hover:scale-110 transition-all flex items-center gap-3 group">
-          <MessageSquare size={26} />
-          <span className="max-w-0 overflow-hidden group-hover:max-w-xs transition-all duration-300 whitespace-nowrap font-black uppercase tracking-widest text-xs pr-0 group-hover:pr-2">Intel Portal</span>
+        <button
+          onClick={() => setIsOpen(true)}
+          className="fixed bottom-6 right-6 z-50 bg-[#134e4a] text-[#d4af37] p-4 rounded-full shadow-lg hover:scale-110 transition-transform border-2 border-[#d4af37]"
+          aria-label="Open chat"
+        >
+          <MessageSquare size={24} />
         </button>
       )}
-    </div>
+    </>
   );
-};
-
-export default ChatWidget;
+}

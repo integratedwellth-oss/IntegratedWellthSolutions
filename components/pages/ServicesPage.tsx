@@ -2,6 +2,7 @@ import React, { useState, useMemo } from 'react';
 import RevealOnScroll from '../RevealOnScroll';
 import NewsTicker from '../NewsTicker';
 import Button from '../Button';
+<<<<<<< HEAD
 import {
   ShieldCheck,
   Tag,
@@ -36,6 +37,10 @@ import {
   BadgePercent,
   CheckCircle
 } from 'lucide-react';
+=======
+import ServicesJourney from '../ServicesJourney';
+import { ShieldCheck, Tag, CheckCircle2, ArrowRight, Loader2, Upload, Building, X } from 'lucide-react';
+>>>>>>> 82f618f761130e25f33a848c1b389ed32e8dad2c
 import { db, storage } from '../../firebaseConfig';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
@@ -698,6 +703,7 @@ const ServicesPage: React.FC = () => {
       </section>
 
       <NewsTicker />
+<<<<<<< HEAD
 
       {/* --------------------------------------------------------- */}
       {/* CONVERSATIONAL MULTI-STEP ASSISTANT (WIZARD MODE) */}
@@ -1379,6 +1385,10 @@ const ServicesPage: React.FC = () => {
       {/* SOVEREIGNTY PATHWAYS SECTION (IN PLAIN ENGLISH WITH CBA) */}
       {/* --------------------------------------------------------- */}
       <section className="py-24 px-4 md:px-8 bg-gray-50 border-t border-b border-gray-100">
+=======
+      <ServicesJourney />
+      <section className="py-24 px-6 bg-white">
+>>>>>>> 82f618f761130e25f33a848c1b389ed32e8dad2c
         <div className="max-w-7xl mx-auto">
           <RevealOnScroll>
             <div className="text-center max-w-3xl mx-auto mb-16 space-y-4">
