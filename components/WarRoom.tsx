@@ -1,290 +1,316 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useMemo } from 'react';
 import {
-  ShieldAlert,
-  Activity,
-  AlertTriangle,
-  CheckCircle2,
-  FileText,
-  Sparkles,
-  Loader2,
-  ArrowRight,
-  Send,
-  Calendar,
-  MessageSquare,
-  Building,
-  Scale,
-  DollarSign,
-  TrendingDown,
-  Lock,
-  ExternalLink,
-  PhoneCall,
-  Check,
-  RefreshCw,
-  Zap,
-  Info,
-  Clock,
   ShieldCheck,
-  Flame,
-  Briefcase
+  Scale,
+  Calendar,
+  FileText,
+  ArrowRight,
+  CheckCircle2,
+  Building2,
+  Lock,
+  PhoneCall,
+  ExternalLink,
+  ChevronRight,
+  AlertCircle,
+  HelpCircle,
+  Clock,
+  Sparkles,
+  Award,
+  BookOpen
 } from 'lucide-react';
 import RevealOnScroll from './RevealOnScroll';
 import { db } from '../firebaseConfig';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
-import { createChatSession, sendMessageStream } from '../services/geminiService';
 
 // -------------------------------------------------------------
-// TYPES & CONSTANTS
+// TYPES & DATA STRUCTURES
 // -------------------------------------------------------------
 
-type StreamType = 'stress' | 'threats' | 'calendar' | 'ai' | 'dossier';
+type TabMode = 'diagnostic' | 'playbooks' | 'deadlines' | 'consultation';
 
-const STREAM_LABELS: Record<StreamType, { label: string; iconName: string }> = {
-  stress: { label: 'STRUCTURAL AUDIT', iconName: 'Activity' },
-  threats: { label: 'CRISIS SIMULATOR', iconName: 'ShieldAlert' },
-  calendar: { label: 'STATUTORY RADAR', iconName: 'Calendar' },
-  ai: { label: 'AI COPILOT', iconName: 'Sparkles' },
-  dossier: { label: 'BATTLE PLAN', iconName: 'FileText' }
-};
-
-interface PillarOption {
-  label: string;
-  points: number;
-  desc: string;
-}
-
-interface DiagnosticPillar {
+interface DiagnosticQuestion {
   id: string;
-  title: string;
-  subtitle: string;
-  icon: string;
-  options: PillarOption[];
+  category: string;
+  question: string;
+  guidance: string;
+  options: {
+    label: string;
+    points: number;
+    implication: string;
+  }[];
 }
 
-const DIAGNOSTIC_PILLARS: DiagnosticPillar[] = [
+const DIAGNOSTIC_QUESTIONS: DiagnosticQuestion[] = [
   {
-    id: 'liquidity',
-    title: '1. Cash Runway & Liquidity Buffer',
-    subtitle: 'How long can payroll and ops survive if revenue drops 80%?',
-    icon: 'DollarSign',
+    id: 'cashflow',
+    category: '1. Liquidity & Working Capital Buffer',
+    question: 'How many months of operational expenditure (OPEX & payroll) does your balance sheet hold in dedicated reserves?',
+    guidance: 'Liquidity buffer is the single strongest predictor of SME continuity during client payment delays or macroeconomic friction in South Africa.',
     options: [
-      { label: '< 30 Days (Cash Fragile)', points: 0, desc: 'Zero buffer. One late client payment triggers payroll failure or overdraft penalties.' },
-      { label: '1 – 3 Months (Vulnerable)', points: 10, desc: 'Tight working capital. Dependent on immediate receivables collection.' },
-      { label: '3 – 6 Months (Stable)', points: 20, desc: 'Healthy liquidity reserve buffer. Can weather seasonal dips.' },
-      { label: '6+ Months (Sovereign Buffer)', points: 25, desc: 'Fully insulated balance sheet with dedicated tax & operational reserve vaults.' }
+      {
+        label: 'Less than 30 Days (Critical Exposure)',
+        points: 0,
+        implication: 'Immediate liquidity strain. High vulnerability to commercial overdraft fees or payroll shortfall.'
+      },
+      {
+        label: '1 to 3 Months (Moderate Reserve)',
+        points: 10,
+        implication: 'Baseline working capital. Sufficient for steady months, but vulnerable to significant client defaults.'
+      },
+      {
+        label: '3 to 6 Months (Healthy Balance)',
+        points: 20,
+        implication: 'Prudent reserve management. Operational stability allows strategic planning and supplier discounts.'
+      },
+      {
+        label: '6+ Months (Sovereign Buffer)',
+        points: 25,
+        implication: 'Executive-level balance sheet resilience with dedicated statutory tax and emergency cash vaults.'
+      }
     ]
   },
   {
-    id: 'compliance',
-    title: '2. SARS & Statutory Health',
-    subtitle: 'Current status of VAT201, PAYE/EMP501, and Provisional Tax filings.',
-    icon: 'Scale',
+    id: 'sars_compliance',
+    category: '2. SARS & Statutory Filing Status',
+    question: 'What is the current status of your VAT201, EMP201/501, and Corporate Income Tax (ITR14 / IRP6) returns?',
+    guidance: 'Unreconciled returns compound daily interest and trigger automated third-party appointment notices from SARS Debt Management.',
     options: [
-      { label: 'Backlogged / Penalty Alerts', points: 0, desc: 'Outstanding returns, SARS audit alerts, or mounting daily penalty interest.' },
-      { label: 'Reactive Scrambles', points: 10, desc: 'Files submitted at the last minute; uncertainty around calculations and deductions.' },
-      { label: 'Generally Compliant', points: 20, desc: 'Up to date, but heavy founder time spent managing admin and bookkeepers.' },
-      { label: 'Automated & Audit-Proof', points: 25, desc: '100% proactive reconciliations, active Tax Clearance PIN, zero late flags.' }
+      {
+        label: 'Backlogged / Outstanding Returns / Disputed Penalties',
+        points: 0,
+        implication: 'High risk of SARS admin penalties, Tax Clearance PIN suspension, or IT88 third-party agent appointments.'
+      },
+      {
+        label: 'Reactive (Filed on deadline with frequent adjustments)',
+        points: 10,
+        implication: 'Compliance consumes executive time; risk of missed input tax claims and year-end reconciliation surprises.'
+      },
+      {
+        label: 'Generally Up to Date (Handled by external bookkeeper)',
+        points: 20,
+        implication: 'Statutory returns are filed regularly, though strategic tax planning and forecasting remain limited.'
+      },
+      {
+        label: 'Proactive & Fully Reconciled (Active TCS PIN & Clean Ledger)',
+        points: 25,
+        implication: 'Impeccable statutory standing, proactive tax structuring, and zero non-compliance exposure.'
+      }
     ]
   },
   {
-    id: 'structure',
-    title: '3. Asset Protection & Structure',
-    subtitle: 'Legal insulation between personal wealth and business trading liabilities.',
-    icon: 'Lock',
+    id: 'legal_insulation',
+    category: '3. Corporate Structure & Asset Protection',
+    question: 'How is your enterprise legally structured to protect personal wealth and foundational assets from trading risks?',
+    guidance: 'Operating risks (supplier debts, customer claims, labour disputes) should never bleed into IP, property, or founder personal assets.',
     options: [
-      { label: 'Totally Exposed (Sole Prop / Linked)', points: 0, desc: 'Personal home and savings at direct risk from business creditors and SARS.' },
-      { label: 'Standard PTY Ltd (No Trust)', points: 10, desc: 'Company registered, but personal director surety signed without ring-fencing.' },
-      { label: 'Holding Co / Multi-Entity', points: 20, desc: 'Operating company decoupled from main IP and capital assets.' },
-      { label: 'Full Structural Sovereignty', points: 25, desc: 'Optimized Holding Co + Trust architecture with full statutory ring-fencing.' }
+      {
+        label: 'Sole Proprietor / Direct Personal Exposure',
+        points: 0,
+        implication: 'Personal home, savings, and assets are 100% attached to business debt and creditor liabilities.'
+      },
+      {
+        label: 'Single Operating PTY Ltd (Without Ring-Fencing)',
+        points: 10,
+        implication: 'Basic legal entity, but personal director sureties often expose personal assets to commercial creditors.'
+      },
+      {
+        label: 'Holding Company / Multi-Entity Separation',
+        points: 20,
+        implication: 'Good separation between trading operations and key assets, reducing risk exposure across entities.'
+      },
+      {
+        label: 'Optimized Trust & Holding Company Architecture',
+        points: 25,
+        implication: 'Premier estate and corporate insulation. Assets are legally ring-fenced from operational trading risks.'
+      }
     ]
   },
   {
-    id: 'dependency',
-    title: '4. Founder Autonomy Index',
-    subtitle: 'Can the enterprise operate for 30 consecutive days without you?',
-    icon: 'Briefcase',
+    id: 'governance_autonomy',
+    category: '4. Financial Governance & Founder Autonomy',
+    question: 'Could your enterprise operate, invoice, reconcile, and maintain compliance for 30 days without your daily involvement?',
+    guidance: 'A sovereign enterprise operates on documented financial controls, automated cloud accounting, and structured advisory oversight.',
     options: [
-      { label: 'Total Founder Dependency', points: 0, desc: 'If you take 14 days off, operations, invoicing, and compliance grind to a halt.' },
-      { label: 'High Friction Absence', points: 10, desc: 'Staff can handle routine tasks, but critical decisions and banking need you daily.' },
-      { label: 'Moderate Autonomy', points: 20, desc: 'Documented processes exist, but financial management still requires review.' },
-      { label: 'Fully Autonomous Engine', points: 25, desc: 'Cloud accounting, delegated authority, and dedicated CBA advisory partner in place.' }
+      {
+        label: 'Total Founder Bottleneck (Operations stall completely)',
+        points: 0,
+        implication: 'Founder carries all accounting, banking, and strategic decisions in their head; zero documented handover.'
+      },
+      {
+        label: 'High Friction (Staff handle tasks, but decisions stall)',
+        points: 10,
+        implication: 'Routine work continues, but strategic billing, compliance reviews, and authorizations halt.'
+      },
+      {
+        label: 'Structured Processes (Monthly management accounts in place)',
+        points: 20,
+        implication: 'Cloud accounting and documented routines enable normal operations with periodic founder check-ins.'
+      },
+      {
+        label: 'Autonomous Financial Engine (Fractional CBA & Cloud Controls)',
+        points: 25,
+        implication: 'Professional management accounts, continuous forecasting, and strategic advisory running autonomously.'
+      }
     ]
   }
 ];
 
-// Interactive Crisis Scenarios
-interface CrisisScenario {
+// Professional Practice Advisory Playbooks
+interface AdvisoryPlaybook {
   id: string;
   title: string;
-  threatLevel: string;
-  threatColor: string;
+  statutoryReference: string;
+  tag: string;
   trigger: string;
-  consequence: string;
-  triage72h: string[];
-  iwsShield: string;
+  consequences: string;
+  actionProtocol: string[];
+  practiceSupport: string;
 }
 
-const CRISIS_SCENARIOS: CrisisScenario[] = [
+const ADVISORY_PLAYBOOKS: AdvisoryPlaybook[] = [
   {
     id: 'sars_it88',
-    title: 'SARS IT88 Third-Party Bank Account Freeze',
-    threatLevel: 'CRITICAL THREAT',
-    threatColor: 'text-rose-500 bg-rose-500/10 border-rose-500/30',
-    trigger: 'Unresolved historic tax debt or unresponded final demand notice.',
-    consequence: 'SARS instructs your commercial bank to deduct funds directly, freezing payroll and supplier payments without court order.',
-    triage72h: [
-      'Immediate formal Request for Suspension of Payment under Section 164 of the Tax Administration Act.',
-      'File formal Notice of Objection (Section 104) if the assessment is disputed.',
-      'Direct liaison with SARS Debt Management to lift third-party agent appointment.'
+    title: 'SARS Third-Party Agent Appointment (IT88 Bank Notice)',
+    statutoryReference: 'Section 164 & 179 of the Tax Administration Act No. 28 of 2011',
+    tag: 'Urgent Tax Dispute',
+    trigger: 'Unresolved historic tax assessment, unallocated return discrepancy, or unanswered final demand notice.',
+    consequences: 'SARS instructs commercial banks to remit funds directly from trading accounts to satisfy the alleged tax debt, risking immediate payroll failure.',
+    actionProtocol: [
+      'Submit an immediate formal Request for Suspension of Payment under Section 164(2) of the Tax Administration Act.',
+      'Lodge a formal Notice of Objection (NOO / Section 104) if the assessment contains factual or legal errors.',
+      'Engage SARS Debt Management with an audited statement of assets and liabilities to negotiate a structured deferral (Section 200).'
     ],
-    iwsShield: 'Our registered Tax Practitioners immediately take over SARS communications, file urgent suspension paperwork, and restructure debt via Section 200 compromise.'
+    practiceSupport: 'Our registered Tax Practitioners assume direct liaison with SARS, file statutory suspension notices to safeguard your bank accounts, and rectify erroneous assessments.'
   },
   {
-    id: 'bad_debt',
-    title: 'Major Client Defaults on R250,000 Invoice',
-    threatLevel: 'HIGH CASH STRAIN',
-    threatColor: 'text-amber-400 bg-amber-400/10 border-amber-400/30',
-    trigger: 'Key corporate customer enters business rescue or defaults on net-30 terms.',
-    consequence: 'Working capital shortfall causes EMP201 payroll tax deficit and supplier credit hold.',
-    triage72h: [
-      'Claim bad debt input tax deduction on next VAT201 under Section 22(1) of the VAT Act.',
-      'Activate emergency cash flow bridge and restructure outgoing supplier payment dates.',
-      'Audit accounts receivable and institute strict credit insurance / upfront deposits.'
+    id: 'vat_bad_debt',
+    title: 'Major Client Insolvency & Unpaid Trade Invoices',
+    statutoryReference: 'Section 22(1) of the Value-Added Tax Act No. 89 of 1991',
+    tag: 'Cash Flow Protection',
+    trigger: 'A commercial debtor goes into business rescue, liquidation, or defaults past 90–120 days on a significant invoice.',
+    consequences: 'Your business has already paid output VAT on revenue never received, creating a double cash deficit and restricting working capital.',
+    actionProtocol: [
+      'Formally write off the irrecoverable balance in the general ledger with complete supporting audit trail and recovery correspondence.',
+      'Claim an input tax deduction under Section 22(1) on the subsequent VAT201 return to recover output VAT previously remitted to SARS.',
+      'Revise future standard terms of service to include retention-of-title clauses, upfront milestone billing, or credit insurance.'
     ],
-    iwsShield: 'IWS cash flow stress-testing models immediate working capital adjustments and recovers statutory tax credits to cushion cash bleed.'
+    practiceSupport: 'We audit the bad-debt write-off schedule, compile required evidentiary documentation for SARS verification, and adjust working capital forecasts.'
   },
   {
-    id: 'cipc_dereg',
-    title: 'CIPC Notice of Impending Entity Deregistration',
-    threatLevel: 'SEVERE LEGAL HAZARD',
-    threatColor: 'text-orange-500 bg-orange-500/10 border-orange-500/30',
-    trigger: 'Failure to submit CIPC Annual Returns or Beneficial Ownership filings for 2+ consecutive years.',
-    consequence: 'Company legal personality terminates. Bank accounts frozen by compliance algorithms. Contracts become legally void.',
-    triage72h: [
-      'Perform urgent CIPC status diagnostic and calculate historic penalty turnover brackets.',
-      'Submit outstanding Annual Returns & new mandatory Beneficial Ownership Register within 24 hours.',
-      'Obtain official CIPC Letter of Good Standing for bank compliance officers.'
+    id: 'cipc_compliance',
+    title: 'CIPC Impending Deregistration & Beneficial Ownership',
+    statutoryReference: 'Companies Act No. 71 of 2008 & General Laws Amendment Act of 2022',
+    tag: 'Corporate Governance',
+    trigger: 'Failure to submit annual returns for consecutive periods or non-filing of the mandatory Beneficial Ownership (BO) register.',
+    consequences: 'The entity enters "Deregistration Process" with CIPC. Corporate bank accounts are frozen, and contracts, licenses, and leases risk becoming legally unenforceable.',
+    actionProtocol: [
+      'Perform an immediate CIPC status check and calculate outstanding filing fees and turnover declarations.',
+      'Prepare and file the mandatory Beneficial Ownership Register alongside compliant MOI and director identification records.',
+      'Obtain an updated CIPC Disclosure Certificate confirming active good standing for commercial banks and tender compliance.'
     ],
-    iwsShield: 'IWS executes express CIPC annual filings and Beneficial Ownership registrations, restoring good standing in 1–2 business days.'
+    practiceSupport: 'As registered CIPC filing agents, we resolve historic arrear returns, establish compliance monitoring schedules, and keep your corporate standing spotless.'
   },
   {
-    id: 'payroll_audit',
-    title: 'SARS EMP501 Bi-Annual Reconciliation Audit',
-    threatLevel: 'COMPLIANCE AUDIT',
-    threatColor: 'text-blue-400 bg-blue-400/10 border-blue-400/30',
-    trigger: 'Mismatch between declared monthly EMP201 payments and issued IRP5 tax certificates.',
-    consequence: 'Automatic 10% penalty plus interest on unallocated payroll taxes, blocking Tax Clearance PIN issuance.',
-    triage72h: [
-      'Extract full general ledger payroll breakdown against SARS eFiling statement of account.',
-      'Perform forensic payroll reconciliation to identify missing employee tax numbers or UIF caps.',
-      'Resubmit corrected EMP501 and file formal penalty remission application.'
+    id: 'payroll_reconciliation',
+    title: 'Bi-Annual EMP501 Payroll Discrepancies & Audit Flags',
+    statutoryReference: 'Fourth Schedule to the Income Tax Act No. 58 of 1962',
+    tag: 'Payroll & Labour',
+    trigger: 'Discrepancies between monthly EMP201 returns, actual employee salary records, and the bi-annual EMP501 reconciliation.',
+    consequences: 'Automatic 10% penalty for late or erroneous reconciliation, accompanied by compounding interest and suspension of Tax Compliance Status (TCS).',
+    actionProtocol: [
+      'Conduct a thorough month-by-month payroll reconciliation against SARS eFiling statement of accounts and general ledger journals.',
+      'Re-issue corrected IRP5/IT3(a) certificates and re-submit via e@syFile or eFiling.',
+      'Submit a formal Request for Remission of Administrative Penalties citing procedural compliance history.'
     ],
-    iwsShield: 'Our accredited payroll specialists reconcile all variance discrepancies, file clean IRP5 declarations, and restore your active Tax Clearance status.'
+    practiceSupport: 'Our payroll specialists perform forensic reconciliation, rectify submission discrepancies, and restore your active Tax Clearance PIN.'
   }
 ];
 
-// Pre-loaded AI prompts
-const SUGGESTED_PROMPTS = [
-  'How do I legally stop SARS from deducting funds from my bank account?',
-  'What is the difference between a PTY Ltd and a Holding Company structure?',
-  'How do I apply for a SARS Section 104 penalty remission?',
-  'What documents do I need to maintain an active Tax Clearance PIN?'
-];
-
 // -------------------------------------------------------------
-// MAIN WAR ROOM COMPONENT
+// MAIN COMPONENT
 // -------------------------------------------------------------
 
 const WarRoom: React.FC = () => {
-  const [activeStream, setActiveStream] = useState<StreamType>('stress');
-  const [selectedPillarValues, setSelectedPillarValues] = useState<Record<string, number>>({
-    liquidity: 10,
-    compliance: 10,
-    structure: 10,
-    dependency: 10
+  const [activeTab, setActiveTab] = useState<TabMode>('diagnostic');
+  const [selectedAnswers, setSelectedAnswers] = useState<Record<string, number>>({
+    cashflow: 10,
+    sars_compliance: 10,
+    legal_insulation: 10,
+    governance_autonomy: 10
   });
 
-  const [activeScenarioId, setActiveScenarioId] = useState<string>('sars_it88');
+  const [activePlaybookId, setActivePlaybookId] = useState<string>('sars_it88');
 
-  // AI Chat States
-  const [chatMessages, setChatMessages] = useState<Array<{ role: 'user' | 'model'; text: string }>>([
-    {
-      role: 'model',
-      text: 'War Room Tactical AI online. I am trained on South African tax compliance (SARS), CIPC corporate governance, and SME cash flow architecture. What vulnerability or scenario would you like to stress-test?'
-    }
-  ]);
-  const [chatInput, setChatInput] = useState('');
-  const [isAiLoading, setIsAiLoading] = useState(false);
-  const chatSessionRef = React.useRef(createChatSession());
-
-  // Lead Generation / Dossier Form
+  // Consultation Intake Form
   const [formData, setFormData] = useState({
-    name: '',
-    company: '',
-    email: '',
-    phone: '',
-    turnover: 'R1M – R7M / year (Growing)',
-    notes: ''
+    fullName: '',
+    companyName: '',
+    workEmail: '',
+    contactNumber: '',
+    turnoverBracket: 'R1M – R7M / year (Growing SME)',
+    primaryChallenge: ''
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isSuccess, setIsSuccess] = useState(false);
+  const [isSubmitted, setIsSubmitted] = useState(false);
 
-  // Compute Total Sovereignty Score
+  // Compute Total Score
   const totalScore = useMemo(() => {
-    return Object.values(selectedPillarValues).reduce((a, b) => a + b, 0);
-  }, [selectedPillarValues]);
+    return Object.values(selectedAnswers).reduce((a, b) => a + b, 0);
+  }, [selectedAnswers]);
 
-  const scoreAnalysis = useMemo(() => {
-    if (totalScore <= 30) {
+  // Score Assessment Details
+  const assessmentDetails = useMemo(() => {
+    if (totalScore <= 35) {
       return {
-        level: 'CRITICAL STRUCTURAL EXPOSURE',
-        color: 'text-rose-500',
-        badgeBg: 'bg-rose-500/10 border-rose-500/30 text-rose-400',
-        summary: 'Your business is operating in a danger zone. Cash buffers are razor thin, and personal assets are directly exposed to SARS or commercial liabilities.',
-        urgentTriage: 'Emergency compliance audit and cash vault segregation required within 7 days.',
-        pathway: 'Foundation Pathway (R3,500/mo) or Emergency Turnaround'
+        level: 'Critical Vulnerability — Structural Intervention Required',
+        tierBadge: 'High Risk Exposure',
+        badgeColor: 'bg-rose-50 text-rose-800 border-rose-200',
+        summary: 'Your enterprise is operating with elevated exposure to SARS penalties, cash flow bottlenecks, and personal liability risks.',
+        recommendation: 'Immediate forensic compliance catch-up, cash vault segregation, and formal representation before regulatory authorities.',
+        suggestedService: 'Foundation Compliance Pathway & Urgent Remediation'
       };
-    } else if (totalScore <= 60) {
+    } else if (totalScore <= 65) {
       return {
-        level: 'VULNERABLE REACTIVE STATE',
-        color: 'text-amber-400',
-        badgeBg: 'bg-amber-400/10 border-amber-400/30 text-amber-400',
-        summary: 'You are staying afloat, but compliance takes excessive founder bandwidth. Inefficient tax structures and founder dependency are capping scalability.',
-        urgentTriage: 'Implement monthly management review, automate VAT/EMP201 filings, and establish holding entity insulation.',
-        pathway: 'Ascension Pathway (R7,000/mo) — Fractional CBA & Governance'
+        level: 'Reactive Compliance — Growth Bottlenecks Present',
+        tierBadge: 'Moderate Exposure',
+        badgeColor: 'bg-amber-50 text-amber-900 border-amber-200',
+        summary: 'Statutory obligations are managed, but administrative overhead consumes valuable leadership time. Financial systems lack forward-looking forecasting.',
+        recommendation: 'Implement bi-monthly management accounts, automated VAT/EMP workflows, and cash flow forecasting models.',
+        suggestedService: 'Ascension Pathway — Fractional CBA & Financial Governance'
       };
     } else if (totalScore <= 85) {
       return {
-        level: 'STABLE OPERATIONAL ALIGNMENT',
-        color: 'text-teal-300',
-        badgeBg: 'bg-teal-400/10 border-teal-400/30 text-teal-300',
-        summary: 'Solid core foundation. Operations and filings are orderly. Next step is wealth preservation, tax restructuring, and strategic board-level advisory.',
-        urgentTriage: 'Execute cash forecasting, corporate restructuring, and audit defense protocols.',
-        pathway: 'Ascension or Sovereign Pathway'
+        level: 'Stable Foundation — Ready for Strategic Scale',
+        tierBadge: 'Stable Standing',
+        badgeColor: 'bg-teal-50 text-teal-900 border-teal-200',
+        summary: 'Sound operational disciplines with low immediate regulatory risk. Next priority is tax optimization and balance sheet efficiency.',
+        recommendation: 'Enhance corporate restructuring, asset insulation, and executive board-level financial reporting.',
+        suggestedService: 'Ascension or Sovereign Advisory Retainer'
       };
     } else {
       return {
-        level: 'SOVEREIGN ENTERPRISE STATUS',
-        color: 'text-emerald-400',
-        badgeBg: 'bg-emerald-400/10 border-emerald-400/30 text-emerald-400',
-        summary: 'Maximum resilience. Zero founder bottleneck, ring-fenced assets, audit-proof books, and executive financial governance active.',
-        urgentTriage: 'Maintain quarterly strategic reviews and high-level tax optimization.',
-        pathway: 'Sovereign Pathway (R11,500/mo) — Full Strategic Leadership'
+        level: 'Sovereign Standing — Premier Balance Sheet Architecture',
+        tierBadge: 'Audit-Proof & Insulated',
+        badgeColor: 'bg-emerald-50 text-emerald-900 border-emerald-200',
+        summary: 'Exemplary financial hygiene, robust asset ring-fencing, and high founder autonomy. Focus remains on wealth preservation and legacy growth.',
+        recommendation: 'Continuous fractional CBA governance, tax restructuring, and strategic capital allocation.',
+        suggestedService: 'Sovereign Pathway — Complete Executive Financial Leadership'
       };
     }
   }, [totalScore]);
 
-  // Dynamic Live Statutory Radar Dates (Computed relative to current date)
-  const dynamicRadarDeadlines = useMemo(() => {
+  // Dynamic South African Statutory Calendar
+  const statutoryDeadlines = useMemo(() => {
     const now = new Date();
     const currentYear = now.getFullYear();
-    const currentMonth = now.getMonth(); // 0-indexed
+    const currentMonth = now.getMonth();
 
     // Next EMP201 (7th of next month)
     const nextEmpMonth = (currentMonth + 1) % 12;
     const nextEmpYear = currentMonth === 11 ? currentYear + 1 : currentYear;
     const empDate = new Date(nextEmpYear, nextEmpMonth, 7);
 
-    // Next VAT201 (25th of current or next month depending on today's day)
+    // Next VAT201 (25th of cycle)
     let vatDate: Date;
     if (now.getDate() <= 25) {
       vatDate = new Date(currentYear, currentMonth, 25);
@@ -294,17 +320,14 @@ const WarRoom: React.FC = () => {
       vatDate = new Date(nextVatYear, nextVatMonth, 25);
     }
 
-    // Provisional Tax Periods (Aug 31 & Feb 28/29)
+    // Provisional Tax Periods (31 Aug & 28 Feb)
     let provDate: Date;
     if (currentMonth < 7 || (currentMonth === 7 && now.getDate() <= 31)) {
-      provDate = new Date(currentYear, 7, 31); // 31 Aug
+      provDate = new Date(currentYear, 7, 31);
     } else {
       const febYear = currentMonth >= 8 ? currentYear + 1 : currentYear;
-      provDate = new Date(febYear, 1, 28); // 28 Feb
+      provDate = new Date(febYear, 1, 28);
     }
-
-    // CIPC & Beneficial Ownership (Annual rolling cycle)
-    const cipcDate = new Date(currentYear, currentMonth, Math.min(28, now.getDate() + 14));
 
     const calcDays = (target: Date) => {
       const diff = target.getTime() - now.getTime();
@@ -313,252 +336,217 @@ const WarRoom: React.FC = () => {
 
     return [
       {
-        title: 'Monthly EMP201 Payroll Filing',
-        scope: 'PAYE, UIF & SDL Statutory Declaration',
-        date: empDate.toLocaleDateString('en-ZA', { day: 'numeric', month: 'short', year: 'numeric' }),
-        daysLeft: calcDays(empDate),
-        urgency: calcDays(empDate) <= 5 ? 'CRITICAL' : 'MANDATORY'
+        name: 'EMP201 Monthly Payroll & UIF Submission',
+        authority: 'South African Revenue Service (SARS)',
+        dueDate: empDate.toLocaleDateString('en-ZA', { day: 'numeric', month: 'long', year: 'numeric' }),
+        daysRemaining: calcDays(empDate),
+        description: 'Monthly declaration of PAYE, SDL, and UIF deductions withheld from employee remuneration.'
       },
       {
-        title: 'Bi-Monthly VAT201 Declaration',
-        scope: 'Output vs Input Tax Reconciliation',
-        date: vatDate.toLocaleDateString('en-ZA', { day: 'numeric', month: 'short', year: 'numeric' }),
-        daysLeft: calcDays(vatDate),
-        urgency: calcDays(vatDate) <= 7 ? 'HIGH PRIORITY' : 'ACTIVE CYCLE'
+        name: 'VAT201 Bi-Monthly Return & Settlement',
+        authority: 'South African Revenue Service (SARS)',
+        dueDate: vatDate.toLocaleDateString('en-ZA', { day: 'numeric', month: 'long', year: 'numeric' }),
+        daysRemaining: calcDays(vatDate),
+        description: 'Statutory reconciliation and settlement of output VAT collected against allowable input VAT incurred.'
       },
       {
-        title: 'Provisional Tax (IRP6 Period)',
-        scope: 'Estimated Corporate & Director Tax',
-        date: provDate.toLocaleDateString('en-ZA', { day: 'numeric', month: 'short', year: 'numeric' }),
-        daysLeft: calcDays(provDate),
-        urgency: 'STATUTORY WINDOW'
+        name: 'Provisional Tax Return (IRP6 Period)',
+        authority: 'South African Revenue Service (SARS)',
+        dueDate: provDate.toLocaleDateString('en-ZA', { day: 'numeric', month: 'long', year: 'numeric' }),
+        daysRemaining: calcDays(provDate),
+        description: 'Statutory estimate and advance payment of corporate and director taxable income.'
       },
       {
-        title: 'CIPC Annual Return & Beneficial Ownership',
-        scope: 'Corporate Deregistration Prevention',
-        date: cipcDate.toLocaleDateString('en-ZA', { day: 'numeric', month: 'short', year: 'numeric' }),
-        daysLeft: calcDays(cipcDate),
-        urgency: 'MANDATORY REGISTRATION'
+        name: 'CIPC Annual Return & Beneficial Ownership Filing',
+        authority: 'Companies and Intellectual Property Commission',
+        dueDate: 'Annual Anniversary Cycle',
+        daysRemaining: 14,
+        description: 'Mandatory annual enterprise turnover declaration and Beneficial Ownership register verification.'
       }
     ];
   }, []);
 
-  // Handle AI Chat Submission
-  const handleAiSend = async (messageToSend?: string) => {
-    const text = messageToSend || chatInput;
-    if (!text.trim() || isAiLoading) return;
-
-    const userMsg = { role: 'user' as const, text };
-    setChatMessages(prev => [...prev, userMsg]);
-    if (!messageToSend) setChatInput('');
-    setIsAiLoading(true);
-
-    try {
-      const stream = await sendMessageStream(chatSessionRef.current, text);
-      let fullReply = '';
-      for await (const chunk of stream) {
-        fullReply += chunk.text;
-      }
-
-      setChatMessages(prev => [
-        ...prev,
-        {
-          role: 'model',
-          text: fullReply || 'I have analyzed your situation. For binding statutory filings and direct execution, our registered CBA advisors are on standby to take this off your desk.'
-        }
-      ]);
-    } catch (err) {
-      // Intelligent client-side fallback matching IWS protocol
-      setTimeout(() => {
-        let fallbackText = 'Based on South African Tax Administration and CIPC regulations, immediate proactive reconciliation is essential. Under Section 104 of the Tax Administration Act, formal objections must be lodged within 30 business days. IWS accredited practitioners can file this on your behalf.';
-        if (text.toLowerCase().includes('bank') || text.toLowerCase().includes('freeze')) {
-          fallbackText = 'If SARS has issued an IT88 third-party appointment on your bank account, you have the statutory right under Section 164 of the Tax Administration Act to request an immediate Suspension of Payment while disputing the underlying assessment. Contact IWS immediately to file this shield.';
-        } else if (text.toLowerCase().includes('holding') || text.toLowerCase().includes('structure')) {
-          fallbackText = 'A proper structural architecture separates the Operating Entity (trading risk, payroll, commercial contracts) from a Holding Company or Trust (owning IP, core equipment, and cash reserves). This ensures that trading disputes never threaten foundational assets.';
-        }
-        setChatMessages(prev => [...prev, { role: 'model', text: fallbackText }]);
-      }, 500);
-    } finally {
-      setIsAiLoading(false);
-    }
-  };
-
-  // Submit Lead & Battle Plan Request
-  const handleSubmitDossier = async (e: React.FormEvent) => {
+  // Handle Form Submission
+  const handleIntakeSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
 
     try {
       if (db) {
         await addDoc(collection(db, 'war_room_leads'), {
-          name: formData.name,
-          company: formData.company,
-          email: formData.email,
-          phone: formData.phone,
-          turnover: formData.turnover,
-          notes: formData.notes || '',
-          sovereigntyScore: totalScore,
-          analysisLevel: scoreAnalysis.level,
-          recommendedPathway: scoreAnalysis.pathway,
-          timestamp: serverTimestamp()
+          name: formData.fullName,
+          company: formData.companyName,
+          email: formData.workEmail,
+          phone: formData.contactNumber,
+          turnover: formData.turnoverBracket,
+          primaryChallenge: formData.primaryChallenge || '',
+          score: totalScore,
+          assessmentStatus: assessmentDetails.level,
+          recommendedPathway: assessmentDetails.suggestedService,
+          submittedAt: serverTimestamp()
         });
 
-        // Send confirmation email
+        // Email dispatch
         await addDoc(collection(db, 'mail'), {
-          to: formData.email,
+          to: formData.workEmail,
           message: {
-            subject: `[WAR ROOM DOSSIER] ${formData.company} Financial Battle Plan`,
-            html: `<div style="font-family:sans-serif;color:#134e4a;padding:24px;max-width:600px;margin:0 auto;border:1px solid #e5e7eb;border-radius:16px;background:#ffffff;">
-              <h1 style="color:#d4af37;text-transform:uppercase;letter-spacing:1px;font-size:22px;">War Room Tactical Dossier</h1>
-              <p>Hi <strong>${formData.name}</strong>,</p>
-              <p>Your Financial Sovereignty stress test report for <strong>${formData.company}</strong> has been generated:</p>
-              <div style="background:#0f172a;color:#ffffff;padding:16px;border-radius:12px;margin:16px 0;">
-                <p style="margin:0;font-size:12px;color:#d4af37;text-transform:uppercase;letter-spacing:1px;">Sovereignty Score</p>
-                <h2 style="margin:4px 0;font-size:28px;color:#ffffff;">${totalScore} / 100</h2>
-                <p style="margin:0;color:#94a3b8;font-size:13px;">Status: <strong>${scoreAnalysis.level}</strong></p>
-                <p style="margin:8px 0 0 0;color:#38bdf8;font-size:13px;">Recommended Strategy: <strong>${scoreAnalysis.pathway}</strong></p>
+            subject: `[CONFIDENTIAL] Financial Health & Compliance Assessment: ${formData.companyName}`,
+            html: `<div style="font-family: Arial, sans-serif; color: #1e293b; max-width: 640px; margin: 0 auto; padding: 24px; border: 1px solid #e2e8f0; border-radius: 8px;">
+              <h2 style="color: #134e4a; border-bottom: 2px solid #d4af37; padding-bottom: 8px;">Executive Financial Health Summary</h2>
+              <p>Dear <strong>${formData.fullName}</strong>,</p>
+              <p>Thank you for completing the Strategic Financial Diagnostic for <strong>${formData.companyName}</strong>.</p>
+              <div style="background-color: #f8fafc; padding: 16px; border-radius: 6px; margin: 16px 0; border-left: 4px solid #134e4a;">
+                <p style="margin: 0; font-size: 13px; color: #64748b; text-transform: uppercase;">Diagnostic Score</p>
+                <h3 style="margin: 4px 0 0 0; color: #134e4a; font-size: 24px;">${totalScore} / 100</h3>
+                <p style="margin: 4px 0 0 0; font-weight: bold; color: #0f172a;">${assessmentDetails.level}</p>
               </div>
-              <p><strong>Immediate Triage Priority:</strong><br/>${scoreAnalysis.urgentTriage}</p>
-              <p style="margin-top:24px;">
-                <a href="https://calendly.com/marcia-kgaphola/new-meeting" style="background:#d4af37;color:#0f172a;padding:14px 28px;border-radius:8px;text-decoration:none;font-weight:bold;display:inline-block;text-transform:uppercase;letter-spacing:1px;font-size:13px;">Schedule Executive Strategy Session</a>
+              <p><strong>Professional Recommendation:</strong><br/>${assessmentDetails.recommendation}</p>
+              <p><strong>Suggested Structure:</strong><br/>${assessmentDetails.suggestedService}</p>
+              <p style="margin-top: 24px;">
+                <a href="https://calendly.com/marcia-kgaphola/new-meeting" style="background-color: #134e4a; color: #ffffff; padding: 12px 24px; text-decoration: none; border-radius: 4px; font-weight: bold; display: inline-block;">Schedule Discovery Consultation</a>
+              </p>
+              <p style="font-size: 12px; color: #94a3b8; margin-top: 32px; border-top: 1px solid #e2e8f0; padding-top: 16px;">
+                Integrated Wellth Solutions · Chartered Business Accountants (CIBA) · Registered Tax Practitioners (SAIT)
               </p>
             </div>`
           }
         });
       }
-      setIsSuccess(true);
+      setIsSubmitted(true);
     } catch (err) {
       console.error(err);
-      setIsSuccess(true);
+      setIsSubmitted(true);
     } finally {
       setIsSubmitting(false);
     }
   };
 
   return (
-    <div className="min-h-screen bg-slate-950 text-white font-sans selection:bg-brand-gold/30 selection:text-white pt-28 pb-20 px-4 sm:px-6">
-      <div className="max-w-7xl mx-auto space-y-10">
-        
-        {/* TOP COMMAND HEADER */}
-        <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-6 border-b border-white/10 pb-8">
-          <div className="space-y-3 max-w-3xl">
-            <div className="flex flex-wrap items-center gap-3">
-              <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-rose-500/10 border border-rose-500/30 text-rose-400 text-[10px] font-black uppercase tracking-widest">
-                <Flame size={12} className="animate-pulse" /> Live Threat Engine
+    <div className="bg-stone-50 text-stone-900 min-h-screen font-sans selection:bg-brand-gold/30 pt-32 pb-24">
+      
+      {/* --------------------------------------------------------- */}
+      {/* HERO SECTION: EXECUTIVE ADVISORY HEADER */}
+      {/* --------------------------------------------------------- */}
+      <section className="max-w-7xl mx-auto px-6 mb-12">
+        <RevealOnScroll>
+          <div className="border-b border-stone-200 pb-10">
+            <div className="flex flex-wrap items-center gap-3 mb-4">
+              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-teal-50 border border-teal-200 text-teal-900 text-xs font-semibold">
+                <ShieldCheck size={14} className="text-teal-700" /> Executive Advisory & Compliance Diagnostic
               </span>
-              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-[10px] font-black uppercase tracking-widest">
-                <ShieldCheck size={12} /> CIBA · SAIT · SAICA Accredited
+              <span className="text-xs text-stone-700 font-medium">
+                CIBA · SAIT · SAICA Accredited Practice
               </span>
             </div>
 
-            <h1 className="text-4xl sm:text-6xl font-sora font-extrabold tracking-tighter leading-none">
-              THE FINANCIAL <br className="hidden sm:inline" />
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-brand-gold via-amber-200 to-white italic">
-                WAR ROOM.
-              </span>
-            </h1>
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-end">
+              <div className="lg:col-span-8 space-y-4">
+                <h1 className="text-4xl md:text-5xl lg:text-6xl font-sora font-extrabold text-brand-900 tracking-tight leading-tight">
+                  The Strategic <span className="text-brand-gold italic">War Room</span>.
+                </h1>
+                <p className="text-base md:text-lg text-stone-600 max-w-3xl leading-relaxed">
+                  A comprehensive advisory diagnostic designed for South African founders and directors to evaluate balance sheet liquidity, resolve statutory compliance risks, and establish long-term financial sovereignty.
+                </p>
+              </div>
 
-            <p className="text-sm sm:text-base text-gray-400 font-light leading-relaxed">
-              Stress-test your enterprise against South African regulatory audits, cash-flow bottlenecks, and structural dependency before they strike.
-            </p>
-          </div>
-
-          {/* Quick Score Snapshot Box */}
-          <div className="bg-white/5 border border-white/10 rounded-3xl p-5 sm:p-6 backdrop-blur-xl flex items-center gap-6 shrink-0">
-            <div className="text-center">
-              <span className="text-[10px] font-black uppercase tracking-widest text-gray-400 block mb-1">
-                Sovereignty Score
-              </span>
-              <div className="text-4xl font-sora font-black text-brand-gold">
-                {totalScore}<span className="text-lg text-gray-500">/100</span>
+              {/* Score Snapshot Badge */}
+              <div className="lg:col-span-4 bg-white border border-stone-200 p-6 rounded-2xl shadow-sm space-y-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-bold uppercase tracking-wider text-stone-500">Diagnostic Index</span>
+                  <span className="text-2xl font-sora font-black text-brand-900">{totalScore} <span className="text-xs text-stone-400 font-normal">/ 100</span></span>
+                </div>
+                <div className="w-full bg-stone-100 h-2 rounded-full overflow-hidden">
+                  <div
+                    className="bg-brand-gold h-full transition-all duration-300"
+                    style={{ width: `${totalScore}%` }}
+                  />
+                </div>
+                <p className="text-xs text-stone-600 font-medium leading-snug">
+                  Status: <strong className="text-stone-900">{assessmentDetails.tierBadge}</strong>
+                </p>
               </div>
             </div>
-            <div className="h-10 w-px bg-white/10" />
-            <div className="space-y-1">
-              <span className={`text-[10px] font-black uppercase tracking-wider px-2.5 py-1 rounded-md border ${scoreAnalysis.badgeBg}`}>
-                {scoreAnalysis.level}
-              </span>
-              <p className="text-xs text-gray-400 truncate max-w-[200px]">
-                {scoreAnalysis.pathway}
-              </p>
-            </div>
           </div>
-        </div>
+        </RevealOnScroll>
 
-        {/* NAVIGATION TABS (5 STREAMS) */}
-        <div className="grid grid-cols-2 sm:grid-cols-5 gap-2 bg-white/5 p-1.5 rounded-2xl border border-white/10">
-          {(Object.keys(STREAM_LABELS) as StreamType[]).map(id => {
-            const isActive = activeStream === id;
+        {/* SECTION NAVIGATION TABS */}
+        <div className="mt-8 flex flex-wrap gap-2 border-b border-stone-200 pb-4">
+          {[
+            { id: 'diagnostic', label: 'Financial Health Diagnostic', icon: <Scale size={16} /> },
+            { id: 'playbooks', label: 'Advisory Playbooks & Risk Defense', icon: <BookOpen size={16} /> },
+            { id: 'deadlines', label: 'Statutory Calendar & Radar', icon: <Calendar size={16} /> },
+            { id: 'consultation', label: 'Confidential Strategy Consultation', icon: <PhoneCall size={16} /> }
+          ].map(tab => {
+            const isActive = activeTab === tab.id;
             return (
               <button
-                key={id}
-                onClick={() => setActiveStream(id)}
-                className={`py-3.5 px-3 rounded-xl text-[10px] sm:text-xs font-black uppercase tracking-wider transition-all flex items-center justify-center gap-2 ${
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id as TabMode)}
+                className={`flex items-center gap-2 px-5 py-3 rounded-xl text-xs font-bold uppercase tracking-wider transition-all ${
                   isActive
-                    ? 'bg-brand-gold text-slate-950 font-bold shadow-lg scale-[1.02]'
-                    : 'text-gray-400 hover:text-white hover:bg-white/5'
+                    ? 'bg-brand-900 text-white shadow-sm'
+                    : 'text-stone-600 hover:text-stone-900 hover:bg-white'
                 }`}
               >
-                {id === 'stress' && <Activity size={14} />}
-                {id === 'threats' && <ShieldAlert size={14} />}
-                {id === 'calendar' && <Calendar size={14} />}
-                {id === 'ai' && <Sparkles size={14} />}
-                {id === 'dossier' && <FileText size={14} />}
-                <span className="truncate">{STREAM_LABELS[id].label}</span>
+                {tab.icon}
+                <span>{tab.label}</span>
               </button>
             );
           })}
         </div>
+      </section>
 
-        {/* ========================================================= */}
-        {/* 1. STRUCTURAL AUDIT (4-PILLAR STRESS TEST) */}
-        {/* ========================================================= */}
-        {activeStream === 'stress' && (
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start animate-fadeIn">
-            {/* Left Column: The 4 Diagnostic Dimensions */}
+      {/* --------------------------------------------------------- */}
+      {/* 1. FINANCIAL HEALTH DIAGNOSTIC TAB */}
+      {/* --------------------------------------------------------- */}
+      {activeTab === 'diagnostic' && (
+        <section className="max-w-7xl mx-auto px-6 space-y-8 animate-fadeIn">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+            
+            {/* Left Column: 4 Diagnostic Pillars */}
             <div className="lg:col-span-8 space-y-6">
-              {DIAGNOSTIC_PILLARS.map(pillar => {
-                const currentValue = selectedPillarValues[pillar.id] ?? 10;
+              {DIAGNOSTIC_QUESTIONS.map(item => {
+                const currentVal = selectedAnswers[item.id] ?? 10;
                 return (
-                  <div
-                    key={pillar.id}
-                    className="p-6 rounded-3xl bg-white/[0.03] border border-white/10 hover:border-white/20 transition-all space-y-4"
-                  >
-                    <div className="flex items-start justify-between gap-4">
-                      <div>
-                        <h3 className="text-lg font-bold text-white font-sora">{pillar.title}</h3>
-                        <p className="text-xs text-gray-400 mt-0.5">{pillar.subtitle}</p>
-                      </div>
+                  <div key={item.id} className="bg-white border border-stone-200 rounded-2xl p-6 sm:p-8 shadow-sm space-y-4">
+                    <div>
+                      <span className="text-xs font-bold uppercase tracking-widest text-brand-gold">{item.category}</span>
+                      <h3 className="text-lg font-bold text-stone-900 font-sora mt-1">{item.question}</h3>
+                      <p className="text-xs text-stone-500 mt-1 leading-relaxed">{item.guidance}</p>
                     </div>
 
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-                      {pillar.options.map((opt, idx) => {
-                        const isSelected = currentValue === opt.points;
+                    <div className="space-y-2.5 pt-2">
+                      {item.options.map((opt, oIdx) => {
+                        const isSelected = currentVal === opt.points;
                         return (
-                          <button
-                            key={idx}
-                            onClick={() => {
-                              setSelectedPillarValues(prev => ({
-                                ...prev,
-                                [pillar.id]: opt.points
-                              }));
-                            }}
-                            className={`text-left p-3.5 rounded-2xl border transition-all ${
+                          <div
+                            key={oIdx}
+                            onClick={() => setSelectedAnswers(prev => ({ ...prev, [item.id]: opt.points }))}
+                            className={`p-4 rounded-xl border cursor-pointer transition-all flex items-start justify-between gap-4 ${
                               isSelected
-                                ? 'bg-brand-gold/15 border-brand-gold text-white shadow-sm ring-1 ring-brand-gold/30'
-                                : 'bg-black/30 border-white/5 text-gray-400 hover:border-white/20 hover:text-gray-200'
+                                ? 'border-brand-900 bg-teal-50/40 ring-1 ring-brand-900/20'
+                                : 'border-stone-200 bg-white hover:border-stone-300'
                             }`}
                           >
-                            <div className="flex items-center justify-between mb-1">
-                              <span className={`text-xs font-bold ${isSelected ? 'text-brand-gold' : 'text-gray-300'}`}>
-                                {opt.label}
-                              </span>
-                              <span className="text-[10px] font-mono text-gray-500 font-bold">
-                                {opt.points} pts
-                              </span>
+                            <div className="space-y-1">
+                              <div className="flex items-center gap-2">
+                                <div className={`w-4 h-4 rounded-full border flex items-center justify-center ${
+                                  isSelected ? 'border-brand-900 bg-brand-900' : 'border-stone-300'
+                                }`}>
+                                  {isSelected && <div className="w-1.5 h-1.5 rounded-full bg-white" />}
+                                </div>
+                                <span className={`text-sm font-bold ${isSelected ? 'text-brand-900' : 'text-stone-800'}`}>
+                                  {opt.label}
+                                </span>
+                              </div>
+                              <p className="text-xs text-stone-600 pl-6 leading-relaxed">
+                                {opt.implication}
+                              </p>
                             </div>
-                            <p className="text-[11px] text-gray-400 leading-snug">{opt.desc}</p>
-                          </button>
+                            <span className="text-xs font-mono font-semibold text-stone-400 shrink-0">
+                              {opt.points} pts
+                            </span>
+                          </div>
                         );
                       })}
                     </div>
@@ -567,485 +555,413 @@ const WarRoom: React.FC = () => {
               })}
             </div>
 
-            {/* Right Column: Live Threat Diagnostic Summary */}
-            <div className="lg:col-span-4 sticky top-24 space-y-6">
-              <div className="p-6 rounded-3xl bg-gradient-to-b from-slate-900 to-slate-950 border border-white/15 shadow-2xl space-y-6">
+            {/* Right Column: Diagnostic Assessment & Executive Recommendations */}
+            <div className="lg:col-span-4 sticky top-28 space-y-6">
+              <div className="bg-white border border-stone-200 rounded-2xl p-6 sm:p-8 shadow-sm space-y-6">
                 <div>
-                  <span className="text-[10px] font-black uppercase tracking-widest text-brand-gold block mb-1">
-                    Live Diagnostic Telemetry
+                  <span className="text-xs font-bold uppercase tracking-widest text-brand-gold block mb-1">
+                    Diagnostic Outcome
                   </span>
-                  <h3 className="text-xl font-bold font-sora text-white">Structural Health Matrix</h3>
+                  <h3 className="text-xl font-sora font-extrabold text-brand-900">
+                    Executive Summary
+                  </h3>
                 </div>
 
-                {/* Score Circle & Progress Bar */}
-                <div className="space-y-3 bg-black/40 p-4 rounded-2xl border border-white/10">
+                {/* Score Matrix */}
+                <div className="p-4 bg-stone-50 rounded-xl border border-stone-200 space-y-3">
                   <div className="flex justify-between items-baseline">
-                    <span className="text-xs text-gray-400 font-bold uppercase tracking-wider">Overall Resilience:</span>
-                    <span className="text-2xl font-black font-sora text-brand-gold">{totalScore}%</span>
+                    <span className="text-xs font-bold text-stone-500 uppercase tracking-wider">Overall Resilience:</span>
+                    <span className="text-2xl font-black font-sora text-brand-900">{totalScore}%</span>
                   </div>
-                  <div className="w-full bg-white/10 h-3 rounded-full overflow-hidden">
+                  <div className="w-full bg-stone-200 h-2.5 rounded-full overflow-hidden">
                     <div
-                      className={`h-full transition-all duration-500 ${
-                        totalScore <= 30
-                          ? 'bg-rose-500'
-                          : totalScore <= 60
-                          ? 'bg-amber-400'
-                          : totalScore <= 85
-                          ? 'bg-teal-400'
-                          : 'bg-emerald-400'
-                      }`}
+                      className="bg-brand-900 h-full transition-all duration-300"
                       style={{ width: `${totalScore}%` }}
                     />
                   </div>
-                  <p className="text-[11px] text-gray-300 italic pt-1">
-                    "{scoreAnalysis.summary}"
+                  <span className={`inline-block px-3 py-1 rounded-md text-xs font-bold border ${assessmentDetails.badgeColor}`}>
+                    {assessmentDetails.tierBadge}
+                  </span>
+                </div>
+
+                <div className="space-y-2 text-xs">
+                  <span className="font-bold text-stone-900 uppercase tracking-wider block text-[11px]">
+                    Practice Findings:
+                  </span>
+                  <p className="text-stone-600 leading-relaxed">
+                    {assessmentDetails.summary}
                   </p>
                 </div>
 
-                {/* Prescribed Solution */}
-                <div className="space-y-2 border-t border-white/10 pt-4 text-xs">
-                  <span className="font-bold text-gray-400 uppercase tracking-wider block text-[10px]">
-                    Prescribed Immediate Action:
+                <div className="space-y-2 text-xs border-t border-stone-100 pt-4">
+                  <span className="font-bold text-stone-900 uppercase tracking-wider block text-[11px]">
+                    Recommended Course of Action:
                   </span>
-                  <p className="text-brand-gold font-medium leading-relaxed bg-brand-gold/10 p-3 rounded-xl border border-brand-gold/20">
-                    {scoreAnalysis.urgentTriage}
+                  <p className="text-stone-800 font-medium leading-relaxed bg-teal-50/50 p-3 rounded-lg border border-teal-100">
+                    {assessmentDetails.recommendation}
                   </p>
-                </div>
-
-                <button
-                  onClick={() => setActiveStream('dossier')}
-                  className="w-full py-4 bg-brand-gold text-slate-950 font-black uppercase tracking-widest text-xs rounded-2xl shadow-xl hover:bg-white transition-all flex items-center justify-center gap-2"
-                >
-                  Generate Battle Plan <ArrowRight size={14} />
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* ========================================================= */}
-        {/* 2. CRISIS SIMULATOR ("WHAT-IF" SCENARIOS) */}
-        {/* ========================================================= */}
-        {activeStream === 'threats' && (
-          <div className="space-y-8 animate-fadeIn">
-            <div>
-              <span className="text-[10px] font-black uppercase tracking-widest text-brand-gold">
-                Tactical Simulation Engine
-              </span>
-              <h2 className="text-2xl sm:text-3xl font-sora font-extrabold text-white mt-1">
-                South African SME Crisis Protocols
-              </h2>
-              <p className="text-xs sm:text-sm text-gray-400 mt-1 max-w-2xl">
-                Select any catastrophic operational event to view the exact statutory defense shield, immediate 72-hour triage steps, and permanent IWS insulation.
-              </p>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
-              {CRISIS_SCENARIOS.map(sc => (
-                <button
-                  key={sc.id}
-                  onClick={() => setActiveScenarioId(sc.id)}
-                  className={`text-left p-4 rounded-2xl border transition-all ${
-                    activeScenarioId === sc.id
-                      ? 'bg-brand-gold/15 border-brand-gold text-white shadow-md'
-                      : 'bg-white/[0.03] border-white/10 text-gray-400 hover:border-white/20'
-                  }`}
-                >
-                  <span className={`text-[9px] font-black uppercase px-2 py-0.5 rounded border inline-block mb-2 ${sc.threatColor}`}>
-                    {sc.threatLevel}
-                  </span>
-                  <h4 className="font-bold text-sm text-white leading-tight">{sc.title}</h4>
-                </button>
-              ))}
-            </div>
-
-            {/* Selected Scenario Detailed Protocol Box */}
-            {(() => {
-              const activeScenario = CRISIS_SCENARIOS.find(s => s.id === activeScenarioId) || CRISIS_SCENARIOS[0];
-              return (
-                <div className="p-6 sm:p-8 rounded-3xl bg-white/[0.04] border border-white/15 space-y-6">
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-white/10 pb-4">
-                    <div>
-                      <span className={`text-[10px] font-black uppercase px-2.5 py-1 rounded border inline-block mb-1 ${activeScenario.threatColor}`}>
-                        {activeScenario.threatLevel}
-                      </span>
-                      <h3 className="text-xl sm:text-2xl font-sora font-bold text-white">{activeScenario.title}</h3>
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-xs">
-                    <div className="bg-black/40 p-5 rounded-2xl border border-white/10 space-y-2">
-                      <span className="font-bold text-rose-400 uppercase tracking-wider block text-[10px]">
-                        The Statutory Hazard & Trigger:
-                      </span>
-                      <p className="text-gray-300 leading-relaxed font-medium">{activeScenario.trigger}</p>
-                      <p className="text-rose-300/90 leading-relaxed pt-2 border-t border-white/5 font-semibold">
-                        Impact: {activeScenario.consequence}
-                      </p>
-                    </div>
-
-                    <div className="bg-black/40 p-5 rounded-2xl border border-white/10 space-y-2">
-                      <span className="font-bold text-brand-gold uppercase tracking-wider block text-[10px]">
-                        Permanent IWS Defense Shield:
-                      </span>
-                      <p className="text-brand-100 leading-relaxed">{activeScenario.iwsShield}</p>
-                    </div>
-                  </div>
-
-                  {/* 72-Hour Triage Steps */}
-                  <div className="space-y-3">
-                    <span className="font-bold text-white uppercase tracking-wider block text-xs flex items-center gap-2">
-                      <Zap size={14} className="text-brand-gold" /> Immediate 72-Hour Response Sequence:
-                    </span>
-                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                      {activeScenario.triage72h.map((step, idx) => (
-                        <div key={idx} className="bg-brand-gold/5 border border-brand-gold/20 p-4 rounded-2xl space-y-1 text-xs">
-                          <span className="font-mono text-brand-gold font-bold text-[10px]">PHASE 0{idx + 1}</span>
-                          <p className="text-gray-200 leading-snug">{step}</p>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-
-                  <div className="pt-4 border-t border-white/10 flex flex-col sm:flex-row justify-between items-center gap-4">
-                    <p className="text-xs text-gray-400">
-                      Facing this threat right now? Our accredited practitioners can intervene within 2 hours.
-                    </p>
-                    <button
-                      onClick={() => setActiveStream('dossier')}
-                      className="px-6 py-3 bg-brand-gold text-slate-950 rounded-xl font-bold text-xs uppercase tracking-wider hover:bg-white transition-all shrink-0"
-                    >
-                      Deploy Response Protocol
-                    </button>
-                  </div>
-                </div>
-              );
-            })()}
-          </div>
-        )}
-
-        {/* ========================================================= */}
-        {/* 3. STATUTORY RADAR (LIVE DYNAMIC CALENDAR) */}
-        {/* ========================================================= */}
-        {activeStream === 'calendar' && (
-          <div className="space-y-6 animate-fadeIn">
-            <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
-              <div>
-                <span className="text-[10px] font-black uppercase tracking-widest text-brand-gold">
-                  Live Statutory Telemetry
-                </span>
-                <h2 className="text-2xl sm:text-3xl font-sora font-extrabold text-white mt-1">
-                  Active South African Regulatory Radar
-                </h2>
-                <p className="text-xs sm:text-sm text-gray-400 mt-1">
-                  Continuously calculated against SARS eFiling, CIPC, and Department of Labour deadlines.
-                </p>
-              </div>
-
-              <a
-                href="#compliance-calendar"
-                className="inline-flex items-center gap-2 text-xs font-bold text-brand-gold hover:underline uppercase tracking-wider"
-              >
-                Access Full Compliance Calendar <ExternalLink size={12} />
-              </a>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {dynamicRadarDeadlines.map((deadline, idx) => (
-                <div
-                  key={idx}
-                  className="p-6 rounded-3xl bg-white/[0.03] border border-white/10 flex flex-col justify-between gap-4 hover:border-brand-gold/40 transition-colors"
-                >
-                  <div className="space-y-1">
-                    <div className="flex items-center justify-between">
-                      <span className="text-[9px] font-mono font-bold bg-white/10 px-2 py-0.5 rounded text-brand-gold uppercase">
-                        {deadline.urgency}
-                      </span>
-                      <span className="text-xs font-bold font-mono text-gray-400">{deadline.date}</span>
-                    </div>
-                    <h4 className="text-lg font-bold text-white font-sora pt-1">{deadline.title}</h4>
-                    <p className="text-xs text-gray-400">{deadline.scope}</p>
-                  </div>
-
-                  <div className="flex items-center justify-between pt-3 border-t border-white/5">
-                    <span className="text-xs text-gray-500">Days Remaining:</span>
-                    <span className={`text-xl font-black font-sora ${deadline.daysLeft <= 7 ? 'text-rose-400' : 'text-brand-gold'}`}>
-                      {deadline.daysLeft} Days
-                    </span>
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            <div className="p-4 bg-brand-gold/10 border border-brand-gold/20 rounded-2xl text-xs text-brand-100 flex items-center gap-3">
-              <Info size={18} className="text-brand-gold shrink-0" />
-              <span>
-                <strong>Zero-Penalty Guarantee:</strong> On Sovereign and Ascension pathways, IWS tracks, compiles, and files every statutory return before these radar thresholds.
-              </span>
-            </div>
-          </div>
-        )}
-
-        {/* ========================================================= */}
-        {/* 4. AI TACTICAL COPILOT (GEMINI AI STREAM) */}
-        {/* ========================================================= */}
-        {activeStream === 'ai' && (
-          <div className="space-y-6 animate-fadeIn">
-            <div>
-              <span className="text-[10px] font-black uppercase tracking-widest text-brand-gold">
-                Autonomous Intelligence
-              </span>
-              <h2 className="text-2xl sm:text-3xl font-sora font-extrabold text-white mt-1">
-                War Room AI Tactical Copilot
-              </h2>
-              <p className="text-xs sm:text-sm text-gray-400 mt-1">
-                Trained on the South African Tax Administration Act, CIPC corporate law, and SME resilience frameworks.
-              </p>
-            </div>
-
-            {/* Quick Prompt Chips */}
-            <div className="flex flex-wrap gap-2">
-              {SUGGESTED_PROMPTS.map((prompt, pIdx) => (
-                <button
-                  key={pIdx}
-                  onClick={() => handleAiSend(prompt)}
-                  className="text-left text-xs bg-white/5 hover:bg-brand-gold/20 border border-white/10 hover:border-brand-gold/40 text-gray-300 hover:text-white px-3.5 py-2 rounded-xl transition-colors"
-                >
-                  💡 {prompt}
-                </button>
-              ))}
-            </div>
-
-            {/* Chat Messages Container */}
-            <div className="bg-black/50 rounded-3xl border border-white/10 p-5 sm:p-6 min-h-[360px] max-h-[460px] overflow-y-auto space-y-4">
-              {chatMessages.map((msg, mIdx) => (
-                <div
-                  key={mIdx}
-                  className={`flex items-start gap-3 ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
-                >
-                  {msg.role === 'model' && (
-                    <div className="w-8 h-8 rounded-xl bg-brand-gold/20 border border-brand-gold text-brand-gold flex items-center justify-center shrink-0 text-xs font-bold">
-                      AI
-                    </div>
-                  )}
-                  <div
-                    className={`p-4 rounded-2xl text-xs sm:text-sm max-w-xl leading-relaxed ${
-                      msg.role === 'user'
-                        ? 'bg-brand-gold text-slate-950 font-bold ml-auto'
-                        : 'bg-white/10 text-gray-200 border border-white/10'
-                    }`}
-                  >
-                    {msg.text}
-                  </div>
-                </div>
-              ))}
-              {isAiLoading && (
-                <div className="flex items-center gap-2 text-xs text-brand-gold font-mono animate-pulse">
-                  <Loader2 className="animate-spin" size={14} /> Synthesizing South African statutory analysis...
-                </div>
-              )}
-            </div>
-
-            {/* Input Bar */}
-            <form
-              onSubmit={(e) => {
-                e.preventDefault();
-                handleAiSend();
-              }}
-              className="flex items-center gap-2 bg-white/5 p-2 rounded-2xl border border-white/15 focus-within:border-brand-gold transition-colors"
-            >
-              <input
-                type="text"
-                placeholder="Ask tactical question (e.g. How to appeal SARS penalty, protect director assets)..."
-                className="w-full bg-transparent px-4 py-3 text-xs sm:text-sm text-white outline-none placeholder-gray-500 font-medium"
-                value={chatInput}
-                onChange={(e) => setChatInput(e.target.value)}
-              />
-              <button
-                type="submit"
-                disabled={!chatInput.trim() || isAiLoading}
-                className="p-3 bg-brand-gold text-slate-950 rounded-xl hover:bg-white transition-colors disabled:opacity-40"
-              >
-                <Send size={16} />
-              </button>
-            </form>
-          </div>
-        )}
-
-        {/* ========================================================= */}
-        {/* 5. GET CUSTOM BATTLE PLAN (DOSSIER & LEAD CAPTURE) */}
-        {/* ========================================================= */}
-        {activeStream === 'dossier' && (
-          <div className="max-w-3xl mx-auto animate-fadeIn space-y-8">
-            {!isSuccess ? (
-              <div className="bg-white/[0.04] border border-white/15 rounded-3xl p-6 sm:p-10 space-y-6">
-                <div>
-                  <span className="text-[10px] font-black uppercase tracking-widest text-brand-gold">
-                    Executive Strategy Output
-                  </span>
-                  <h2 className="text-2xl sm:text-4xl font-sora font-extrabold text-white mt-1">
-                    Deploy Your Custom Battle Plan
-                  </h2>
-                  <p className="text-xs sm:text-sm text-gray-400 mt-1">
-                    Receive your customized Sovereignty score audit, statutory remediation checklist, and dedicated advisor roadmap.
-                  </p>
-                </div>
-
-                {/* Score Matrix Snapshot */}
-                <div className="bg-black/50 p-4 sm:p-5 rounded-2xl border border-white/10 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-                  <div>
-                    <span className="text-[10px] text-gray-400 uppercase tracking-wider block">Audited Resilience Score</span>
-                    <span className="text-2xl font-black font-sora text-brand-gold">{totalScore} / 100</span>
-                    <span className="text-xs text-gray-300 block font-medium mt-0.5">{scoreAnalysis.level}</span>
-                  </div>
-                  <div className="text-left sm:text-right">
-                    <span className="text-[10px] text-gray-400 uppercase tracking-wider block">Recommended Trajectory</span>
-                    <span className="text-sm font-bold text-white">{scoreAnalysis.pathway}</span>
-                  </div>
-                </div>
-
-                <form onSubmit={handleSubmitDossier} className="space-y-4">
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-xs font-bold text-gray-300 uppercase tracking-wider mb-1">Full Name *</label>
-                      <input
-                        required
-                        type="text"
-                        placeholder="e.g. Marcia Kgaphola"
-                        className="w-full p-3.5 bg-black/40 border border-white/15 rounded-xl text-xs sm:text-sm text-white focus:border-brand-gold outline-none"
-                        value={formData.name}
-                        onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-xs font-bold text-gray-300 uppercase tracking-wider mb-1">Business / Entity Name *</label>
-                      <input
-                        required
-                        type="text"
-                        placeholder="e.g. Acacia Systems (Pty) Ltd"
-                        className="w-full p-3.5 bg-black/40 border border-white/15 rounded-xl text-xs sm:text-sm text-white focus:border-brand-gold outline-none"
-                        value={formData.company}
-                        onChange={(e) => setFormData({ ...formData, company: e.target.value })}
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-xs font-bold text-gray-300 uppercase tracking-wider mb-1">Work Email Address *</label>
-                      <input
-                        required
-                        type="email"
-                        placeholder="founder@company.co.za"
-                        className="w-full p-3.5 bg-black/40 border border-white/15 rounded-xl text-xs sm:text-sm text-white focus:border-brand-gold outline-none"
-                        value={formData.email}
-                        onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-xs font-bold text-gray-300 uppercase tracking-wider mb-1">Cellphone / WhatsApp *</label>
-                      <input
-                        required
-                        type="tel"
-                        placeholder="082 123 4567"
-                        className="w-full p-3.5 bg-black/40 border border-white/15 rounded-xl text-xs sm:text-sm text-white focus:border-brand-gold outline-none"
-                        value={formData.phone}
-                        onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                      />
-                    </div>
-                  </div>
-
-                  <div>
-                    <label className="block text-xs font-bold text-gray-300 uppercase tracking-wider mb-1">Annual Turnover Bracket</label>
-                    <select
-                      value={formData.turnover}
-                      onChange={(e) => setFormData({ ...formData, turnover: e.target.value })}
-                      className="w-full p-3.5 bg-black/40 border border-white/15 rounded-xl text-xs sm:text-sm text-white focus:border-brand-gold outline-none"
-                    >
-                      <option value="< R1M / year (Starting out)" className="bg-slate-900">Under R1M / year (Foundation Tier)</option>
-                      <option value="R1M – R7M / year (Growing)" className="bg-slate-900">R1M – R7M / year (Ascension Tier)</option>
-                      <option value="R7M – R25M+ / year (Scaling Scale)" className="bg-slate-900">R7M – R25M+ / year (Sovereign Tier)</option>
-                    </select>
-                  </div>
-
-                  <div>
-                    <label className="block text-xs font-bold text-gray-300 uppercase tracking-wider mb-1">Immediate Compliance Pain Point (Optional)</label>
-                    <textarea
-                      rows={2}
-                      placeholder="e.g. Outstanding VAT audits, need urgent tax clearance PIN for tender..."
-                      className="w-full p-3.5 bg-black/40 border border-white/15 rounded-xl text-xs sm:text-sm text-white focus:border-brand-gold outline-none"
-                      value={formData.notes}
-                      onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-                    />
-                  </div>
-
-                  <button
-                    type="submit"
-                    disabled={isSubmitting}
-                    className="w-full py-4 bg-brand-gold text-slate-950 font-black uppercase tracking-widest text-xs rounded-xl shadow-xl hover:bg-white transition-all flex items-center justify-center gap-2 mt-4"
-                  >
-                    {isSubmitting ? (
-                      <>
-                        <Loader2 className="animate-spin" size={16} /> Compiling Executive Dossier...
-                      </>
-                    ) : (
-                      <>
-                        Dispatch My Battle Plan <ArrowRight size={16} />
-                      </>
-                    )}
-                  </button>
-                </form>
-              </div>
-            ) : (
-              /* Success Screen */
-              <div className="bg-white/[0.04] border border-white/15 rounded-3xl p-8 sm:p-12 text-center space-y-6">
-                <div className="w-20 h-20 bg-emerald-500/20 text-emerald-400 rounded-full flex items-center justify-center mx-auto animate-bounce">
-                  <CheckCircle2 size={48} />
-                </div>
-
-                <div className="space-y-2">
-                  <span className="text-[10px] font-black uppercase tracking-widest text-brand-gold bg-brand-gold/10 px-3 py-1 rounded-full border border-brand-gold/30">
-                    Dossier Dispatched
-                  </span>
-                  <h2 className="text-3xl font-sora font-extrabold text-white">
-                    Battle Plan Initialized for {formData.company}
-                  </h2>
-                  <p className="text-xs sm:text-sm text-gray-300 max-w-md mx-auto">
-                    Your full resilience audit and tailored statutory roadmap have been delivered to <strong>{formData.email}</strong>.
-                  </p>
-                </div>
-
-                <div className="p-6 bg-black/50 rounded-2xl max-w-md mx-auto text-left text-xs space-y-3 border border-white/10">
-                  <span className="font-bold text-brand-gold uppercase tracking-wider block text-[10px]">
-                    Immediate Next Action
-                  </span>
-                  <p className="text-gray-300">
-                    Book your direct 30-minute strategic discovery session with Principal Architect Marcia Kgaphola:
-                  </p>
-                  <a
-                    href="https://calendly.com/marcia-kgaphola/new-meeting"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center justify-center gap-2 w-full py-3.5 bg-brand-gold text-slate-950 rounded-xl font-bold uppercase tracking-wider hover:bg-white transition-colors"
-                  >
-                    Schedule Strategy Session <ExternalLink size={14} />
-                  </a>
                 </div>
 
                 <div className="pt-2">
                   <button
-                    onClick={() => {
-                      setIsSuccess(false);
-                      setActiveStream('stress');
-                    }}
-                    className="text-xs text-gray-400 hover:text-white underline"
+                    onClick={() => setActiveTab('consultation')}
+                    className="w-full py-3.5 bg-brand-900 text-white rounded-xl font-bold text-xs uppercase tracking-wider hover:bg-brand-gold hover:text-brand-900 transition-colors shadow-sm flex items-center justify-center gap-2"
                   >
-                    Run Another Simulation
+                    Request Detailed Practice Review <ArrowRight size={14} />
                   </button>
                 </div>
               </div>
-            )}
-          </div>
-        )}
+            </div>
 
-      </div>
+          </div>
+        </section>
+      )}
+
+      {/* --------------------------------------------------------- */}
+      {/* 2. ADVISORY PLAYBOOKS TAB */}
+      {/* --------------------------------------------------------- */}
+      {activeTab === 'playbooks' && (
+        <section className="max-w-7xl mx-auto px-6 space-y-8 animate-fadeIn">
+          <div>
+            <span className="text-xs font-bold uppercase tracking-widest text-brand-gold">
+              South African Statutory Guidance
+            </span>
+            <h2 className="text-2xl md:text-3xl font-sora font-extrabold text-brand-900 mt-1">
+              Advisory Playbooks & Risk Defense
+            </h2>
+            <p className="text-sm text-stone-600 mt-1 max-w-2xl">
+              Standard operating procedures for managing critical tax, CIPC, and commercial liquidity challenges under South African corporate law.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
+            {ADVISORY_PLAYBOOKS.map(item => (
+              <button
+                key={item.id}
+                onClick={() => setActivePlaybookId(item.id)}
+                className={`text-left p-4 rounded-xl border transition-all ${
+                  activePlaybookId === item.id
+                    ? 'border-brand-900 bg-white shadow-sm ring-1 ring-brand-900/10'
+                    : 'border-stone-200 bg-white/60 hover:bg-white text-stone-600'
+                }`}
+              >
+                <span className="text-[10px] font-bold text-brand-gold uppercase tracking-wider block mb-1">
+                  {item.tag}
+                </span>
+                <h4 className="font-bold text-sm text-stone-900 leading-tight">
+                  {item.title}
+                </h4>
+              </button>
+            ))}
+          </div>
+
+          {/* Selected Playbook Detail Box */}
+          {(() => {
+            const activePlaybook = ADVISORY_PLAYBOOKS.find(p => p.id === activePlaybookId) || ADVISORY_PLAYBOOKS[0];
+            return (
+              <div className="bg-white border border-stone-200 rounded-2xl p-6 sm:p-10 shadow-sm space-y-8">
+                <div className="border-b border-stone-100 pb-6 space-y-2">
+                  <div className="flex items-center gap-2">
+                    <span className="px-2.5 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider bg-stone-100 text-stone-700">
+                      {activePlaybook.tag}
+                    </span>
+                    <span className="text-xs font-mono text-stone-500">
+                      {activePlaybook.statutoryReference}
+                    </span>
+                  </div>
+                  <h3 className="text-2xl font-sora font-extrabold text-brand-900">
+                    {activePlaybook.title}
+                  </h3>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-xs">
+                  <div className="bg-stone-50 p-5 rounded-xl border border-stone-200 space-y-2">
+                    <span className="font-bold text-stone-900 uppercase tracking-wider block text-[11px]">
+                      Operational Trigger & Risk:
+                    </span>
+                    <p className="text-stone-700 leading-relaxed">{activePlaybook.trigger}</p>
+                    <p className="text-rose-900 font-medium leading-relaxed pt-2 border-t border-stone-200">
+                      <strong>Consequence:</strong> {activePlaybook.consequences}
+                    </p>
+                  </div>
+
+                  <div className="bg-teal-50/50 p-5 rounded-xl border border-teal-100 space-y-2">
+                    <span className="font-bold text-teal-900 uppercase tracking-wider block text-[11px]">
+                      How Integrated Wellth Supports You:
+                    </span>
+                    <p className="text-teal-950 leading-relaxed font-medium">
+                      {activePlaybook.practiceSupport}
+                    </p>
+                  </div>
+                </div>
+
+                {/* Step-by-Step Response Protocol */}
+                <div className="space-y-3">
+                  <h4 className="text-xs font-bold uppercase tracking-wider text-stone-900 flex items-center gap-2">
+                    <Award size={16} className="text-brand-gold" /> Step-by-Step Statutory Remediation Protocol:
+                  </h4>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                    {activePlaybook.actionProtocol.map((step, sIdx) => (
+                      <div key={sIdx} className="bg-white border border-stone-200 p-4 rounded-xl space-y-1.5 text-xs">
+                        <span className="text-[10px] font-mono font-bold text-brand-gold">PHASE 0{sIdx + 1}</span>
+                        <p className="text-stone-700 leading-relaxed">{step}</p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="pt-4 border-t border-stone-100 flex flex-col sm:flex-row justify-between items-center gap-4">
+                  <p className="text-xs text-stone-500">
+                    Need immediate professional assistance with this scenario? Contact our practice directly.
+                  </p>
+                  <button
+                    onClick={() => setActiveTab('consultation')}
+                    className="px-6 py-3 bg-brand-900 text-white rounded-xl font-bold text-xs uppercase tracking-wider hover:bg-brand-gold hover:text-brand-900 transition-colors shrink-0"
+                  >
+                    Engage Practice for this Issue
+                  </button>
+                </div>
+              </div>
+            );
+          })()}
+        </section>
+      )}
+
+      {/* --------------------------------------------------------- */}
+      {/* 3. STATUTORY CALENDAR TAB */}
+      {/* --------------------------------------------------------- */}
+      {activeTab === 'deadlines' && (
+        <section className="max-w-7xl mx-auto px-6 space-y-8 animate-fadeIn">
+          <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+            <div>
+              <span className="text-xs font-bold uppercase tracking-widest text-brand-gold">
+                South African Regulatory Radar
+              </span>
+              <h2 className="text-2xl md:text-3xl font-sora font-extrabold text-brand-900 mt-1">
+                Statutory Compliance Calendar
+              </h2>
+              <p className="text-sm text-stone-600 mt-1">
+                Upcoming filing and settlement obligations tracked by our practice for South African entities.
+              </p>
+            </div>
+
+            <a
+              href="#compliance-calendar"
+              className="text-xs font-bold text-brand-900 hover:text-brand-gold uppercase tracking-wider flex items-center gap-1"
+            >
+              Full Interactive Calendar <ExternalLink size={14} />
+            </a>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {statutoryDeadlines.map((item, idx) => (
+              <div key={idx} className="bg-white border border-stone-200 rounded-2xl p-6 shadow-sm flex flex-col justify-between gap-4">
+                <div className="space-y-1.5">
+                  <div className="flex justify-between items-center">
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-stone-500 bg-stone-100 px-2.5 py-0.5 rounded">
+                      {item.authority}
+                    </span>
+                    <span className="text-xs font-mono font-bold text-stone-600">
+                      {item.dueDate}
+                    </span>
+                  </div>
+                  <h4 className="text-lg font-bold text-stone-900 font-sora pt-1">
+                    {item.name}
+                  </h4>
+                  <p className="text-xs text-stone-600 leading-relaxed">
+                    {item.description}
+                  </p>
+                </div>
+
+                <div className="pt-3 border-t border-stone-100 flex items-center justify-between">
+                  <span className="text-xs text-stone-400">Estimated Days Remaining:</span>
+                  <span className={`text-lg font-black font-sora ${item.daysRemaining <= 7 ? 'text-rose-600' : 'text-brand-900'}`}>
+                    {item.daysRemaining} Days
+                  </span>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <div className="bg-white border border-stone-200 rounded-2xl p-6 text-xs text-stone-600 space-y-2">
+            <h4 className="font-bold text-stone-900 uppercase tracking-wider text-[11px] flex items-center gap-2">
+              <ShieldCheck size={16} className="text-brand-gold" /> Proactive Compliance Management:
+            </h4>
+            <p className="leading-relaxed">
+              Under our ongoing monthly Sovereignty Pathways (Foundation, Ascension, Sovereign), Integrated Wellth Solutions handles all monthly transaction categorization, VAT201 calculations, EMP201 submissions, and CIPC filings well in advance of these deadlines to ensure zero administrative penalties.
+            </p>
+          </div>
+        </section>
+      )}
+
+      {/* --------------------------------------------------------- */}
+      {/* 4. CONFIDENTIAL STRATEGY CONSULTATION TAB */}
+      {/* --------------------------------------------------------- */}
+      {activeTab === 'consultation' && (
+        <section className="max-w-3xl mx-auto px-6 space-y-8 animate-fadeIn">
+          {!isSubmitted ? (
+            <div className="bg-white border border-stone-200 rounded-2xl p-6 sm:p-10 shadow-sm space-y-6">
+              <div>
+                <span className="text-xs font-bold uppercase tracking-widest text-brand-gold">
+                  Direct Principal Engagement
+                </span>
+                <h2 className="text-2xl sm:text-3xl font-sora font-extrabold text-brand-900 mt-1">
+                  Schedule Confidential Strategy Session
+                </h2>
+                <p className="text-xs sm:text-sm text-stone-600 mt-1">
+                  Discuss your enterprise structure, SARS dispute remediation, or monthly fractional CBA advisory with Principal Practice Leader Marcia Kgaphola.
+                </p>
+              </div>
+
+              {/* Diagnostic Score Summary Box */}
+              <div className="bg-stone-50 p-4 rounded-xl border border-stone-200 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 text-xs">
+                <div>
+                  <span className="text-stone-500 uppercase tracking-wider block text-[10px]">Diagnostic Reference</span>
+                  <span className="font-bold text-stone-900">Score: {totalScore}/100 — {assessmentDetails.tierBadge}</span>
+                </div>
+                <div className="text-left sm:text-right">
+                  <span className="text-stone-500 uppercase tracking-wider block text-[10px]">Recommended Advisory Tier</span>
+                  <span className="font-bold text-brand-900">{assessmentDetails.suggestedService}</span>
+                </div>
+              </div>
+
+              <form onSubmit={handleIntakeSubmit} className="space-y-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs font-bold text-stone-700 uppercase tracking-wider mb-1">Full Name *</label>
+                    <input
+                      required
+                      type="text"
+                      placeholder="e.g. Marcia Kgaphola"
+                      className="w-full p-3.5 bg-stone-50 border border-stone-200 rounded-xl text-xs sm:text-sm text-stone-900 focus:border-brand-900 focus:bg-white outline-none"
+                      value={formData.fullName}
+                      onChange={e => setFormData({ ...formData, fullName: e.target.value })}
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold text-stone-700 uppercase tracking-wider mb-1">Business / Entity Name *</label>
+                    <input
+                      required
+                      type="text"
+                      placeholder="e.g. Acacia Solutions (Pty) Ltd"
+                      className="w-full p-3.5 bg-stone-50 border border-stone-200 rounded-xl text-xs sm:text-sm text-stone-900 focus:border-brand-900 focus:bg-white outline-none"
+                      value={formData.companyName}
+                      onChange={e => setFormData({ ...formData, companyName: e.target.value })}
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold text-stone-700 uppercase tracking-wider mb-1">Work Email Address *</label>
+                    <input
+                      required
+                      type="email"
+                      placeholder="director@company.co.za"
+                      className="w-full p-3.5 bg-stone-50 border border-stone-200 rounded-xl text-xs sm:text-sm text-stone-900 focus:border-brand-900 focus:bg-white outline-none"
+                      value={formData.workEmail}
+                      onChange={e => setFormData({ ...formData, workEmail: e.target.value })}
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold text-stone-700 uppercase tracking-wider mb-1">Cellphone / WhatsApp *</label>
+                    <input
+                      required
+                      type="tel"
+                      placeholder="082 123 4567"
+                      className="w-full p-3.5 bg-stone-50 border border-stone-200 rounded-xl text-xs sm:text-sm text-stone-900 focus:border-brand-900 focus:bg-white outline-none"
+                      value={formData.contactNumber}
+                      onChange={e => setFormData({ ...formData, contactNumber: e.target.value })}
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-stone-700 uppercase tracking-wider mb-1">Annual Turnover Bracket</label>
+                  <select
+                    value={formData.turnoverBracket}
+                    onChange={e => setFormData({ ...formData, turnoverBracket: e.target.value })}
+                    className="w-full p-3.5 bg-stone-50 border border-stone-200 rounded-xl text-xs sm:text-sm text-stone-900 focus:border-brand-900 focus:bg-white outline-none"
+                  >
+                    <option value="Under R1M / year (Foundation Tier)">Under R1 Million / year (Foundation Level)</option>
+                    <option value="R1M – R7M / year (Growing SME)">R1 Million – R7 Million / year (Ascension Level)</option>
+                    <option value="R7M – R25M+ / year (Established Enterprise)">R7 Million – R25 Million+ / year (Sovereign Level)</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-stone-700 uppercase tracking-wider mb-1">Primary Compliance or Advisory Challenge (Optional)</label>
+                  <textarea
+                    rows={2}
+                    placeholder="e.g. Outstanding VAT reconciliations, CIPC beneficial ownership filing, fractional CBA advisory..."
+                    className="w-full p-3.5 bg-stone-50 border border-stone-200 rounded-xl text-xs sm:text-sm text-stone-900 focus:border-brand-900 focus:bg-white outline-none"
+                    value={formData.primaryChallenge}
+                    onChange={e => setFormData({ ...formData, primaryChallenge: e.target.value })}
+                  />
+                </div>
+
+                <button
+                  type="submit"
+                  disabled={isSubmitting}
+                  className="w-full py-4 bg-brand-900 text-white font-bold uppercase tracking-wider text-xs rounded-xl shadow-sm hover:bg-brand-gold hover:text-brand-900 transition-all flex items-center justify-center gap-2 mt-2"
+                >
+                  {isSubmitting ? 'Transmitting Request...' : 'Submit Consultation Request'} <ArrowRight size={14} />
+                </button>
+
+                <p className="text-[11px] text-center text-stone-500">
+                  All consultations and financial records are governed by strict client confidentiality and non-disclosure standards.
+                </p>
+              </form>
+            </div>
+          ) : (
+            /* Confirmation State */
+            <div className="bg-white border border-stone-200 rounded-2xl p-8 sm:p-12 text-center space-y-6 shadow-sm">
+              <div className="w-16 h-16 bg-teal-50 text-teal-800 rounded-full flex items-center justify-center mx-auto border border-teal-200">
+                <CheckCircle2 size={36} />
+              </div>
+
+              <div className="space-y-2">
+                <span className="text-xs font-bold uppercase tracking-widest text-brand-gold bg-amber-50 px-3 py-1 rounded-full border border-amber-200">
+                  Consultation Request Received
+                </span>
+                <h2 className="text-2xl sm:text-3xl font-sora font-extrabold text-brand-900">
+                  Thank You, {formData.fullName}
+                </h2>
+                <p className="text-xs sm:text-sm text-stone-600 max-w-md mx-auto leading-relaxed">
+                  Your diagnostic submission for <strong>{formData.companyName}</strong> has been logged. An executive summary has been sent to <strong>{formData.workEmail}</strong>.
+                </p>
+              </div>
+
+              <div className="p-6 bg-stone-50 rounded-xl max-w-md mx-auto text-left text-xs space-y-3 border border-stone-200">
+                <span className="font-bold text-stone-900 uppercase tracking-wider block text-[11px]">
+                  Next Step: Schedule Online Session
+                </span>
+                <p className="text-stone-600 leading-relaxed">
+                  You can immediately reserve your 30-minute strategic consultation with Principal Practice Leader Marcia Kgaphola:
+                </p>
+                <a
+                  href="https://calendly.com/marcia-kgaphola/new-meeting"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center justify-center gap-2 w-full py-3.5 bg-brand-900 text-white rounded-xl font-bold uppercase tracking-wider hover:bg-brand-gold hover:text-brand-900 transition-colors"
+                >
+                  Book Discovery Consultation <ExternalLink size={14} />
+                </a>
+              </div>
+
+              <div className="pt-2">
+                <button
+                  onClick={() => {
+                    setIsSubmitted(false);
+                    setActiveTab('diagnostic');
+                  }}
+                  className="text-xs text-stone-500 hover:text-stone-900 underline"
+                >
+                  Return to Diagnostic
+                </button>
+              </div>
+            </div>
+          )}
+        </section>
+      )}
+
     </div>
   );
 };
