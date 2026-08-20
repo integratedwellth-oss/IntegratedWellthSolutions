@@ -12,9 +12,12 @@ interface EventPopupProps {
 const EventPopup: React.FC<EventPopupProps> = ({ isOpen, onClose }) => {
   const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
+  const [phone, setPhone] = useState('');
   const [businessName, setBusinessName] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
+
+  const CHECKLIST_IMAGE_URL = "https://res.cloudinary.com/dux7wudkk/image/upload/v1787250364/IntegratedWellthSolutions_Founder_Financial_Self_Care_Checklist_oechfv.png";
 
   if (!isOpen) return null;
 
@@ -26,6 +29,7 @@ const EventPopup: React.FC<EventPopupProps> = ({ isOpen, onClose }) => {
     await submitLeadMagnet({
       fullName,
       email,
+      phone,
       businessName,
       source: 'lead_magnet_popup'
     });
@@ -83,9 +87,9 @@ const EventPopup: React.FC<EventPopupProps> = ({ isOpen, onClose }) => {
             {/* Checklist Cover Preview Card */}
             <div className="relative group rounded-xl overflow-hidden shadow-2xl border-2 border-brand-gold/40 max-w-[200px] mx-auto bg-slate-900/60 transition-transform duration-500 hover:scale-105">
               <img 
-                src="/lead_magnet_cover.jpg" 
+                src={CHECKLIST_IMAGE_URL} 
                 alt="The Founder's Financial Self-Care Checklist Cover" 
-                className="w-full h-auto object-cover"
+                className="w-full h-auto object-cover bg-white"
                 onError={(e) => {
                   // Fallback preview styling if image not served
                   (e.target as HTMLElement).style.display = 'none';
@@ -136,22 +140,38 @@ const EventPopup: React.FC<EventPopupProps> = ({ isOpen, onClose }) => {
                     value={fullName}
                     onChange={(e) => setFullName(e.target.value)}
                     placeholder="e.g. Sipho Ndlovu" 
-                    className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50 text-brand-900 text-sm font-medium focus:bg-white focus:border-brand-gold focus:ring-2 focus:ring-brand-gold/20 outline-none transition-all"
+                    className="w-full px-4 py-2.5 rounded-xl border border-slate-200 bg-slate-50 text-brand-900 text-sm font-medium focus:bg-white focus:border-brand-gold focus:ring-2 focus:ring-brand-gold/20 outline-none transition-all"
                   />
                 </div>
 
-                <div>
-                  <label className="block text-[11px] font-black uppercase tracking-wider text-brand-900 mb-1">
-                    Business / Work Email <span className="text-rose-500">*</span>
-                  </label>
-                  <input 
-                    type="email" 
-                    required
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    placeholder="sipho@company.co.za" 
-                    className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50 text-brand-900 text-sm font-medium focus:bg-white focus:border-brand-gold focus:ring-2 focus:ring-brand-gold/20 outline-none transition-all"
-                  />
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-[11px] font-black uppercase tracking-wider text-brand-900 mb-1">
+                      Business Email <span className="text-rose-500">*</span>
+                    </label>
+                    <input 
+                      type="email" 
+                      required
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      placeholder="sipho@company.co.za" 
+                      className="w-full px-4 py-2.5 rounded-xl border border-slate-200 bg-slate-50 text-brand-900 text-sm font-medium focus:bg-white focus:border-brand-gold focus:ring-2 focus:ring-brand-gold/20 outline-none transition-all"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-[11px] font-black uppercase tracking-wider text-brand-900 mb-1">
+                      Contact / WhatsApp <span className="text-rose-500">*</span>
+                    </label>
+                    <input 
+                      type="tel" 
+                      required
+                      value={phone}
+                      onChange={(e) => setPhone(e.target.value)}
+                      placeholder="082 123 4567" 
+                      className="w-full px-4 py-2.5 rounded-xl border border-slate-200 bg-slate-50 text-brand-900 text-sm font-medium focus:bg-white focus:border-brand-gold focus:ring-2 focus:ring-brand-gold/20 outline-none transition-all"
+                    />
+                  </div>
                 </div>
 
                 <div>
@@ -163,7 +183,7 @@ const EventPopup: React.FC<EventPopupProps> = ({ isOpen, onClose }) => {
                     value={businessName}
                     onChange={(e) => setBusinessName(e.target.value)}
                     placeholder="e.g. Apex Holdings (Pty) Ltd" 
-                    className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50 text-brand-900 text-sm font-medium focus:bg-white focus:border-brand-gold focus:ring-2 focus:ring-brand-gold/20 outline-none transition-all"
+                    className="w-full px-4 py-2.5 rounded-xl border border-slate-200 bg-slate-50 text-brand-900 text-sm font-medium focus:bg-white focus:border-brand-gold focus:ring-2 focus:ring-brand-gold/20 outline-none transition-all"
                   />
                 </div>
 

@@ -84,11 +84,13 @@ const LandingPage: React.FC<LandingPageProps> = ({ onOpenAssessment }) => {
   // Lead capture form state
   const [leadName, setLeadName] = useState('');
   const [leadEmail, setLeadEmail] = useState('');
+  const [leadPhone, setLeadPhone] = useState('');
   const [leadCompany, setLeadCompany] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [downloadSuccess, setDownloadSuccess] = useState(false);
 
   const FOUNDER_URL = "https://res.cloudinary.com/dka0498ns/image/upload/f_auto,q_auto/v1768022744/Marcia_Kgaphola._The_founder_of_Integrated_Wellth_Solution_giving_a_keynote_speech_at_a_women_business_conference_rr55ol.jpg";
+  const CHECKLIST_IMAGE_URL = "https://res.cloudinary.com/dux7wudkk/image/upload/v1787250364/IntegratedWellthSolutions_Founder_Financial_Self_Care_Checklist_oechfv.png";
 
   const toggleStep = (id: number) => {
     setCompletedSteps(prev => ({
@@ -108,6 +110,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onOpenAssessment }) => {
     await submitLeadMagnet({
       fullName: leadName,
       email: leadEmail,
+      phone: leadPhone,
       businessName: leadCompany,
       checklistSelfAuditScore: auditScorePercent,
       source: 'landing_page_checklist_hero'
@@ -208,10 +211,10 @@ const LandingPage: React.FC<LandingPageProps> = ({ onOpenAssessment }) => {
                       <FileText size={24} className="text-brand-gold shrink-0" />
                     </div>
 
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
                       <div>
                         <label className="block text-[11px] font-black uppercase tracking-wider text-slate-700 mb-1">
-                          Full Name *
+                          Full Name <span className="text-rose-500">*</span>
                         </label>
                         <input 
                           type="text"
@@ -224,7 +227,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onOpenAssessment }) => {
                       </div>
                       <div>
                         <label className="block text-[11px] font-black uppercase tracking-wider text-slate-700 mb-1">
-                          Business Email *
+                          Business Email <span className="text-rose-500">*</span>
                         </label>
                         <input 
                           type="email"
@@ -232,6 +235,31 @@ const LandingPage: React.FC<LandingPageProps> = ({ onOpenAssessment }) => {
                           value={leadEmail}
                           onChange={(e) => setLeadEmail(e.target.value)}
                           placeholder="founder@company.co.za"
+                          className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm font-medium focus:ring-2 focus:ring-brand-gold/30 focus:border-brand-gold outline-none"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-[11px] font-black uppercase tracking-wider text-slate-700 mb-1">
+                          Contact / WhatsApp <span className="text-rose-500">*</span>
+                        </label>
+                        <input 
+                          type="tel"
+                          required
+                          value={leadPhone}
+                          onChange={(e) => setLeadPhone(e.target.value)}
+                          placeholder="082 123 4567 / +27..."
+                          className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm font-medium focus:ring-2 focus:ring-brand-gold/30 focus:border-brand-gold outline-none"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-[11px] font-black uppercase tracking-wider text-slate-500 mb-1">
+                          Company Name <span className="text-slate-400 font-normal lowercase">(optional)</span>
+                        </label>
+                        <input 
+                          type="text"
+                          value={leadCompany}
+                          onChange={(e) => setLeadCompany(e.target.value)}
+                          placeholder="Acme Holdings (Pty) Ltd"
                           className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm font-medium focus:ring-2 focus:ring-brand-gold/30 focus:border-brand-gold outline-none"
                         />
                       </div>
@@ -292,19 +320,19 @@ const LandingPage: React.FC<LandingPageProps> = ({ onOpenAssessment }) => {
 
             </div>
 
-            {/* Right Column: Visual Book/Checklist Cover Mockup */}
+            {/* Right Column: Visual Checklist Cover Mockup */}
             <div className="lg:col-span-5 flex justify-center">
               <RevealOnScroll>
-                <div className="relative group max-w-sm">
+                <div className="relative group max-w-md w-full">
                   {/* Decorative Glow */}
                   <div className="absolute -inset-2 bg-gradient-to-r from-brand-gold to-teal-500 rounded-3xl blur-xl opacity-40 group-hover:opacity-60 transition duration-1000"></div>
                   
                   {/* Lead Magnet Preview Card */}
                   <div className="relative rounded-2xl overflow-hidden bg-slate-950 border-4 border-brand-gold/60 shadow-[0_25px_50px_-12px_rgba(0,0,0,0.7)] transform transition-transform duration-500 hover:-translate-y-2">
                     <img 
-                      src="/lead_magnet_cover.jpg" 
+                      src={CHECKLIST_IMAGE_URL} 
                       alt="The Founder's Financial Self-Care Checklist" 
-                      className="w-full h-auto object-cover"
+                      className="w-full h-auto object-cover bg-white"
                       loading="eager"
                     />
 
