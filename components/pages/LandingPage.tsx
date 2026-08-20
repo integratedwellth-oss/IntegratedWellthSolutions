@@ -176,13 +176,6 @@ const LandingPage: React.FC<LandingPageProps> = ({ onOpenAssessment }) => {
             {/* Left Column: Headline, Subtext & Lead Capture Form */}
             <div className="lg:col-span-7 space-y-8">
               
-              <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-brand-gold/15 border border-brand-gold/30 backdrop-blur-md">
-                <span className="w-2 h-2 rounded-full bg-brand-gold animate-ping"></span>
-                <span className="text-[11px] font-black uppercase tracking-[0.25em] text-brand-gold">
-                  Official IWS Lead Magnet & Practice Framework
-                </span>
-              </div>
-
               <h1 className="text-4xl sm:text-5xl lg:text-6xl font-sora font-extrabold tracking-tight leading-[1.08] text-white">
                 The Founder’s <br />
                 <span className="text-transparent bg-clip-text bg-gradient-to-r from-brand-gold via-amber-200 to-brand-gold">
