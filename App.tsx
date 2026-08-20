@@ -63,7 +63,7 @@ const App: React.FC = () => {
           return;
         }
 
-        const validViews = ['home', 'landing', 'services', 'who-we-help', 'team', 'workshops', 'exclusive', 'blog', 
+        const validViews = ['home', 'landing', 'checklist', 'self-care', 'services', 'who-we-help', 'team', 'workshops', 'exclusive', 'blog', 
         'contact', 'privacy', 'startups', 'existing-business', 'npos', 'individuals', 'wellness', 'accountability', 
         'tracker', 'warroom', 'protocol', 'intel', 'my-intel', 'compliance-calendar', 'roadmap', 'gallery', 'poster'];
 
@@ -103,6 +103,8 @@ const App: React.FC = () => {
       switch (currentView) {
         case 'poster': return <WorkshopFlyer />;
         case 'exclusive': return <ExclusiveWorkshopPage />; // SURGICAL ADDITION
+        case 'checklist':
+        case 'self-care':
         case 'landing': return <LandingPage onOpenAssessment={() => setShowAssessmentModal(true)} />;
         case 'my-intel': return <UserDashboard onTriggerAssessment={() => setShowAssessmentModal(true)} />;
         case 'compliance-calendar': return <ComplianceCalendarPage />;
@@ -132,8 +134,8 @@ const App: React.FC = () => {
   };
 
   const isFullPageMode = ['warroom', 'intel', 'my-intel', 'poster'].includes(currentView);
-  const shouldHideNavbar = ['intel', 'my-intel', 'landing', 'poster'].includes(currentView);
-  const shouldHideFloatingBar = isFullPageMode || currentView === 'landing' || currentView === 'compliance-calendar' || hideAlertBar;
+  const shouldHideNavbar = ['intel', 'my-intel', 'poster'].includes(currentView);
+  const shouldHideFloatingBar = isFullPageMode || currentView === 'landing' || currentView === 'checklist' || currentView === 'compliance-calendar' || hideAlertBar;
 
   return (
     <ErrorBoundary>
