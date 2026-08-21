@@ -143,27 +143,25 @@ export default {
   async fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
     const url = new URL(request.url);
 
-    // ─── Health Check ───
-    if (url.pathname === "/" || url.pathname === "/health") {
-      return new Response("IWS WhatsApp Bot Worker is active.", { status: 200 });
-    }
-
     // ─── Meta Webhook Verification (GET) ───
     if (request.method === "GET") {
       const mode = url.searchParams.get("hub.mode");
       const token = url.searchParams.get("hub.verify_token");
       const challenge = url.searchParams.get("hub.challenge");
 
-      const expectedToken = (env.WHATSAPP_VERIFY_TOKEN || "IntegratedWellth_Secure_Token_2026!").trim();
-
-      if (mode === "subscribe" && token === expectedToken) {
-        return new Response(challenge, {
-          status: 200,
-          headers: { "Content-Type": "text/plain" }
-        });
+      if (mode === "subscribe") {
+        const expectedToken = (env.WHATSAPP_VERIFY_TOKEN || "IntegratedWellth_Secure_Token_2026!").trim();
+        if (token === expectedToken) {
+          return new Response(challenge, {
+            status: 200,
+            headers: { "Content-Type": "text/plain" }
+          });
+        }
+        return new Response("Forbidden: Invalid Token", { status: 403 });
       }
 
-      return new Response("Forbidden", { status: 403 });
+      // Plain browser visit / Health Check
+      return new Response("IWS WhatsApp Bot Worker is active.", { status: 200 });
     }
 
     // ─── Meta Webhook Event Handler (POST) ───
