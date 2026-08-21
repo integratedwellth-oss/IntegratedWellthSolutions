@@ -61,7 +61,7 @@ const FinancialHealthScore: React.FC<FinancialHealthScoreProps> = ({ isOpen = tr
   useEffect(() => {
     const auth = getFirebaseAuth();
     if (!auth) return;
-    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+    const unsubscribe = onAuthStateChanged(auth, (currentUser: any) => {
       setUser(currentUser);
       if (currentUser && stage === 'auth') {
         saveAndFinalize(currentUser);

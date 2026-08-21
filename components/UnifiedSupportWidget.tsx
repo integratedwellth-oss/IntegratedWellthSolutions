@@ -1,16 +1,51 @@
-import { X, Send, Loader2, Sparkles, MessageCircle, Zap, ArrowRight, RefreshCcw } from 'lucide-react';
+import { X, Send, Loader2, Sparkles, MessageCircle, Zap, ArrowRight, RefreshCcw, Download, Calendar, ExternalLink } from 'lucide-react';
 import React, { useState, useRef, useEffect } from 'react';
 import { functions } from '../firebaseConfig';
 import { httpsCallable } from 'firebase/functions';
 import { ChatMessage } from '../types';
+import { downloadFounderChecklistPDF } from '../services/exportService';
 
 const SUGGESTIONS: Record<string, string[]> = {
-  'home': ["What is the SARS Safety Net?", "How do I join the next workshop?", "Can you fix my messy books?"],
-  'startups': ["How do I get investor-ready?", "What paperwork do I need to start?", "How do I manage my first grant?"],
-  'existing-business': ["Is my business SARS compliant?", "Why am I not making enough profit?", "How do I win bigger contracts?"],
-  'npos': ["How do I register an NPO?", "Help with donor reports", "Tax-exempt status help"],
-  'wellness': ["I'm feeling burnt out", "Tips for leader stress", "Better money habits for my team"],
-  'default': ["Show me your services", "Where is your office?", "Book a free chat"]
+  'home': [
+    "Download Founder's Checklist (PDF)",
+    "Run 3-Step Compliance Check",
+    "Show me services by segment",
+    "Where is the War Room stress test?",
+    "Book a free strategy session"
+  ],
+  'startups': [
+    "What services exist for startups?",
+    "How do I get investor-ready?",
+    "Download Founder's Checklist (PDF)",
+    "Book a free strategy session"
+  ],
+  'existing-business': [
+    "Is my business SARS compliant?",
+    "Show services for established businesses",
+    "What is the War Room stress test?",
+    "How do you help win tenders?"
+  ],
+  'npos': [
+    "What services exist for NPOs/NGOs?",
+    "How do I get PBO tax-exempt status?",
+    "Help with donor reporting and fund accounting"
+  ],
+  'wellness': [
+    "Burnout prevention and mindfulness coaching",
+    "How to manage founder stress & money habits",
+    "Download Founder's Checklist (PDF)"
+  ],
+  'checklist': [
+    "Tell me more about the 5 steps in the checklist",
+    "How does the Monthly Sanity Reconciliation work?",
+    "Book a discovery call with Marcia"
+  ],
+  'default': [
+    "Download Founder's Checklist (PDF)",
+    "Run 3-Step Compliance Check",
+    "Show me your services",
+    "Book a free discovery session"
+  ]
 };
 
 const UnifiedSupportWidget: React.FC = () => {
@@ -96,24 +131,109 @@ const UnifiedSupportWidget: React.FC = () => {
     setMode('menu');
   };
 
-  const renderMarkdown = (text: string) => {
-    if (!text) return null;
-    const lines = text.split('\n');
-    return lines.map((line, i) => {
-      if (line.startsWith('### ')) {
-        return <h4 key={i} className="text-brand-900 font-sora font-black text-base mt-4 mb-2 uppercase tracking-tight">{line.replace('### ', '')}</h4>;
-      }
-      if (line.startsWith('* ') || line.startsWith('- ')) {
-        const content = line.replace(/^[\*\-]\s/, '');
+  const formatTextWithLinks = (text: string) => {
+    // Regex for URLs and hash routes
+    const urlRegex = /(https?:\/\/[^\s]+|#[\w-]+)/g;
+    const parts = text.split(urlRegex);
+
+    return parts.map((part, index) => {
+      if (part.startsWith('http://') || part.startsWith('https://')) {
+        const isCalendly = part.includes('calendly.com');
+        const isWhatsApp = part.includes('wa.link') || part.includes('whatsapp.com');
         return (
-          <div key={i} className="flex gap-2 items-start mb-2 ml-1 text-brand-900/80">
-            <div className="w-1.5 h-1.5 rounded-full bg-brand-gold mt-1.5 flex-shrink-0"></div>
-            <span className="text-sm">{content}</span>
-          </div>
+          <a
+            key={index}
+            href={part}
+            target="_blank"
+            rel="noopener noreferrer"
+            className={`inline-flex items-center gap-1 font-bold underline px-1.5 py-0.5 rounded transition-all ${
+              isCalendly
+                ? 'bg-amber-100 text-amber-950 hover:bg-amber-200 no-underline shadow-xs my-0.5'
+                : isWhatsApp
+                ? 'bg-emerald-100 text-emerald-950 hover:bg-emerald-200 no-underline shadow-xs my-0.5'
+                : 'text-brand-700 hover:text-brand-900'
+            }`}
+          >
+            {isCalendly ? (
+              <>
+                <Calendar size={12} /> Book Discovery Call <ExternalLink size={10} />
+              </>
+            ) : isWhatsApp ? (
+              <>
+                <MessageCircle size={12} /> WhatsApp Direct <ExternalLink size={10} />
+              </>
+            ) : (
+              <>
+                {part} <ExternalLink size={10} />
+              </>
+            )}
+          </a>
+        );
+      } else if (part.startsWith('#')) {
+        return (
+          <a
+            key={index}
+            href={part}
+            onClick={() => {
+              window.location.hash = part;
+            }}
+            className="inline-flex items-center gap-1 font-bold text-brand-900 bg-brand-100/70 hover:bg-brand-gold/30 px-2 py-0.5 rounded text-xs transition-colors my-0.5"
+          >
+            {part} <ArrowRight size={10} />
+          </a>
         );
       }
-      return line.trim() ? <p key={i} className="mb-3 text-sm leading-relaxed text-brand-900/90">{line}</p> : <div key={i} className="h-2" />;
+      return part;
     });
+  };
+
+  const renderMarkdown = (text: string) => {
+    if (!text) return null;
+    const isChecklistMentioned = /(checklist|self-care|5 steps)/i.test(text);
+    const lines = text.split('\n');
+
+    return (
+      <div className="space-y-2">
+        {lines.map((line, i) => {
+          if (line.startsWith('### ')) {
+            return (
+              <h4 key={i} className="text-brand-900 font-sora font-black text-base mt-4 mb-2 uppercase tracking-tight">
+                {line.replace('### ', '')}
+              </h4>
+            );
+          }
+          if (line.startsWith('* ') || line.startsWith('- ')) {
+            const content = line.replace(/^[\*\-]\s/, '');
+            return (
+              <div key={i} className="flex gap-2 items-start mb-1.5 ml-1 text-brand-900/80">
+                <div className="w-1.5 h-1.5 rounded-full bg-brand-gold mt-1.5 flex-shrink-0"></div>
+                <span className="text-sm leading-relaxed">{formatTextWithLinks(content)}</span>
+              </div>
+            );
+          }
+          return line.trim() ? (
+            <p key={i} className="mb-2 text-sm leading-relaxed text-brand-900/90">
+              {formatTextWithLinks(line)}
+            </p>
+          ) : (
+            <div key={i} className="h-1" />
+          );
+        })}
+
+        {isChecklistMentioned && (
+          <div className="pt-2 mt-2 border-t border-brand-900/10">
+            <button
+              onClick={() => {
+                downloadFounderChecklistPDF('Founder');
+              }}
+              className="w-full flex items-center justify-center gap-2 py-2.5 px-4 bg-brand-gold text-brand-900 rounded-xl font-bold text-xs uppercase tracking-wider shadow-sm hover:brightness-105 active:scale-[0.98] transition-all"
+            >
+              <Download size={14} /> Download Founder's Checklist (PDF)
+            </button>
+          </div>
+        )}
+      </div>
+    );
   };
 
   const toggleWidget = () => {

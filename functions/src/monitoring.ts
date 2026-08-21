@@ -6,7 +6,7 @@ const db = admin.firestore();
 
 const sendMetaMessage = async (toNumber: string, text: string): Promise<void> => {
   const WHATSAPP_TOKEN = (process.env.WHATSAPP_TOKEN || "").trim();
-  const PHONE_NUMBER_ID = (process.env.PHONE_NUMBER_ID || "").trim();
+  const PHONE_NUMBER_ID = (process.env.WHATSAPP_PHONE_NUMBER_ID || process.env.PHONE_NUMBER_ID || "").trim();
   if (!WHATSAPP_TOKEN || !PHONE_NUMBER_ID) return;
 
   // ─── SECURITY FIX: Validate phone number format before sending ───
@@ -42,7 +42,7 @@ export const weeklySecurityAudit = onSchedule({
 }, async () => {
   const now = admin.firestore.Timestamp.now();
   const oneWeekAgo = new Date(now.toDate().getTime() - 7 * 24 * 60 * 60 * 1000);
-  const adminPhone = (process.env.ADMIN_PHONE_NUMBER || "").trim();
+  const adminPhone = (process.env.ADMIN_WHATSAPP_NUMBER || process.env.ADMIN_PHONE_NUMBER || "").trim();
 
   let report = "🔐 *IWS Weekly Security Audit*\n";
   report += `📅 ${now.toDate().toLocaleDateString()}\n\n`;

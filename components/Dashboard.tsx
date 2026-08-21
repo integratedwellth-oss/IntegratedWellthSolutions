@@ -13,8 +13,8 @@ import { httpsCallable } from 'firebase/functions';
 import { RefreshCw, Shield, Users, FileText, Calendar, X, Eye } from 'lucide-react';
 
 // ─── Secure callable functions ───
-const getMyClaims = httpsCallable(functions, 'getMyClaims');
-const getAdminData = httpsCallable(functions, 'getAdminData');
+const getMyClaims = (data?: any) => functions ? httpsCallable(functions, 'getMyClaims')(data) : Promise.reject('Functions unavailable');
+const getAdminData = (data?: any) => functions ? httpsCallable(functions, 'getAdminData')(data) : Promise.reject('Functions unavailable');
 
 interface LeadItem {
   id: string;
@@ -41,7 +41,7 @@ const TAB_CONFIG: { key: TabKey; label: string; icon: typeof Users }[] = [
 ];
 
 const Dashboard: FC = () => {
-  const [user, setUser] = useState<User | null>(null);
+  const [user, setUser] = useState<any>(null);
   const [isAdmin, setIsAdmin] = useState(false);
   const [checkingAdmin, setCheckingAdmin] = useState(true);
 
@@ -55,7 +55,7 @@ const Dashboard: FC = () => {
   // ─── Check auth state ───
   useEffect(() => {
     if (!auth) { setCheckingAdmin(false); setLoading(false); return; }
-    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+    const unsubscribe = onAuthStateChanged(auth, (currentUser: any) => {
       setUser(currentUser);
       if (!currentUser) {
         setCheckingAdmin(false);

@@ -37,17 +37,17 @@ const UserDashboard: React.FC<UserDashboardProps> = ({ onTriggerAssessment }) =>
   useEffect(() => {
     if (!auth) { setLoading(false); return; }
     let unsubscribe: (() => void) | undefined;
-    const unsubscribeAuth = onAuthStateChanged(auth, (currentUser) => {
+    const unsubscribeAuth = onAuthStateChanged(auth, (currentUser: any) => {
       setUser(currentUser);
       if (currentUser && currentUser.uid) {
         const qAssessments = query(collection(db, 'assessments'), where('userId', '==', currentUser.uid));
-        const unsubAssessments = onSnapshot(qAssessments, (snap) => {
-          const data = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        const unsubAssessments = onSnapshot(qAssessments, (snap: any) => {
+          const data = snap.docs.map((doc: any) => ({ id: doc.id, ...doc.data() }));
           setMyAssessments(data.sort((a: any, b: any) => (b.timestamp?.seconds || 0) - (a.timestamp?.seconds || 0)));
           setLoading(false);
         });
         const complianceDocRef = doc(db, 'compliance_states', currentUser.uid);
-        const unsubCompliance = onSnapshot(complianceDocRef, (docSnap) => {
+        const unsubCompliance = onSnapshot(complianceDocRef, (docSnap: any) => {
           if (docSnap.exists()) {
             setComplianceState(docSnap.data());
           } else {

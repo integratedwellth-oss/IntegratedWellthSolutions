@@ -100,6 +100,29 @@ const sendMetaMessage = async (toNumber, text) => {
         })
     });
 };
+const sendMetaDocument = async (toNumber, documentUrl, filename, caption) => {
+    const WHATSAPP_TOKEN = (process.env.WHATSAPP_TOKEN || "").trim();
+    const PHONE_NUMBER_ID = (process.env.PHONE_NUMBER_ID || "").trim();
+    if (!WHATSAPP_TOKEN || !PHONE_NUMBER_ID) {
+        console.error("Meta credentials missing.");
+        return;
+    }
+    await fetch(`https://graph.facebook.com/v21.0/${PHONE_NUMBER_ID}/messages`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "Authorization": `Bearer ${WHATSAPP_TOKEN}` },
+        body: JSON.stringify({
+            messaging_product: "whatsapp",
+            recipient_type: "individual",
+            to: toNumber,
+            type: "document",
+            document: {
+                link: documentUrl,
+                filename: filename,
+                caption: caption || ""
+            }
+        })
+    });
+};
 const callDeepSeek = async (messages) => {
     const DEEPSEEK_API_KEY = (process.env.DEEPSEEK_API_KEY || "").trim();
     const sanitizedMessages = messages.map((m) => ({
@@ -116,7 +139,7 @@ const callDeepSeek = async (messages) => {
             model: "deepseek-chat",
             messages: sanitizedMessages,
             temperature: 0.2,
-            max_tokens: 450
+            max_tokens: 650
         })
     });
     if (!response.ok)
@@ -134,7 +157,7 @@ const ALLOWED_ORIGINS = [
 // ─── websiteChat: hardened callable ───
 // NOTE: App Check enforcement disabled until reCAPTCHA v3 is configured.
 // To enable: add enforceAppCheck: true and initializeAppCheck in firebaseConfig.ts
-exports.websiteChat = (0, https_1.onCall)({ region: "us-central1", cors: ALLOWED_ORIGINS }, async (request) => {
+exports.websiteChat = (0, https_1.onCall)({ region: "us-central1", cors: ALLOWED_ORIGINS, enforceAppCheck: true }, async (request) => {
     const message = request.data.message;
     const history = request.data.history;
     const uid = request.auth?.uid;
@@ -150,8 +173,15 @@ exports.websiteChat = (0, https_1.onCall)({ region: "us-central1", cors: ALLOWED
         throw new https_1.HttpsError("resource-exhausted", "Rate limit exceeded. Please try again later.");
     }
     try {
+        const formattedHistory = (history || [])
+            .slice(-10) // keep last 10 messages for context efficiency
+            .map((h) => ({
+            role: (h.role === "model" || h.role === "assistant") ? "assistant" : "user",
+            content: h.text || h.content || ""
+        }));
         const messages = [
             { role: "system", content: prompt_1.SYSTEM_PROMPT },
+            ...formattedHistory,
             { role: "user", content: message }
         ];
         const reply = await callDeepSeek(messages);
@@ -212,6 +242,28 @@ exports.whatsappWebhook = (0, https_1.onRequest)({ region: "us-central1" }, asyn
     const userMessage = (message.text?.body || "").trim();
     const senderName = contact?.profile?.name || "Client";
     try {
+        // 1. Lead Detection & Automatic Capture for "Founder's Financial Self-Care Checklist"
+        const emailRegex = /\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b/;
+        const emailMatch = userMessage.match(emailRegex);
+        const isChecklistQuery = /(checklist|self-care|self care|guide|download|founder's checklist|pdf)/i.test(userMessage);
+        if (emailMatch || isChecklistQuery) {
+            const capturedEmail = emailMatch ? emailMatch[0] : "";
+            await dbAdmin.collection("war_room_leads").add({
+                fullName: senderName,
+                phone: fromNumber,
+                email: capturedEmail,
+                source: "whatsapp_bot",
+                campaign: "founders_financial_self_care_2026",
+                query: userMessage,
+                status: "new_lead",
+                createdAt: admin.firestore.FieldValue.serverTimestamp()
+            });
+            const adminPhone = (process.env.ADMIN_PHONE_NUMBER || "").trim();
+            if (adminPhone) {
+                await sendMetaMessage(adminPhone, `ALERT: New Lead from WhatsApp!\nName: ${senderName}\nPhone: ${fromNumber}\nEmail: ${capturedEmail || "Pending"}\nQuery: ${userMessage}`);
+            }
+        }
+        // 2. Check for explicit verified claims first (custom business overrides)
         const claimsSnapshot = await dbAdmin.collection("verified_claims").get();
         let matchedClaim = null;
         for (const doc of claimsSnapshot.docs) {
@@ -268,7 +320,7 @@ exports.whatsappWebhook = (0, https_1.onRequest)({ region: "us-central1" }, asyn
     }
 });
 // ─── getAdminData: Secure endpoint for Dashboard ───
-exports.getAdminData = (0, https_1.onCall)({ region: "us-central1", cors: ALLOWED_ORIGINS }, async (request) => {
+exports.getAdminData = (0, https_1.onCall)({ region: "us-central1", cors: ALLOWED_ORIGINS, enforceAppCheck: true }, async (request) => {
     const uid = request.auth?.uid;
     if (!uid) {
         throw new https_1.HttpsError("unauthenticated", "You must be signed in.");

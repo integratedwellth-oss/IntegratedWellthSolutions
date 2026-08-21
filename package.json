@@ -9,14 +9,23 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@firebase/logger": "^0.5.2",
+    "@firebase/webchannel-wrapper": "^1.0.7",
+    "@jridgewell/gen-mapping": "^0.3.5",
+    "@jridgewell/resolve-uri": "^3.1.0",
+    "@jridgewell/sourcemap-codec": "^1.4.15",
+    "@jridgewell/trace-mapping": "^0.3.20",
+    "caniuse-lite": "^1.0.30001809",
     "firebase": "11.1.0",
     "framer-motion": "11.18.2",
     "jspdf": "2.5.1",
     "jspdf-autotable": "3.8.2",
-    "lucide-react": "0.561.0",
+    "lucide-react": "^0.469.0",
+    "postcss-selector-parser": "^7.1.5",
     "react": "19.0.0",
     "react-dom": "19.0.0",
-    "swiper": "11.2.4"
+    "swiper": "11.2.4",
+    "ts-interface-checker": "^0.1.13"
   },
   "devDependencies": {
     "@types/react": "19.0.0",

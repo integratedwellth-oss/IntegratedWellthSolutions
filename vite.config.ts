@@ -14,8 +14,10 @@ export default defineConfig({
   plugins: [react()],
   resolve: {
     alias: {
-      // Correct Alias: Maps '@' to the project root
-      '@': path.resolve(__dirname, './'), 
+      '@': path.resolve(__dirname, './'),
+      'html2canvas': path.resolve(__dirname, './emptyStub.js'),
+      'stackblur-canvas': path.resolve(__dirname, './emptyStub.js'),
+      'canvg': path.resolve(__dirname, './emptyStub.js'),
     },
   },
   build: {
@@ -24,7 +26,6 @@ export default defineConfig({
     rollupOptions: {
       input: {
         main: path.resolve(__dirname, 'index.html'),
-        summit: path.resolve(__dirname, 'summit.html'), 
       },
     },
   }

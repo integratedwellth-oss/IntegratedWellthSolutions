@@ -70,7 +70,7 @@ const verifyMetaSignature = (body: string, signature: string | undefined, appSec
 
 const sendMetaMessage = async (toNumber: string, text: string): Promise<void> => {
   const WHATSAPP_TOKEN = (process.env.WHATSAPP_TOKEN || "").trim();
-  const PHONE_NUMBER_ID = (process.env.PHONE_NUMBER_ID || "").trim();
+  const PHONE_NUMBER_ID = (process.env.WHATSAPP_PHONE_NUMBER_ID || process.env.PHONE_NUMBER_ID || "").trim();
   if (!WHATSAPP_TOKEN || !PHONE_NUMBER_ID) {
     console.error("Meta credentials missing.");
     return;
@@ -84,6 +84,30 @@ const sendMetaMessage = async (toNumber: string, text: string): Promise<void> =>
       to: toNumber,
       type: "text",
       text: { preview_url: false, body: text }
+    })
+  });
+};
+
+const sendMetaDocument = async (toNumber: string, documentUrl: string, filename: string, caption?: string): Promise<void> => {
+  const WHATSAPP_TOKEN = (process.env.WHATSAPP_TOKEN || "").trim();
+  const PHONE_NUMBER_ID = (process.env.WHATSAPP_PHONE_NUMBER_ID || process.env.PHONE_NUMBER_ID || "").trim();
+  if (!WHATSAPP_TOKEN || !PHONE_NUMBER_ID) {
+    console.error("Meta credentials missing.");
+    return;
+  }
+  await fetch(`https://graph.facebook.com/v21.0/${PHONE_NUMBER_ID}/messages`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", "Authorization": `Bearer ${WHATSAPP_TOKEN}` },
+    body: JSON.stringify({
+      messaging_product: "whatsapp",
+      recipient_type: "individual",
+      to: toNumber,
+      type: "document",
+      document: {
+        link: documentUrl,
+        filename: filename,
+        caption: caption || ""
+      }
     })
   });
 };
@@ -104,7 +128,7 @@ const callDeepSeek = async (messages: ChatMessage[]): Promise<string> => {
       model: "deepseek-chat",
       messages: sanitizedMessages,
       temperature: 0.2,
-      max_tokens: 450
+      max_tokens: 650
     })
   });
   if (!response.ok) return "PROTOCOL INTERRUPTED: DeepSeek connection failed.";
@@ -144,8 +168,16 @@ export const websiteChat = onCall(
     }
 
     try {
+      const formattedHistory: ChatMessage[] = (history || [])
+        .slice(-10) // keep last 10 messages for context efficiency
+        .map((h) => ({
+          role: (h.role === "model" || h.role === "assistant") ? "assistant" : "user",
+          content: h.text || h.content || ""
+        }));
+
       const messages: ChatMessage[] = [
         { role: "system", content: SYSTEM_PROMPT },
+        ...formattedHistory,
         { role: "user", content: message }
       ];
       const reply = await callDeepSeek(messages);
@@ -215,6 +247,34 @@ export const whatsappWebhook = onRequest(
     const senderName = contact?.profile?.name || "Client";
 
     try {
+      // 1. Lead Detection & Automatic Capture for "Founder's Financial Self-Care Checklist"
+      const emailRegex = /\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b/;
+      const emailMatch = userMessage.match(emailRegex);
+      const isChecklistQuery = /(checklist|self-care|self care|guide|download|founder's checklist|pdf)/i.test(userMessage);
+
+      if (emailMatch || isChecklistQuery) {
+        const capturedEmail = emailMatch ? emailMatch[0] : "";
+        await dbAdmin.collection("war_room_leads").add({
+          fullName: senderName,
+          phone: fromNumber,
+          email: capturedEmail,
+          source: "whatsapp_bot",
+          campaign: "founders_financial_self_care_2026",
+          query: userMessage,
+          status: "new_lead",
+          createdAt: admin.firestore.FieldValue.serverTimestamp()
+        });
+
+        const adminPhone = (process.env.ADMIN_WHATSAPP_NUMBER || process.env.ADMIN_PHONE_NUMBER || "").trim();
+        if (adminPhone) {
+          await sendMetaMessage(
+            adminPhone,
+            `ALERT: New Lead from WhatsApp!\nName: ${senderName}\nPhone: ${fromNumber}\nEmail: ${capturedEmail || "Pending"}\nQuery: ${userMessage}`
+          );
+        }
+      }
+
+      // 2. Check for explicit verified claims first (custom business overrides)
       const claimsSnapshot = await dbAdmin.collection("verified_claims").get();
       let matchedClaim: admin.firestore.DocumentData | null = null;
       for (const doc of claimsSnapshot.docs) {
@@ -233,7 +293,7 @@ export const whatsappWebhook = onRequest(
           interest: matchedClaim.title || userMessage,
           timestamp: admin.firestore.FieldValue.serverTimestamp()
         });
-        const adminPhone = (process.env.ADMIN_PHONE_NUMBER || "").trim();
+        const adminPhone = (process.env.ADMIN_WHATSAPP_NUMBER || process.env.ADMIN_PHONE_NUMBER || "").trim();
         if (adminPhone) {
           await sendMetaMessage(
             adminPhone,

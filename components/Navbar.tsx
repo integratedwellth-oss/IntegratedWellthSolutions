@@ -12,7 +12,7 @@ const Navbar: React.FC<NavbarProps> = ({ onNavigate }) => {
 
   useEffect(() => {
     if (!auth) { setIsLoggedIn(false); return; }
-    const unsubAuth = onAuthStateChanged(auth, (user) => setIsLoggedIn(!!user));
+    const unsubAuth = onAuthStateChanged(auth, (user: any) => setIsLoggedIn(!!user));
     setActiveHash(window.location.hash || '#home');
     return () => unsubAuth();
   }, []);
