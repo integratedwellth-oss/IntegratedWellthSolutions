@@ -1,5 +1,10 @@
 import { SYSTEM_PROMPT } from "./prompt";
 
+export interface ExecutionContext {
+  waitUntil(promise: Promise<any>): void;
+  passThroughOnException?(): void;
+}
+
 export interface Env {
   WHATSAPP_VERIFY_TOKEN: string;
   META_APP_SECRET?: string;

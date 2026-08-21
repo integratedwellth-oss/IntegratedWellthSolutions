@@ -43,25 +43,10 @@ jobs:
           VITE_FIREBASE_APP_ID: ${{ secrets.VITE_FIREBASE_APP_ID }}
           VITE_RECAPTCHA_SITE_KEY: ${{ secrets.VITE_RECAPTCHA_SITE_KEY }}
 
-      - name: Generate Functions Environment Variables
-        run: |
-          cat << 'EOF' > functions/.env
-          WHATSAPP_VERIFY_TOKEN=${{ secrets.WHATSAPP_VERIFY_TOKEN }}
-          META_APP_SECRET=${{ secrets.META_APP_SECRET }}
-          WHATSAPP_TOKEN=${{ secrets.WHATSAPP_TOKEN }}
-          WHATSAPP_PHONE_NUMBER_ID=${{ secrets.WHATSAPP_PHONE_NUMBER_ID }}
-          PHONE_NUMBER_ID=${{ secrets.WHATSAPP_PHONE_NUMBER_ID }}
-          WHATSAPP_APP_ID=${{ secrets.WHATSAPP_APP_ID }}
-          ADMIN_WHATSAPP_NUMBER=${{ secrets.ADMIN_WHATSAPP_NUMBER }}
-          ADMIN_PHONE_NUMBER=${{ secrets.ADMIN_WHATSAPP_NUMBER }}
-          GEMINI_API_KEY=${{ secrets.GEMINI_API_KEY }}
-          DEEPSEEK_API_KEY=${{ secrets.DEEPSEEK_API_KEY }}
-          EOF
-
-      - name: Deploy to Firebase Hosting and Functions
+      - name: Deploy to Firebase Hosting
         uses: w9jds/firebase-action@v15.15.0
         with:
-          args: deploy --only hosting,functions --force
+          args: deploy --only hosting --force
         env:
           GCP_SA_KEY: ${{ secrets.GCP_SA_KEY }}
           PROJECT_ID: integratedwellthsolutions
