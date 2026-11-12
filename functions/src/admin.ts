@@ -29,7 +29,7 @@ export const setAdminClaim = onCall(
     // Verify caller is an admin
     const caller = await authAdmin.getUser(callerUid);
     const callerIsAdmin =
-      ADMIN_EMAILS.includes(caller.email || "") ||
+      (ADMIN_EMAILS.includes(caller.email || "") && caller.emailVerified === true) ||
       caller.customClaims?.admin === true;
 
     if (!callerIsAdmin) {
@@ -72,7 +72,7 @@ export const removeAdminClaim = onCall(
 
     const caller = await authAdmin.getUser(callerUid);
     const callerIsAdmin =
-      ADMIN_EMAILS.includes(caller.email || "") ||
+      (ADMIN_EMAILS.includes(caller.email || "") && caller.emailVerified === true) ||
       caller.customClaims?.admin === true;
 
     if (!callerIsAdmin) {

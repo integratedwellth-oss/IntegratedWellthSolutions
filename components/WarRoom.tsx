@@ -21,7 +21,7 @@ import {
   Check
 } from 'lucide-react';
 import RevealOnScroll from './RevealOnScroll';
-import { db } from '../firebaseConfig';
+import { getFirebaseDb } from '../firebaseConfig';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 
 // -------------------------------------------------------------
@@ -420,6 +420,7 @@ const WarRoom: React.FC = () => {
     setIsSubmitting(true);
 
     try {
+      const db = getFirebaseDb();
       if (db) {
         await addDoc(collection(db, 'war_room_leads'), {
           name: formData.fullName,

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { db, storage } from '../firebaseConfig';
+import { getFirebaseDb, getFirebaseStorage } from '../firebaseConfig';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { CheckCircle, ArrowRight, ArrowLeft, Upload } from 'lucide-react';
@@ -52,6 +52,8 @@ const WorkshopRegistrationForm = ({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
+    const db = getFirebaseDb();
+    const storage = getFirebaseStorage();
 
     try {
       let popUrl = '';

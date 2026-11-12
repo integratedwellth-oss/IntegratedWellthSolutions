@@ -4,9 +4,8 @@ service firebase.storage {
 
     // User-uploaded documents (reports, assessments) — owner only
     match /users/{userId}/{allPaths=**} {
-      allow read, write: if request.auth != null
-        && request.auth.uid == userId
-        && request.resource.size < 10 * 1024 * 1024;
+      allow read: if request.auth != null && request.auth.uid == userId;
+      allow write: if request.auth != null && request.auth.uid == userId && request.resource.size < 10 * 1024 * 1024;
     }
 
     // Generated PDF exports — owner can read, Cloud Function writes
@@ -19,6 +18,12 @@ service firebase.storage {
     match /public/{allPaths=**} {
       allow read: if true;
       allow write: if false;
+    }
+
+    // Workshop proof-of-participation uploads — authenticated write up to 5 MB; read via reports path only
+    match /workshop_pops/{allPaths=**} {
+      allow write: if request.auth != null && request.resource.size < 5 * 1024 * 1024;
+      allow read: if false;
     }
 
     // Catch-all — deny everything else

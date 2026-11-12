@@ -15,9 +15,20 @@ export interface Env {
   ADMIN_WHATSAPP_NUMBER?: string;
 }
 
+// ─── Constant-time string comparison (timing-attack safe) ───
+function timingSafeEqual(a: string, b: string): boolean {
+  if (a.length !== b.length) return false;
+  let result = 0;
+  for (let i = 0; i < a.length; i++) {
+    result |= a.charCodeAt(i) ^ b.charCodeAt(i);
+  }
+  return result === 0;
+}
+
 // ─── HMAC-SHA256 Signature Verification via Web Crypto API ───
 async function verifyMetaSignature(rawBody: string, signatureHeader: string | null, appSecret?: string): Promise<boolean> {
-  if (!appSecret || !signatureHeader) return true; // allow if secret is not set yet
+  if (!appSecret) return true; // allow if secret not configured yet
+  if (!signatureHeader) return false; // reject if secret is set but header missing
   const parts = signatureHeader.split("=");
   if (parts.length !== 2 || parts[0] !== "sha256") return false;
   const expectedHash = parts[1];
@@ -35,7 +46,7 @@ async function verifyMetaSignature(rawBody: string, signatureHeader: string | nu
     const hashHex = Array.from(new Uint8Array(signature))
       .map(b => b.toString(16).padStart(2, "0"))
       .join("");
-    return hashHex.toLowerCase() === expectedHash.toLowerCase();
+    return timingSafeEqual(hashHex.toLowerCase(), expectedHash.toLowerCase());
   } catch (err) {
     console.error("Signature verification error:", err);
     return false;
