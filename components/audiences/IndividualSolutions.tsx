@@ -60,6 +60,27 @@ const IndividualSolutions: React.FC = () => {
           ))}
         </div>
 
+        {/* Interactive Feature Banner */}
+        <div className="bg-gradient-to-r from-brand-900 to-teal-800 text-white rounded-2xl p-8 mb-16 shadow-lg border border-brand-gold/30 flex flex-col md:flex-row items-center justify-between gap-6">
+          <div className="max-w-2xl">
+            <span className="bg-brand-gold text-brand-900 text-xs font-black uppercase px-3 py-1 rounded-full tracking-wider">
+              NEW INTERACTIVE SYSTEM
+            </span>
+            <h2 className="text-2xl md:text-3xl font-black mt-3 text-white">
+              IWS Personal Finance for Everyone
+            </h2>
+            <p className="text-brand-100 text-sm mt-2 leading-relaxed">
+              Model your personal balance sheet, audit founder-identity decoupling, verify mathematical statement integrity, and export your personal wealth roadmap.
+            </p>
+          </div>
+          <button
+            onClick={() => window.location.hash = '#personal-finance'}
+            className="shrink-0 bg-brand-gold text-brand-900 hover:bg-white px-6 py-3.5 rounded-xl font-black text-sm uppercase tracking-wider transition-all shadow-md"
+          >
+            Launch Finance Portal →
+          </button>
+        </div>
+
         {/* Q&A Section */}
         <div className="bg-gray-50 rounded-2xl p-8 md:p-12 mb-16">
           <h2 className="text-3xl font-bold text-center text-brand-900 mb-10">Common Questions</h2>

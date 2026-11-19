@@ -26,6 +26,7 @@ const Navbar: React.FC<NavbarProps> = ({ onNavigate }) => {
   const navLinks = [
     { label: 'PROTOCOL', hash: '#protocol' },
     { label: 'SERVICES', hash: '#services' },
+    { label: 'PERSONAL FINANCE', hash: '#personal-finance' },
     { label: 'CALENDAR', hash: '#compliance-calendar' },
     { label: 'TEAM', hash: '#team' },
     { label: 'BLOG', hash: '#blog' },
