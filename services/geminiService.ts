@@ -1,4 +1,5 @@
-import { getFunctions, httpsCallable } from "firebase/functions";
+import { httpsCallable } from "firebase/functions";
+import { getFirebaseFunctions } from "../firebaseConfig";
 
 // ─── SECURITY FIX: Strip HTML and enforce length limits before sending to AI ───
 const sanitizeInput = (text: string): string => {
@@ -28,7 +29,10 @@ export const sendMessageStream = async (
   }
 
   try {
-    const functions = getFunctions();
+    const functions = getFirebaseFunctions();
+    if (!functions) {
+      throw new Error("Firebase Functions unavailable. Please check your configuration.");
+    }
     // ─── SECURITY FIX: Call the correct function name ───
     // The backend exports 'websiteChat', not 'geminiChat'
     const chatCall = httpsCallable(functions, "websiteChat");

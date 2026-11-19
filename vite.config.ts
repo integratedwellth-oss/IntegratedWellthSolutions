@@ -26,6 +26,8 @@ export default defineConfig({
     rollupOptions: {
       input: {
         main: path.resolve(__dirname, 'index.html'),
+        summit: path.resolve(__dirname, 'summit.html'),
+        zoho: path.resolve(__dirname, 'zoho-widget.html'),
       },
     },
   }

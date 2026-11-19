@@ -36,6 +36,7 @@ const StrategicJourney = React.lazy(() => import('./components/StrategicJourney'
 const FinancialHealthScore = React.lazy(() => import('./components/FinancialHealthScore'));
 const UnifiedSupportWidget = React.lazy(() => import('./components/UnifiedSupportWidget'));
 const WorkshopFlyer = React.lazy(() => import('./components/WorkshopFlyer'));
+const PersonalFinancePage = React.lazy(() => import('./components/pages/PersonalFinancePage'));
 
 const App: React.FC = () => {
   const [currentView, setCurrentView] = useState('home');
@@ -65,7 +66,7 @@ const App: React.FC = () => {
 
         const validViews = ['home', 'landing', 'checklist', 'self-care', 'services', 'who-we-help', 'team', 'workshops', 'exclusive', 'blog', 
         'contact', 'privacy', 'startups', 'existing-business', 'npos', 'individuals', 'wellness', 'accountability', 
-        'tracker', 'warroom', 'protocol', 'intel', 'my-intel', 'compliance-calendar', 'roadmap', 'gallery', 'poster'];
+        'tracker', 'warroom', 'protocol', 'intel', 'my-intel', 'compliance-calendar', 'roadmap', 'gallery', 'poster', 'personal-finance'];
 
         if (['protocol', 'roadmap', 'gallery'].includes(hash)) {
           setCurrentView('home');
@@ -101,6 +102,7 @@ const App: React.FC = () => {
   const renderCurrentView = () => {
     try {
       switch (currentView) {
+        case 'personal-finance': return <PersonalFinancePage />;
         case 'poster': return <WorkshopFlyer />;
         case 'exclusive': return <ExclusiveWorkshopPage />; // SURGICAL ADDITION
         case 'checklist':
